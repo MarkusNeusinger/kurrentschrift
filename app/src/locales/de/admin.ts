@@ -1603,6 +1603,11 @@ export const admin = {
       absetzerSollHint:
         'So viele verbundene Körperläufe schreibt die Schrift dieses Wort — ohne Markenzüge (i-Punkt, Umlaut), die zählt diese Zahl nicht mit. Sie ist das Soll, gegen das der Absetzer-Sensor misst.',
       herkunft: 'Bahn: {{verfahren}} · {{datum}}',
+      // Ein Skip-Eintrag trägt dasselbe `verfahren` wie jeder andere Eintrag —
+      // nur eben keine Bahn. „Bahn: Tintenpfad" wäre dort das Gegenteil dessen,
+      // was Ampel und Status sagen; dies nennt dieselben zwei Angaben als das,
+      // was sie waren: ein Versuch.
+      herkunftVersuch: 'Keine Bahn · Versuch: {{verfahren}} · {{datum}}',
       herkunftNone: 'kein Eintrag',
       skipDetail: 'Grund laut Folger: {{detail}}',
       // Die drei Umleitungen aus §6.4. Jede sagt, WO die Arbeit liegt — die

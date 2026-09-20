@@ -161,7 +161,14 @@ export function StripsPanel({
     setShownCount(GALLERY_PAGE);
   }
 
+  // The GALLERY's listing, and only the gallery's. Since the list became the
+  // default surface of this tab, an unconditional fetch here meant opening
+  // `?reiter=streifen` cost two hand-wide reads — this one plus the list's own
+  // meta read — for a listing nothing on screen consumes (Copilot review). The
+  // display mode is therefore a dependency, so the switch to „Galerie" is what
+  // fetches it.
   useEffect(() => {
+    if (view !== 'galerie') return undefined;
     let cancelled = false;
     getEigenhandStrips(hand, { wort: filter.wort, item: filter.item }, { retries: 2 })
       .then((data) => !cancelled && setStrips(data.strips))
@@ -170,7 +177,7 @@ export function StripsPanel({
     return () => {
       cancelled = true;
     };
-  }, [hand, version, filter.wort, filter.item, refresh]);
+  }, [hand, version, filter.wort, filter.item, refresh, view]);
 
   // A saved Fleckenmaske lands straight in the listed row — the tile is the
   // authority on the mask it just wrote — and then the listing is fetched
@@ -340,9 +347,6 @@ export function StripsPanel({
           key={hand}
           hand={hand}
           wort={filter.wort ?? ''}
-          // The search box is the panel's, so its reset is too — the mirror
-          // above empties the input when the filter drops to „no word".
-          onClearWort={() => onFilter({ ...filter, wort: undefined })}
           item={filter.item ?? null}
           onShowGalerie={() => setView('galerie')}
         />

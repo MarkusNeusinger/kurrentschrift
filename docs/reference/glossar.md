@@ -4871,7 +4871,8 @@ welcher EINE Schritt als Nächstes dran ist. Genau dafür gibt es sie: die
 Umleitungen (proposals/admin-redesign.md §6.4). „übersprungen: unautoriert"
 ist keine Folger-Arbeit, sondern eine Ground-Truth-Lücke und springt zur
 Tafel (`/admin/buchstaben?g=<key>`, die Schlüssel stehen im `detail` des
-→ Skip-Eintrags); „Maske geändert" verlangt erst `pfad --apply`; ein Kasten
+→ Skip-Eintrags) — und bekommt dort KEINEN Korb-Knopf, weil die Lücke nicht in
+den Auftragskorb gehört (V9); „Maske geändert" verlangt erst `pfad --apply`; ein Kasten
 ohne `rect_px` („keine Bogen-Geometrie") bekommt einen Satz und gar keinen
 Befehl, weil er „nie machbar" ist; und auf einem von Hand gezogenen Kasten
 wird NIE zum Neu-Folgen eingeladen — das ist die eigene Linie des Autors, und

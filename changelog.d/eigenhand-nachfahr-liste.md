@@ -10,8 +10,9 @@
   names. Each row says what the Tintentreue found and which sensor named it,
   where the Bahn comes from, how many Absetzer the script writes the word in,
   and the ONE next step: „übersprungen: unautoriert" links into the letter view
-  for exactly the keys the Skip-Eintrag named — a Ground-Truth gap belongs on
-  the Tafel, not in the basket — „Maske geändert" asks for `pfad --apply`
+  for exactly the keys the Skip-Eintrag named and offers no basket flag at all
+  there, because a Ground-Truth gap belongs on the Tafel and not in the Korb
+  (V9) — „Maske geändert" asks for `pfad --apply`
   first, and a Kasten off a Bogen printed before the cut geometry gets a
   sentence and no command at all, because that one is „nie machbar" and a
   re-follow would only write the same Skip-Eintrag again. On a box the author

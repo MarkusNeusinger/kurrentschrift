@@ -132,6 +132,21 @@ it('sends an unauthored skip to the letter view for the keys it named', () => {
   const links = [...container.querySelectorAll('a')].map((a) => a.getAttribute('href'));
   expect(links).toEqual(['/admin/buchstaben?g=sz&h=mn-suetterlin', '/admin/buchstaben?g=ch&h=mn-suetterlin']);
   expect(container.textContent).toContain('Tafel fehlt: sz ch');
+  // …and offers no flag beside it: a Ground-Truth gap is „kein Korb-Eintrag"
+  // (V9), so the plate is the step INSTEAD of the basket, not next to it.
+  expect(container.textContent).not.toContain('⚑');
+});
+
+it('calls a skipped box an attempt, never a Bahn', () => {
+  // `_skip` stamps the follower onto the entry it writes, but there is no path
+  // — „Bahn: Tintenpfad" would contradict the verdict and the „Ohne Bahn"
+  // status in the same line.
+  render(row({ skipGrund: 'gave_up', skipDetail: 'no_ink: nothing found', severity: 'nichts-gefunden' }));
+  expect(container.textContent).toContain('Keine Bahn · Versuch: automatisch (Tintenpfad)');
+  expect(container.textContent).not.toContain('Bahn: automatisch');
+  // A followed box keeps saying where its Bahn comes from.
+  render(row());
+  expect(container.textContent).toContain('Bahn: automatisch (Tintenpfad) · 2026-09-20');
 });
 
 it('keeps „Maske geändert" beside the verdict rather than inside it', () => {

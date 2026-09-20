@@ -146,6 +146,11 @@ function workItemUrl(item: WorkItemOut, hand: string | null): string | null {
     // of rows carrying that text instead of on every box of the hand.
     if (item.specimen_kind === 'strip') {
       const box = readStripBoxSpecimen(item.specimen_id);
+      // The column is free text and the API checks only the namespace and the
+      // length, so an id that is not an address names no box. Then the WORD is
+      // all that is left — and it is a working filter, not a guess. A row with
+      // neither opens nothing rather than the whole hand (Copilot review).
+      if (box === null && !item.word) return null;
       return eigenhandUrl('streifen', { ...box, wort: item.word, hand });
     }
     return item.word ? wordsUrl(item.word, item.specimen_id, hand) : null;

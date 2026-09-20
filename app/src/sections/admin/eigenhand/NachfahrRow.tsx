@@ -174,17 +174,29 @@ export function NachfahrRow({
               {fmt(t.tafelFehltAction, { key })}
             </Button>
           ))}
-          <Button size="small" variant="text" onClick={onMark} sx={{ minHeight: TOUCH_TARGET }}>
-            {`⚑ ${t.korbMark}`}
-          </Button>
+          {/* „kein Korb-Eintrag (V9)" — a missing Tafel-Duktus is not a
+              complaint about anything generated, so the row offers the jump to
+              the plate INSTEAD of the flag rather than beside it. Two mutually
+              exclusive next steps on one row is how the wrong one gets taken
+              (Copilot review). */}
+          {row.skipGrund !== 'unauthored' && (
+            <Button size="small" variant="text" onClick={onMark} sx={{ minHeight: TOUCH_TARGET }}>
+              {`⚑ ${t.korbMark}`}
+            </Button>
+          )}
         </Stack>
       }
       subline={
         <Typography variant="caption" sx={{ color: paper.inkSoft }}>
           {[
+            // A Skip-Eintrag carries `verfahren` like any other entry — `_skip`
+            // stamps the follower that wrote it — but there IS no Bahn, so
+            // „Bahn: Tintenpfad" would contradict both the verdict and the
+            // „Ohne Bahn" status. The same two facts, said as the attempt they
+            // were (Copilot review).
             row.verfahren === null
               ? t.herkunftNone
-              : fmt(t.herkunft, {
+              : fmt(row.skipGrund === null ? t.herkunft : t.herkunftVersuch, {
                   verfahren: verfahrenLabel(row.verfahren, VERFAHREN_LABELS),
                   datum: row.erzeugtAm ?? de.admin.eigenhand.pfadNoDate,
                 }),

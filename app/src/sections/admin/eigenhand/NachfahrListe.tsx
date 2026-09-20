@@ -50,7 +50,7 @@ import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { useFileMark, useKorbItems } from '@/sections/admin/shell/korbState';
 import { korbCountsOf } from '@/sections/admin/shell/korbTargets';
 import { clampPage, pageSlice, readListState, writeListState, type ListState } from '@/sections/admin/shell/listState';
-import { stripBoxSpecimen } from '@/sections/admin/shell/focus';
+import { EIGENHAND_PARAMS, stripBoxSpecimen } from '@/sections/admin/shell/focus';
 import { FilterChipRow, ListEmpty, ListPager } from '@/sections/admin/shell/WorkList';
 import { TOUCH_TARGET } from '@/styles/hitArea';
 import { paper } from '@/styles/paper';
@@ -59,10 +59,6 @@ export function NachfahrListe({
   hand,
   /** The panel's word search (`?wort=`) — it narrows this list too. */
   wort,
-  /** Clear that search. It belongs to the PANEL, so „Filter zurücksetzen" can
-   * only undo it through the owner — without this the button would leave the
-   * screen unchanged wherever the word alone emptied the list. */
-  onClearWort,
   /** The coverage item filter (`?item=`), which only the gallery can answer. */
   item,
   /** Switch the surface back to the gallery — the way out of that mismatch. */
@@ -70,7 +66,6 @@ export function NachfahrListe({
 }: {
   hand: string;
   wort: string;
-  onClearWort: () => void;
   item: string | null;
   onShowGalerie: () => void;
 }) {
@@ -118,6 +113,21 @@ export function NachfahrListe({
   // history, not a log of filter clicks.
   const update = (next: Partial<ListState<BoxFilter, BoxSort, BoxStatus>>) =>
     setParams(writeListState(params, next, STRIP_BOX_LIST_SPEC), { replace: true });
+
+  // „Filter zurücksetzen" clears the word search too — it narrows this list as
+  // much as a chip does, and a button that leaves it standing would change
+  // nothing wherever the word alone emptied the list.
+  //
+  // ONE navigation, and that is the whole reason this is not two calls: both
+  // writers start from the `params` of THIS render, so a second `setParams` in
+  // the same tick is built on the pre-reset query and puts the chips straight
+  // back (Copilot review). `writeListState` leaves every parameter it does not
+  // own standing, so `wort=` is deleted from its result rather than beside it.
+  const resetAll = () => {
+    const next = writeListState(params, { filters: [], status: BOX_STATUSES[0] }, STRIP_BOX_LIST_SPEC);
+    next.delete(EIGENHAND_PARAMS.wort);
+    setParams(next, { replace: true });
+  };
 
   const korbByBox = useMemo(() => korbCountsOf(korbItems)?.byStripBox ?? null, [korbItems]);
   const rows = useMemo(
@@ -255,14 +265,7 @@ export function NachfahrListe({
         // including the panel's word search, which the reset now reaches. Not
         // `rows.length > 0`: with nothing ticked that offered a button which
         // could not change anything the reader was seeing.
-        <ListEmpty
-          filtered={narrowed || wort.trim() !== ''}
-          emptyText={t.empty}
-          onReset={() => {
-            update({ filters: [], status: BOX_STATUSES[0] });
-            onClearWort();
-          }}
-        />
+        <ListEmpty filtered={narrowed || wort.trim() !== ''} emptyText={t.empty} onReset={resetAll} />
       ) : (
         <Box {...roving.containerProps} sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, maxWidth: 1400 }}>
           {shown.map((row) => (
