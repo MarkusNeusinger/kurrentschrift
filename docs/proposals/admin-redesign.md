@@ -1277,7 +1277,7 @@ Unterpunkt (i)).
 
 **Nachgezogen 2026-09-20 an der gebauten Fassung (#642) — die kurze Zeile
 oben ist als Spezifikation zu eng.** Sie stimmt in allem, was sie sagt, und
-lässt vier Dinge aus, die der Schreibweg wirklich tut:
+lässt fünf Dinge aus, die der Schreibweg wirklich tut:
 
 - **Der Token deckt `{format, pfade}`, nicht `pfade` allein**
   (`core.eigenhand.pfad.pfad_etag`). Eine Liste und die Bedeutung, der ihre

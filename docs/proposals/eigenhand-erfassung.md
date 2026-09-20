@@ -1290,7 +1290,7 @@ und ist keine Altformat-Arbeit).
 dahin „geschrieben wird weiterhin nur Format 1"). Der Wechsel lief als
 LOCKSTEP über zwei Releases, damit Werkzeug und API nie in derselben Minute
 landen müssen: zuerst liest und akzeptiert die API 1 UND 2
-(`SUPPORTED_FORMATS`), während `PFAD_FORMAT` — die Zahl, die geSCHRIEBEN
+(`SUPPORTED_FORMATS`), während `PFAD_FORMAT` — die Zahl, die GESCHRIEBEN
 wird — noch 1 blieb; im zweiten Release steht `PFAD_FORMAT` auf 2. Der 409
 fällt nur noch auf eine Zahl, die dieses Abbild nicht kennt. Was Format 2
 wirklich trägt, sind **drei** Schema-Änderungen — die zwei zusätzlichen
@@ -1305,7 +1305,7 @@ und zwei Zahlen darin sind additiv:
    kein Eintrag. Eine Liste statt zweier, weil ein Kasten genau einen Zustand
    hat.
 2. **Die Span-Herkunft:** `letter_spans` zieht aus dem freien `meta` in ein
-   GEPRÜFTES Feld, jede Spanne mit `herkunft` (`auto` \| `authored`), und die
+   GEPRÜFTES Feld, jede Spanne mit `herkunft` (`auto` oder `authored`), und die
    Indizes werden gegen den Zug gehalten, in den sie zeigen — eine
    entkoppelte Spanne ist in jeder einzelnen Zahl wohlgeformt, also nennt die
    Abweisung Spanne UND Zug.
