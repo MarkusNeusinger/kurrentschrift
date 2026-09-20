@@ -31,6 +31,7 @@ from tools.eigenhand import pull as pull_mod
 from tools.eigenhand import setup as setup_mod
 from tools.eigenhand import snapshot as snapshot_mod
 from tools.eigenhand import sync as sync_mod
+from tools.eigenhand.apiclient import StaleRead
 from tools.eigenhand.kartei import load_kartei, save_kartei
 
 
@@ -493,7 +494,13 @@ class _FakePfadApi:
     """
 
     def __init__(
-        self, pfade: dict[tuple[str, str], list[dict]], *, declared: int | None = 1, rows=None, swallow: bool = False
+        self,
+        pfade: dict[tuple[str, str], list[dict]],
+        *,
+        declared: int | None = 1,
+        rows=None,
+        swallow: bool = False,
+        stale: bool = False,
     ):
         self.pfade = dict(pfade)
         self.declared = declared
@@ -501,6 +508,9 @@ class _FakePfadApi:
         # A server that answers a PUT with less than it was handed — the one
         # shape a restore counted off the REQUEST would have called a success.
         self.swallow = swallow
+        # A server whose stored list moved between this run's read and its
+        # write: the author drew a box while the restore was walking.
+        self.stale = stale
         self.calls: list[tuple[str, str, dict | None]] = []
         # What each write said about the list it was made on. The server
         # refuses a push that names the wrong one (412), so „did the token
@@ -516,6 +526,8 @@ class _FakePfadApi:
             strip, fassung = plain.split("/")[-3:-1]
             if method == "PUT":
                 self.conditions.append(if_match)
+                if self.stale:
+                    raise StaleRead(f"PUT {url} → 412: the stored paths have moved on since this was read")
                 echo = [] if self.swallow else [_as_stored(entry, body["format"]) for entry in body["pfade"]]
                 self.pfade[(strip, fassung)] = echo
                 return {"format": body["format"], "pfade": echo}
@@ -867,6 +879,31 @@ class TestHandDrawnBahnChain:
         fake = _FakePfadApi({("S0001", "F01"): []}, swallow=True)
         with pytest.raises(SystemExit, match="1 hand-drawn Bahn\\(en\\) are NOT restored"):
             _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot))
+
+    def test_a_fassung_whose_list_moved_is_counted_not_silently_dropped(self, dataroot, tmp_path, monkeypatch, capsys):
+        """The other side of the token: what the RESTORE does with a 412.
+
+        The window is real — the author draws a box in the workbench while this
+        run walks the Kartei — and the server refuses the stale merge. That
+        Fassung is then counted as NOT restored, named with the re-run, and the
+        run ends loudly: a 412 read as „stored" would report a drawing as
+        restored that was never written.
+
+        Counted rather than raised, so a single moved list does not leave the
+        rest of the Kartei unattempted; the closing refusal still makes the
+        exit non-zero.
+        """
+        snapshot = self._archived(dataroot, tmp_path, monkeypatch, [_bahn()])
+        _wipe(dataroot / HAND / "fassungen")
+        fake = _FakePfadApi({("S0001", "F01"): []}, stale=True)
+        with pytest.raises(SystemExit, match="1 hand-drawn Bahn\\(en\\) are NOT restored") as refused:
+            _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot))
+        # The run reached its own closing summary rather than dying inside the
+        # walk …
+        assert "0 restored, 0 already there, 1 NOT restored" in capsys.readouterr().out
+        # … and the refusal names both what happened and what puts it right.
+        assert "412" in str(refused.value)
+        assert "run the same --from again" in str(refused.value)
 
     def test_a_kartei_from_an_older_shape_stays_readable(self, monkeypatch):
         """An archived Kartei is never rewritten, so old shapes stay readable.

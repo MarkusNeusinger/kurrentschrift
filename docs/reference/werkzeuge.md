@@ -683,6 +683,16 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Autor währenddessen in der Werkbank zeichnet, würde sonst still auf den
   Archivstand zurückgesetzt. Ein 412 heißt: Lauf wiederholen, der frische Lesevorgang
   trägt die Zeichnung. Dasselbe gilt für `pfad --apply`.
+  Eine so verweigerte Fassung zählt im Restore wie eine, deren Streifenzeile
+  fehlt: als **NOT restored**, mit Namen und mit dem Hinweis auf denselben
+  `--from`-Lauf. Der Durchlauf geht weiter — eine bewegte Liste sagt nichts
+  über die übrigen Fassungen — und die Schlusszeile bricht trotzdem laut ab.
+  `pfad --apply` hingegen hält an und nennt den Befehl, mit dem derselbe
+  Streifen neu gefolgt und gespeichert wird (ohne `--replace-authored`: was
+  inzwischen dort gelandet ist, ist genau das, was ein pauschales Übergehen
+  wieder aufgäbe). Wiederholt wird nie automatisch — derselbe Merge ein zweites
+  Mal gegen die neue Liste geschickt wäre genau die verlorene Änderung, die die
+  Marke eben verweigert hat.
 - **`ingest` → `apply --haken`** (Normalfall) bzw. **`ingest` → `page` →
   `apply <Ergebnis>`** — Scan/Foto entzerren (Passmarken, scikit-image,
   300 DPI Arbeitsauflösung) und die Haken vom Blatt lesen; `apply --haken`

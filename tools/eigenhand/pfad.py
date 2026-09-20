@@ -128,6 +128,7 @@ from core.eigenhand.pfad import (  # noqa: E402
 from core.eigenhand.plan import load_plan, shaping_form_of  # noqa: E402
 from core.eigenhand.tintentreue import KEY_AIOU, KEY_EXKURSION  # noqa: E402
 from tools.eigenhand.apiclient import (  # noqa: E402
+    StaleRead,
     admin_token,
     api_base,
     request_bytes,
@@ -916,7 +917,24 @@ def main(argv: list[str] | None = None) -> int:
         # author drew in the workbench while this run was following is exactly
         # that case, and the merge above cannot know about it. Re-run, and the
         # fresh read carries the drawing.
-        stored = request_json("PUT", push_url, token, {"format": wire_format, "pfade": body}, if_match=etag) or {}
+        try:
+            stored = request_json("PUT", push_url, token, {"format": wire_format, "pfade": body}, if_match=etag) or {}
+        except StaleRead as exc:
+            # The server's refusal says what happened; this says what to do
+            # about it, which is the sentence only the terminal can write. The
+            # re-run deliberately drops `--replace-authored`: whatever landed
+            # in between is exactly what a blanket override would give up
+            # again, so getting it back has to be a fresh decision on a fresh
+            # read.
+            narrowed = "".join(f" --box {index}" for index in args.box or [])
+            raise SystemExit(
+                f"{exc}\n"
+                f"  Nothing of {row['strip']}/{row['fassung']} was stored. The merge above was made on a list "
+                "that has moved since — a box drawn in the workbench, or another run. Follow again; the fresh "
+                "read carries what landed in between:\n"
+                f"    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pfad --hand {hand} "
+                f"--strip {row['strip']} --fassung {row['fassung']}{narrowed} --apply"
+            ) from exc
         # A skip is an entry, not a path. Counting the two together would put
         # the four states back into one number — which is the whole reason the
         # Skip-Eintrag exists (found in review, PR #639).

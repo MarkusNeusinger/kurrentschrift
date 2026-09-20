@@ -68,7 +68,7 @@ from typing import NamedTuple
 
 from core.eigenhand.flecken import FLECKEN_FORMAT
 from core.eigenhand.pfad import push_body
-from tools.eigenhand.apiclient import admin_token, api_base, request_json, request_json_with_etag
+from tools.eigenhand.apiclient import StaleRead, admin_token, api_base, request_json, request_json_with_etag
 from tools.eigenhand.kartei import load_kartei, pfad_wire_format, pfade_of
 from tools.eigenhand.store import WORK_DPI, check_hand_id, hand_dir, sheet_dir
 
@@ -365,8 +365,11 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
     a box in the workbench while the restore is walking the Kartei, and the
     push puts the box back to the archive's state without either side noticing.
     So the push echoes the `ETag` of the read the merge was made on, and the
-    server refuses it (412) when the stored list has moved since. The restore
-    then ends loudly and a re-run reads the drawing.
+    server refuses it (412) when the stored list has moved since. Such a
+    Fassung is counted as NOT restored and named with what to do about it, the
+    same way a missing strip row is — the walk carries on, because one moved
+    list says nothing about the other forty Fassungen, and the closing refusal
+    below ends the run loudly either way.
 
     A Fassung whose strip row is not up there cannot take a path at all (the
     route answers 404). Those are COUNTED and named rather than skipped: a
@@ -422,10 +425,25 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
             key=lambda item: item["box_index"],
         )
         body, content_format, _dropped = push_body(body)
-        echo = (
-            request_json("PUT", url, token, {"format": max(wire_format, content_format), "pfade": body}, if_match=etag)
-            or {}
-        )
+        try:
+            echo = (
+                request_json(
+                    "PUT", url, token, {"format": max(wire_format, content_format), "pfade": body}, if_match=etag
+                )
+                or {}
+            )
+        except StaleRead:
+            # COUNTED and named, like the Fassung whose strip row is missing —
+            # not raised. One moved list is a reason to restore that Fassung
+            # again, never a reason to leave the other forty unattempted, and
+            # the closing refusal already ends the run loudly and non-zero.
+            stuck += len(fresh)
+            why.append(
+                f"{strip}/{fassung}: the stored list moved between this run's read and its write (412) — a box "
+                "was drawn or followed up there in between. Nothing of this Fassung was stored; run the same "
+                "--from again and the merge is made on the list that is there now"
+            )
+            continue
         landed = {entry.get("box_index"): entry for entry in (echo.get("pfade") or [])}
         for entry in fresh:
             if _came_back(landed.get(entry["box_index"]), entry):

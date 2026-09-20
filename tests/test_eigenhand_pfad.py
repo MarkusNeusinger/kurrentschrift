@@ -41,6 +41,7 @@ from core.eigenhand.pfad import (
     pfad_etag,
     push_body,
 )
+from tools.eigenhand.apiclient import StaleRead
 
 
 # The token a stubbed read hands out. Opaque on purpose — the tool has to pass
@@ -1070,6 +1071,32 @@ class TestFollowerHandover:
             argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--replace-authored"],
         )
         assert "replace_authored" not in url
+
+    def test_a_list_that_moved_under_the_run_stops_it_and_names_the_re_run(self, monkeypatch):
+        # The server refuses a push whose token no longer matches (412) — the
+        # author drew a box in the workbench while this run was following. The
+        # refusal is the server's; the NEXT STEP is the terminal's, and it has
+        # to be a line the operator can run rather than „read the Fassung
+        # again". Re-running follows the ink a second time, which is cheap, and
+        # the fresh read carries the drawing.
+        from tools.eigenhand import pfad as tool
+
+        _stub_run(monkeypatch, fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}], stored=[])
+
+        def _refuse(*_args, **_kwargs):
+            raise StaleRead("PUT … → 412: the stored paths have moved on since this was read")
+
+        monkeypatch.setattr(tool, "request_json", _refuse)
+        with pytest.raises(SystemExit) as refused:
+            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--box", "0", "--apply"])
+        message = str(refused.value)
+        assert "moved on since this was read" in message  # the server's own words survive
+        # The line is THIS run again, narrowing included — an operator who
+        # followed one box is not told to re-follow the whole row.
+        assert "pfad --hand mn-suetterlin --strip S0001 --fassung F01 --box 0 --apply" in message
+        # Never the destructive flag: whatever landed in between is exactly
+        # what a blanket override would give up again.
+        assert "--replace-authored" not in message
 
     def test_the_declared_configuration_is_one_the_follower_accepts(self):
         # The arms are named in the tool and stored with every path; a renamed
