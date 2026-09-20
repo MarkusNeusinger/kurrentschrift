@@ -872,6 +872,21 @@ class EigenhandStrip(Base):
     # the PNG (`_STRIP_META_ONLY`) so no listing pulls it; the shape is
     # `core.eigenhand.pfad.check_paths`.
     pfade: Mapped[list | None] = mapped_column(PORTABLE_JSON, nullable=True)
+    # Which Streifen-Pfad format the entries above are written in (0032).
+    # `core.eigenhand.pfad.PFAD_FORMAT` is a MOVING number, so answering a read
+    # out of it makes every stored row read as whatever the running image
+    # believes — the day it becomes 2, rows followed under 1 would claim
+    # measurements nothing ever computed on them. The marker belongs to the
+    # row, and two formats cannot coexist until it does.
+    # NOT NULL with a server default rather than nullable: „no format" is not a
+    # state anything could act on, and every row that existed before this
+    # column was written under 1. It carries a format even where `pfade` is
+    # NULL — a Fassung nobody has followed is a format-1 row waiting for its
+    # first push, which keeps the read free of a second „unknown" branch.
+    # A column of its own instead of an envelope inside `pfade`, so the
+    # deferred JSON cell is never rewritten and every reader of it (the tool's
+    # merge, the SPA's Rohzahlen) keeps working unchanged.
+    pfade_format: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

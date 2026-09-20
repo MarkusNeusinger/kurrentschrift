@@ -24,9 +24,9 @@ from urllib.parse import quote
 import numpy as np
 import pytest
 from PIL import Image
-from sqlalchemy import inspect
+from sqlalchemy import inspect, update
 
-from core.database import EigenhandRepository
+from core.database import EigenhandRepository, EigenhandStrip
 from core.eigenhand import bogen
 from core.eigenhand.befund import BEFUND_FORMAT
 from core.eigenhand.flecken import FLECKEN_FORMAT
@@ -1284,6 +1284,39 @@ class TestStreifenPfad:
         res = await self._put(api, [self._path(stored)], format=PFAD_FORMAT + 1)
         assert res.status == 409
         assert (await self._get(api)).json()["pfade"] is None
+        # Refused means nothing moved — not even the marker of a row that was
+        # never followed.
+        assert (await self._get(api)).json()["format"] == PFAD_FORMAT
+
+    @pytest.mark.asyncio
+    async def test_the_answer_carries_the_rows_own_format_not_this_images_constant(self, api: Harness):
+        """A stored path keeps the format it was written under.
+
+        The read used to stamp its answer with `PFAD_FORMAT`, so the day the
+        constant moves every older row would claim the newer semantics — and an
+        Ampel would colour sensors nothing ever computed on it. Here the row is
+        put on a format this image does not write; the answer has to follow the
+        ROW. This is the whole point of the column, and the only assertion that
+        would fail again if the constant crept back into the answer.
+        """
+        stored = await _store_strip(api)
+        # A Fassung nobody has followed already carries the marker — the column
+        # is NOT NULL, so there is no „unknown format" state to handle.
+        assert (await self._get(api)).json()["format"] == PFAD_FORMAT
+        assert (await self._put(api, [self._path(stored)])).status == 200
+        assert (await self._get(api)).json()["format"] == PFAD_FORMAT
+
+        async with api.session_maker() as session:
+            await session.execute(
+                update(EigenhandStrip)
+                .where(EigenhandStrip.hand == HAND, EigenhandStrip.strip == "S0001", EigenhandStrip.fassung == "F01")
+                .values(pfade_format=PFAD_FORMAT + 1)
+            )
+            await session.commit()
+
+        answer = (await self._get(api)).json()
+        assert answer["format"] == PFAD_FORMAT + 1
+        assert [entry["box_index"] for entry in answer["pfade"]] == [0]
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(

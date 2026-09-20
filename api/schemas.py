@@ -5,6 +5,8 @@ from typing import Annotated, Any, Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from core.eigenhand.pfad import PFAD_FORMAT
+
 
 # Anchor-count bound, shared by BboxIn / TraceRequest / ResampleRequest: below 4
 # the resampler breaks (single-sample linspace / negative counts), far above it
@@ -1557,10 +1559,14 @@ class EigenhandPfadeIn(BaseModel):
     Full replace, like the Fleckenmaske and for the same reason: a follower run
     produces the whole row at once, and merging would have to guess what a
     missing box meant.
+
+    A push that names no format means „the format this API reads" — bound to
+    the constant rather than written out as 1, so the day the constant moves
+    the default moves with it instead of quietly declaring the old semantics.
     """
 
     pfade: list[EigenhandPfad]
-    format: int = 1
+    format: int = PFAD_FORMAT
 
 
 class EigenhandPfadeOut(BaseModel):
@@ -1569,12 +1575,17 @@ class EigenhandPfadeOut(BaseModel):
     An empty list is the other answer („followed, nothing found"), the same
     NULL/empty distinction the Fleckenmaske carries. `boxes` travels along so
     the view can place a path over a single word crop without a second read.
+
+    `format` is filled from the ROW (`eigenhand_strips.pfade_format`); the
+    default here is only what an instance built without one falls back to, and
+    it follows the constant so no code path can silently claim format 1 after
+    the constant has moved.
     """
 
     hand: str
     strip: str
     fassung: str
-    format: int = 1
+    format: int = PFAD_FORMAT
     pfade: list[EigenhandPfad] | None = None
     boxes: list[EigenhandStripBoxOut] = []
 

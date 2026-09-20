@@ -961,6 +961,12 @@ class EigenhandRepository:
     # followed path is a few thousand points per word, and a hand with a few
     # waves behind it would put every path of every Fassung on the wire for a
     # listing that only wants to know which strips exist.
+    #
+    # Its marker `pfade_format` deliberately does NOT join it. The reason to
+    # defer is size, and the marker is one small integer — while the question
+    # it answers („which Fassungen still stand on the old format and want
+    # re-following") is a LISTING question. Deferring it would make that list
+    # pay one extra round trip per row and save nothing at all.
 
     _STRIP_META_ONLY = (defer(EigenhandStrip.png), defer(EigenhandStrip.pfade))
 
