@@ -18,7 +18,9 @@ letter boundaries of its own path as a checked field with their provenance
 (``letter_spans[].herkunft``). Both are format 2 and both are refused under
 format 1 — what a row is stamped with has to be what its cell obeys. The API
 reads and accepts ``SUPPORTED_FORMATS``; ``PFAD_FORMAT`` is only what this
-image WRITES, and the distance between the two is the lockstep.
+image WRITES, and the distance between the two is the lockstep. Since the
+second release (2026-09-20) that distance is zero again — the tool writes what
+the API already accepted — and the rows written under 1 keep saying so.
 
 THE FRAME. A path's ``strokes`` use the same contract as
 ``word_instances.strokes`` — baseline 0, midband 1, x growing from the word's
@@ -64,7 +66,14 @@ from core.eigenhand.crop import px_per_mm, word_box_px
 # what every writer in the repo puts on the wire. It is a MOVING number, which
 # is why a row stores the one it was written under rather than trusting it
 # (`eigenhand_strips.pfade_format`, migration 0032).
-PFAD_FORMAT = 1
+#
+# 1 → 2 on 2026-09-20, the SECOND release of the lockstep: `tools.eigenhand.pfad`
+# now writes the Skip-Einträge and measures the two sensors the Tintentreue was
+# missing, so a push has something to declare. The API has read and accepted 2
+# since the first release, which is what makes moving this a one-sided change —
+# and the stored marker is what keeps the rows written under 1 readable as what
+# they are, rather than as boxes whose sensors somebody forgot.
+PFAD_FORMAT = 2
 
 # Every format this image READS and ACCEPTS on a push, oldest first — wider than
 # `PFAD_FORMAT` on purpose. That gap IS the lockstep (docs/proposals/

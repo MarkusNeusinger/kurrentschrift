@@ -4344,7 +4344,13 @@ auf dem alten Format" eine Listenfrage ist.
 nur noch bei einem Format, das dieses Abbild nicht kennt. Das ist die erste
 Hälfte des Lockstep: die API nimmt die neue Form einen Release VOR dem
 ersten Schreiber an, `PFAD_FORMAT` bleibt derweil die Zahl, die dieses
-Abbild SCHREIBT — die beiden Zahlen sind bewusst nicht dieselbe. Was
+Abbild SCHREIBT — die beiden Zahlen sind bewusst nicht dieselbe. **Die
+zweite Hälfte steht seit demselben Tag:** `PFAD_FORMAT` ist 2, das Werkzeug
+schreibt die → Skip-Einträge und misst die zwei Sensoren, die der
+→ Tintentreue fehlten, und jeder Push deklariert 2. Der Abstand ist damit
+wieder null — und weil jede Zeile ihre eigene Nummer trägt, bleiben die
+unter 1 gefolgten Fassungen genau das, statt still die neue Semantik zu
+behaupten. Was
 Format 2 trägt, sind drei echte Schema-Änderungen (nicht die Sensoren 4/5:
 `meta` ist ein freier Dict, zwei Zahlen darin sind additiv und
 formatneutral): der → Skip-Eintrag, die → Span-Herkunft und der
@@ -4383,8 +4389,18 @@ echte Folger-Arbeit ist. Die Liste ist GESCHLOSSEN — ein freier String
 verschmölze die vier binnen eines Monats wieder —, und der Eintragstyp
 steht in DERSELBEN Liste statt in einer zweiten daneben, weil ein Kasten
 genau einen Zustand hat und zwei Listen sich irgendwann widersprechen.
-Geschrieben wird er vom Werkzeug, das heute an diesen vier Stellen bloß
-`continue` sagt. Ein Skip darf NIE `verfahren: "authored"` behaupten: diese
+Geschrieben wird er vom Werkzeug, und zwar an DREI der vier Stellen, an
+denen es bis zum 2026-09-20 bloß `continue` sagte: `no_geometry`,
+`unauthored`, `gave_up`. `not_selected` schreibt es absichtlich nicht —
+`--box` grenzt den LAUF ein und sagt nichts über die übrigen Kästen, und
+weil der Schreibweg eine volle Ersetzung ist, überschriebe ein
+Ein-Wort-Lauf sonst den Rest der Zeile mit „nicht gewählt"; ein Kasten, den
+nie etwas gefolgt ist, trägt keinen Eintrag, was dieselbe Aussage ohne den
+Schaden ist. Aus demselben Grund verdrängt ein Skip NIE eine gespeicherte
+Bahn: „unautoriert" hängt daran, welche Glyphen die Tafel HEUTE trägt, und
+„aufgegeben" an den Armen dieses Laufs, also kann ein sauber gefolgter
+Kasten nächste Woche einen Skip erzeugen — das Werkzeug lässt dann seinen
+eigenen fallen und sagt es. Ein Skip darf NIE `verfahren: "authored"` behaupten: diese
 Herkunft heißt „eine Bahn, die der Autor GEZEICHNET hat", und alles
 dahinter setzt eine voraus — der 409 sperrt den Kasten, `pull --pfade`
 archiviert ihn, `--replace-authored` verlangt ihn zuvor archiviert. Ein
@@ -4836,7 +4852,13 @@ benennender Sensor, Rohwerte. Sie liest keine Bench-Zahl und speist keine.
 *Technisch:* `core/eigenhand/tintentreue.py` (beim Lesen abgeleitet wie
 → Streifen-Befund), Sensoren aus `pfade[].meta.tintenpfad`; Zeilen unter
 PFAD_FORMAT 1 bleiben grau, weil Exkursion und AIoU auf ihnen nie
-gerechnet wurden. → Rohzahlen-Chip; messjournal.md §14 „Tintentreue
+gerechnet wurden. Seit dem 2026-09-20 rechnet sie das Werkzeug beim Folgen
+mit und legt sie ab (Autor-Entscheid D: „Gemessen wird gespeichert,
+beurteilt wird abgeleitet") — die Papier-Exkursion mit dem Kern des
+K-D-Sensors `tools/tracebench/excursions.py` gegen die EIGENE Tintenmaske
+des Streifens, die AIoU mit `tools/tracebench/metric.py`; beide
+referenzfrei, beide reine Beobachter der gefolgten Bahn.
+→ Rohzahlen-Chip; messjournal.md §14 „Tintentreue
 `sep20`"; proposals/admin-redesign.md §6.3
 
 **Trainingsmenge (nachgefahrene Bahnen) (geplant)** — die von Hand

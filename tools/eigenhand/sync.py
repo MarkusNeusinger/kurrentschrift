@@ -356,9 +356,10 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
     push, and declaring the archive's older number over it would be refused
     outright (422) — the restore would die on a row it was not even asked to
     change (found in review, PR #639). So the push declares whichever of the
-    two the CONTENT needs. It can only ever go up: a format-1 entry is a valid
-    format-2 one, and `check_paths` normalises it, whereas the reverse would be
-    the mislabelling the stored marker exists to prevent.
+    two is higher — the archive's, or what this image writes and the content
+    needs. It can only ever go up: a format-1 entry is a valid format-2 one,
+    and `check_paths` normalises it, whereas the reverse would be the
+    mislabelling the stored marker exists to prevent.
 
     A Fassung whose strip row is not up there cannot take a path at all (the
     route answers 404). Those are COUNTED and named rather than skipped: a
@@ -389,7 +390,14 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
             live = by_box.get(entry["box_index"])
             if live is None:
                 fresh.append(entry)
-            elif live == entry:
+            elif _came_back(live, entry):
+                # „Is this the archived Bahn" and not dict equality, for the
+                # same reason the closing count is not: a Bahn restored under a
+                # format newer than the archive's comes back NORMALISED, so a
+                # second `--from` over the same snapshot would read its own
+                # first restore as a box the author had changed and report it
+                # as kept. That became reachable the day this image started
+                # writing format 2 over format-1 archives.
                 already += 1
             else:
                 kept += 1

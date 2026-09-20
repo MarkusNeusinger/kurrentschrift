@@ -714,6 +714,34 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Manifests (das Werkzeug sagt es, wenn die gitignorten Wurzeln fehlen, und
   nennt `fetch_fixtures`). Eine Ligatur ohne eigene Vorlage zerfällt wie im
   `/write`-Pfad in ihre Buchstaben — sonst fällt jedes Wort mit `ch` aus.
+  Seit dem **2026-09-20 schreibt das Werkzeug Streifen-Pfad-Format 2**
+  (`PFAD_FORMAT`, die zweite Hälfte des Lockstep; die API liest und
+  akzeptiert 2 seit einem Release davor). Das bringt zweierlei. **Acht
+  Sensoren statt sechs:** sechs kommen aus der Folger-Diagnose, zwei misst
+  das Werkzeug selbst gegen die EIGENE Tintenmaske des Wortkastens — die
+  **Papier-Exkursion** (`paper_excursion_xh`, der Kern des K-D-Sensors
+  `tools/tracebench/excursions.py`, in x-Höhen) und die **AIoU**
+  (`tools/tracebench/metric.py`). Beide sind referenzfrei — ein Streifen hat
+  per Doktrin keine Referenzspur — und reine Beobachter: gemessen wird die
+  AUSGELIEFERTE Bahn, die Geometrie bewegt sich nicht. Sie landen in
+  `meta.tintenpfad`, wo die → Tintentreue-Ampel sie liest
+  (Autor-Entscheid D: „Gemessen wird gespeichert, beurteilt wird
+  abgeleitet"). Die Projektion ist eine feste Liste — ein Sensor, der nicht
+  darin steht, erreicht die DB nie und ist danach nicht von „0 gemessen" zu
+  unterscheiden. **Und Skip-Einträge:** ein Kasten, den der Lauf nicht folgen
+  konnte, sagt das jetzt in derselben Liste (`status: "skipped"` + `grund`)
+  statt einfach zu fehlen — `no_geometry` (Bogen ohne Schnittgeometrie),
+  `unauthored` (Glyphen nicht auf der Tafel), `gave_up` (Folger). Den vierten
+  Grund `not_selected` schreibt es bewusst NICHT: `--box` grenzt den Lauf ein
+  und beurteilt nicht die übrigen Kästen. Und ein Skip verdrängt nie eine
+  gespeicherte Bahn — „unautoriert" hängt an der Tafel von heute,
+  „aufgegeben" an den Armen dieses Laufs, also lässt das Werkzeug seinen
+  eigenen Skip fallen und sagt es in der Zeile.
+  Die vom Folger selbst zugeordneten Buchstabengrenzen wandern damit nicht
+  mehr ins freie `meta`: unter Format 2 sind sie ein geprüftes Feld des
+  Eintrags, und dieses Abbild schreibt es noch nicht — es kommt mit
+  `pfad --spans`. Von Hand korrigierte Grenzen sind davon unberührt und
+  reisen weiter mit.
   **Trockenlauf ist die Vorgabe** — ohne `--apply`
   landet das Ergebnis nur als JSON unter der lokalen Hand; `--apply` schreibt
   es über `PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade` in die

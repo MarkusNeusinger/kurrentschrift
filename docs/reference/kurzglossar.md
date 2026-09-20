@@ -679,7 +679,10 @@ Wortkasten keine Bahn hat: `status: "skipped"` plus ein `grund` aus einer
 geschlossenen Liste (`not_selected` · `no_geometry` · `unauthored` ·
 `gave_up` · `other`). Vorher waren diese vier Lagen ein einziger Zustand
 „kein Eintrag" — und „übersprungen: unautoriert" ist ein Absprung zur Tafel,
-keine Nachfahr-Arbeit. Ab PFAD_FORMAT 2 (Autor-Entscheid C, 2026-09-20).
+keine Nachfahr-Arbeit. Ab PFAD_FORMAT 2 (Autor-Entscheid C, 2026-09-20);
+geschrieben werden drei der fünf Gründe (`not_selected` nie, weil `--box`
+den Lauf eingrenzt und nicht die Zeile beurteilt), und ein Skip verdrängt
+nie eine gespeicherte Bahn.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.3
 
 **Span-Herkunft** — `auto` oder `authored` je Buchstabengrenze einer Bahn

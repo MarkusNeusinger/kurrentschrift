@@ -26,6 +26,7 @@ import pytest
 from PIL import Image
 
 from core.eigenhand.flecken import FLECKEN_FORMAT
+from core.eigenhand.pfad import PFAD_FORMAT
 from tools.eigenhand import pull as pull_mod
 from tools.eigenhand import setup as setup_mod
 from tools.eigenhand import snapshot as snapshot_mod
@@ -677,12 +678,16 @@ class TestHandDrawnBahnChain:
         assert _run(monkeypatch, fake) == 0
         assert fake.pushed() == []
 
-    def test_the_restore_puts_the_drawing_back_under_its_own_format(self, dataroot, tmp_path, monkeypatch, capsys):
+    def test_the_restore_puts_the_drawing_back_byte_for_byte(self, dataroot, tmp_path, monkeypatch, capsys):
+        # The Bahn goes up exactly as it was archived — the declaration is the
+        # higher of the archive's format and what this image writes, and the
+        # entry itself is never rewritten to fit it (a format-1 entry IS a
+        # valid format-2 one; `check_paths` fills the new keys in).
         snapshot = self._archived(dataroot, tmp_path, monkeypatch, [_bahn()])
         _wipe(dataroot / HAND / "fassungen")
         fake = _FakePfadApi({("S0001", "F01"): []})
         assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot)) == 0
-        assert fake.pushed() == [{"format": 1, "pfade": [_bahn()]}]
+        assert fake.pushed() == [{"format": PFAD_FORMAT, "pfade": [_bahn()]}]
         assert "1 restored, 0 already there, 0 NOT restored" in capsys.readouterr().out
 
     def test_the_restore_keeps_the_boxes_the_server_already_holds(self, dataroot, tmp_path, monkeypatch):
@@ -786,7 +791,7 @@ class TestHandDrawnBahnChain:
         older = archive / "own-hand" / HAND / "0001"
         fake = _FakePfadApi({("S0001", "F01"): []})
         assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(older)) == 0
-        assert fake.pushed() == [{"format": 1, "pfade": [_bahn()]}]
+        assert fake.pushed() == [{"format": PFAD_FORMAT, "pfade": [_bahn()]}]
         out = capsys.readouterr().out
         assert "1 restored, 0 already there, 0 NOT restored" in out
         assert "Kartei read from 0002" in out  # and it says which one it read

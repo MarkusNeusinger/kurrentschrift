@@ -67,7 +67,7 @@ from math import isfinite
 from typing import Any
 
 from core.eigenhand.befund import body_runs_expected
-from core.eigenhand.pfad import is_authored
+from core.eigenhand.pfad import STATUS_SKIPPED, is_authored
 
 
 TINTENTREUE_FORMAT = 1
@@ -471,11 +471,15 @@ def tintentreue(pfad: Mapping[str, Any] | None, *, hand: str, pfade_format: int,
     The grey states are ordered by what the reader should DO about them, not
     by how they were found:
 
-    1. `kein Eintrag` — nothing to judge. Four causes produce it today (`--box`
-       not chosen · no Bogen geometry · unauthored glyphs · the follower gave
-       up), and they are indistinguishable until the Skip entries of
-       PFAD_FORMAT 2 are written, so exactly ONE grey state may claim them
-       (`admin-redesign.md` §6.3, correction of 2026-09-20).
+    1. `kein Eintrag` — nothing to judge. Four causes produce it (`--box` not
+       chosen · no Bogen geometry · unauthored glyphs · the follower gave up),
+       and exactly ONE grey state may claim them (`admin-redesign.md` §6.3,
+       correction of 2026-09-20). A Skip-Eintrag is one of them and lands here
+       too: it SAYS why there is no path, but naming that reason in the light
+       means German words for the four reasons and a jump-off target for each,
+       which is the Nachfahr-Liste's own PR. What it must not read as is
+       „unvollständig gemessen" — a skip is not a measurement that came out
+       short, it is the statement that there was nothing to measure.
     2. `von Hand gezeichnet` — an UNMEASURED authored Bahn: „von Hand" is a
        Herkunft and never a colour, and there is nothing to grade until the
        tool has run over it. What greys the box is therefore the missing
@@ -496,7 +500,7 @@ def tintentreue(pfad: Mapping[str, Any] | None, *, hand: str, pfade_format: int,
        one could have been the worst.
     """
     schwellen = schwellen_of(hand)
-    if pfad is None:
+    if pfad is None or pfad.get("status") == STATUS_SKIPPED:
         return _grau(GRUND_KEIN_EINTRAG, sensoren=[], pfade_format=pfade_format, schwellen=schwellen)
     sensoren = sensoren_of(pfad, schwellen)
     if is_authored(pfad) and not rohzahlen(pfad).gemessen:
