@@ -4355,10 +4355,15 @@ Kopiereinheit, die der Lauf am relativen Pfad überspringt — eine
 nachträglich dort abgelegte Datei käme nie ins Archiv, und der Lauf meldete
 Erfolg. Der Satz trägt ZWEI Versionen: `format` (die Form der Kartei-Zeile)
 und `pfad_format` (das `PFAD_FORMAT`, unter dem die API geantwortet hat);
-ein Satz in unbekannter Form wird verweigert, nie als „keine Bahn" gelesen.
-Der Restore ist die einzige Richtung — ein gewöhnlicher `sync` schöbe eine
-bewusst aufgegebene Zeichnung wieder hoch — und er endet LAUT: er nennt die
-Zahl der NICHT wiederhergestellten Bahnen und bricht ab, weil ein stiller
+ein Satz in unbekannter Form wird verweigert, nie als „keine Bahn" gelesen
+(unbekannt heißt NEUER, nie älter — eine archivierte Kartei wird nie
+umgeschrieben, eine Verweigerung machte jeden früheren Schnappschuss
+unlesbar). Der Restore ist die einzige Richtung — ein gewöhnlicher `sync`
+schöbe eine bewusst aufgegebene Zeichnung wieder hoch —, er füllt nur
+Kästen ohne Pfad und lässt einen, der schon einen trägt, unangetastet
+(das Archiv ist Herr über das Fehlende, nie über das Lebende), und er endet
+LAUT: er nennt die Zahl der NICHT wiederhergestellten Bahnen, gezählt aus
+der Antwort des Servers, und bricht ab, weil ein stiller
 Teil-Restore der Fehler ist, gegen den die Kette gebaut ist. Und
 `--replace-authored` verweigert, solange genau DIESE Zeichnung nicht
 archiviert ist (Entscheid B); die Verweigerung nennt den einen Befehl, der
