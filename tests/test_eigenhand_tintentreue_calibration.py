@@ -104,9 +104,31 @@ def population(per_step: dict[str, int]) -> list[Box]:
     return rows
 
 
-def result_text(lines: list[str], round_label: int = 1) -> str:
-    """The page's own result file — headed with the round it came out of."""
-    return f"TINTENTREUE/{round_label} geprueft={len(lines)} von {len(lines)}\n" + "\n".join(lines) + "\n"
+HAND = "mn-suetterlin"
+# The four sensors the light can NAME as a box's reason — gate (B) asks that
+# each of them names at least one box over the pass.
+GRADED = (SENSOR_ABSETZER, SENSOR_UNBESUCHT, SENSOR_EXKURSION, SENSOR_AIOU)
+# Stands in for the build digest the real page is tagged with; its VALUE is
+# arbitrary, its presence is the point — see `TestParser`.
+DIGEST = "abc1234567"
+
+
+def result_text(lines: list[str], round_label: int = 1, hand: str = HAND, digest: str = DIGEST) -> str:
+    """The page's own result file — headed with the BUILD it came out of."""
+    head = f"TINTENTREUE-{hand}-{digest}/{round_label} geprueft={len(lines)} von {len(lines)}"
+    return head + "\n" + "\n".join(lines) + "\n"
+
+
+def stamp_of(round_label: int = 1, **extra) -> dict:
+    """A provenance stamp with the fields `analyse` refuses to run without."""
+    return {
+        "round": round_label,
+        "hand": HAND,
+        "digest": DIGEST,
+        "n_label": extra.pop("n_label", 0),
+        "schwellen": {"stand": "2026-09-20", "vorlaeufig": True},
+        **extra,
+    }
 
 
 # ------------------------------------------------------------------- the draw
@@ -309,16 +331,33 @@ class TestParser:
         with pytest.raises(ResultFormatError, match="not a Tintentreue code"):
             parse_result(result_text(["S001:GW"]))
 
-    def test_a_result_headed_by_another_round_is_refused(self):
-        """The vocabulary alone does not separate the rounds: both mint `S###`
-        and `R##` ids, and `A`, `U` and `-` are legal in either. The header
-        names the round the file came out of, so it is held against this one."""
-        assert result_tag(1) == "TINTENTREUE/1"
-        with pytest.raises(ResultFormatError, match="wrong round"):
-            parse_result(result_text(["S001:F"]), "TINTENTREUE/2")
-        with pytest.raises(ResultFormatError, match="wrong round"):
-            parse_result("BEFUND/1 geprueft=1 von 1\nS001:F\n", "TINTENTREUE/1")
-        assert parse_result(result_text(["S001:F"]), "TINTENTREUE/1")[0].step == FOLLOWS
+    def test_a_result_of_another_build_is_refused(self):
+        """The round NUMBER names nothing: every hand has a round 1, every
+        rebuild of it mints the same `S###`/`R##` ids, and `A`, `U` and `-`
+        are legal in the fit vocabulary too — so such a paste would pass an id
+        check screen for screen and be applied to the wrong boxes. The tag
+        therefore carries the hand and the build digest."""
+        mine = result_tag(1, HAND, DIGEST)
+        assert mine == f"TINTENTREUE-{HAND}-{DIGEST}/1"
+        assert parse_result(result_text(["S001:F"]), mine)[0].step == FOLLOWS
+        for wrong in (
+            result_text(["S001:F"], round_label=2),  # another round
+            result_text(["S001:F"], hand="ab-kurrent"),  # another hand
+            result_text(["S001:F"], digest="0000000000"),  # a rebuilt draw
+            "BEFUND/1 geprueft=1 von 1\nS001:F\n",  # a fit round
+        ):
+            with pytest.raises(ResultFormatError, match="wrong round"):
+                parse_result(wrong, mine)
+
+    def test_a_truncated_paste_is_refused_rather_than_analysed(self):
+        """The header says how many screens were judged. A paste that lost its
+        tail would otherwise be evaluated as a complete round, with every
+        quantile drawn from a pool nobody noticed was short — the same refusal
+        the shared humanbench parser makes."""
+        full = result_text(["S001:F", "S002:T", "S003:N"])
+        truncated = "\n".join(full.splitlines()[:-1]) + "\n"
+        with pytest.raises(ResultFormatError, match="header claims 3 judged, file carries 2"):
+            parse_result(truncated)
 
     def test_a_screen_judged_twice_is_refused(self):
         with pytest.raises(ResultFormatError, match="judged twice"):
@@ -410,6 +449,50 @@ class TestPlan:
         assert seen["counts"][SENSOR_UNBESUCHT] == 1
         assert set(seen["dead"]) == {SENSOR_ABSETZER, SENSOR_AIOU}
         assert seen["kill"]
+
+    def test_every_fatal_gate_stops_the_block_not_only_the_reliability_one(self):
+        """Gates (A), (B) and (C) decide whether calibrating happens at all, so
+        printing them and then printing a paste-ready block underneath would
+        leave the reader to enforce them by eye."""
+        carries = {"enough": True, "agree": 6, "pairs": 6, "far": 0}
+        clean_light = {"agreement": 0.8, "monotone": True, "false_green_of_green": 0.0}
+        alive = {"kill": False, "dead": []}
+        rows = judged(*[(f"S{n:03d}", "F") for n in range(30)])
+        stamp = {"n_label": 30}
+        assert tool.fatal_gates(carries, clean_light, alive, judged=rows, stamp=stamp) == []
+
+        killed = tool.fatal_gates(
+            {"enough": False, "agree": 1, "pairs": 6, "far": 3},
+            {"agreement": 0.4, "monotone": False, "false_green_of_green": 0.5},
+            {"kill": True, "dead": [SENSOR_AIOU, SENSOR_EXKURSION]},
+            judged=rows[:5],
+            stamp=stamp,
+        )
+        assert [reason[:3] for reason in killed] == ["(F)", "(A)", "(A)", "(B)", "(C)", "Kur"]
+
+    def test_a_round_shorter_than_it_was_drawn_for_carries_no_claim(self):
+        """The build already warns; the warning has to survive into the
+        evaluation, or the short pass sets a bound anyway."""
+        reasons = tool.fatal_gates(
+            {"enough": True, "agree": 6, "pairs": 6, "far": 0},
+            {"agreement": 0.8, "monotone": True, "false_green_of_green": 0.0},
+            {"kill": False, "dead": []},
+            judged=judged(("S001", "F")),
+            stamp={"n_label": 30},
+        )
+        assert len(reasons) == 1 and reasons[0].startswith("Kurze Runde")
+
+    def test_the_bounds_of_the_draw_are_read_back_off_the_stamp(self):
+        """Never `schwellen_of(hand)` at evaluation time: once the author has
+        adopted a calibration, the live set is not the one the round was drawn
+        under, and reporting it as „geborgt" would mix two calibrations."""
+        drawn = tool.stamped_thresholds(
+            {"hand": HAND, "schwellen": {"stand": "2026-01-01", "vorlaeufig": True, **tool._bounds_dict(VORLAEUFIG)}}
+        )
+        assert drawn.stand == "2026-01-01"
+        assert drawn.unbesucht_gruen == VORLAEUFIG.unbesucht_gruen
+        # A stamp too old to carry them falls back rather than inventing any.
+        assert tool.stamped_thresholds({"hand": HAND}).stand == VORLAEUFIG.stand
 
     def test_a_repeat_does_not_name_its_sensor_a_second_time(self):
         """Counted on the first showings, like every other figure here."""
@@ -609,7 +692,10 @@ class TestRound:
                     "box_index": n,
                     "word": "lesen",
                     "stufe": STUFEN[n % 3],
-                    "sensor": None,
+                    # A green box names no sensor (the light has nothing to
+                    # report); the rest cycle the four graded ones, so gate (B)
+                    # finds no dead branch on this round.
+                    "sensor": None if n % 3 == 0 else GRADED[n % len(GRADED)],
                     "readings": {SENSOR_UNBESUCHT: 0.01 * (n + 1), SENSOR_AIOU: 0.9 - 0.01 * n},
                     "absetzer_soll": 2,
                 }
@@ -619,10 +705,7 @@ class TestRound:
             key.append({**key[n], "uid": f"R{n + 1:02d}", "repeat_of": key[n]["uid"]})
             lines.append(f"R{n + 1:02d}:{lines[n].split(':')[1]}")
         (room / "key.json").write_text(json.dumps(key), encoding="utf-8")
-        (room / "provenance.json").write_text(
-            json.dumps({"round": 1, "hand": "mn-suetterlin", "schwellen": {"stand": "2026-09-20", "vorlaeufig": True}}),
-            encoding="utf-8",
-        )
+        (room / "provenance.json").write_text(json.dumps(stamp_of(1, n_label=12)), encoding="utf-8")
         (room / "urteile.txt").write_text(result_text(lines), encoding="utf-8")
 
         assert tool.main(["analyse", "--round-dir", str(room), "--result", str(room / "urteile.txt")]) == 0
@@ -645,11 +728,12 @@ class TestRound:
             {"uid": "R01", "repeat_of": "S001", "stufe": STUFEN[0], "readings": {}, "absetzer_soll": 2},
         ]
         (room / "key.json").write_text(json.dumps(key), encoding="utf-8")
-        (room / "provenance.json").write_text(json.dumps({"round": 2, "hand": "mn-suetterlin"}), encoding="utf-8")
+        (room / "provenance.json").write_text(json.dumps(stamp_of(2)), encoding="utf-8")
         (room / "urteile.txt").write_text(result_text(["S001:F", "R01:N"], round_label=2), encoding="utf-8")
         assert tool.main(["analyse", "--round-dir", str(room), "--result", str(room / "urteile.txt")]) == 0
         out = capsys.readouterr().out
         assert "Keine Grenze gesetzt" in out and "SCHWELLEN_JE_HAND" not in out
+        assert "(F) Verlässlichkeit" in out
 
     def test_a_round_is_written_once(self, tmp_path: Path):
         built = tool.Built(

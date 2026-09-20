@@ -1652,7 +1652,7 @@ Zwei Lücken sind benannt statt gefüllt:
 
 Was aus §3 unverändert gilt, steht dort und wird hier nicht wiederholt:
 kartografisches Casing (3.5), Zeitnahme (3.9), Wiederaufnahme (3.10), nichts
-Identifizierendes im Payload (3.8). Fünf Regeln sind neu oder anders.
+Identifizierendes im Payload (3.8). Sechs Regeln sind neu oder anders.
 
 **1. Die Seite bleibt lokal.** Sie wird nicht als Artifact veröffentlicht,
 nicht committet und nicht verschickt: ihre Ausschnitte sind die reservierten
@@ -1691,7 +1691,13 @@ und nicht über alle, denn nur die erste Zahl ist gegen die Ziehung
 unempfindlich. Ungemessene Kästen (jeder graue Zustand, jeder Skip-Eintrag)
 kommen gar nicht erst in die Grundgesamtheit — es gibt an ihnen nichts zu
 kalibrieren. Der Rest ist die **Rückhaltemenge** (3.3) und wird mit `--only`
-bestätigt, nicht neu gewürfelt.
+bestätigt, nicht neu gewürfelt — sie ist dabei ausdrücklich **nicht**
+stufen-ausgewogen: ausgeteilt wird aus jedem Band, bis eines leer ist, und
+eine Stufe, von der die Hand nur eine Handvoll Kästen hat, kann der Durchgang
+vollständig aufbrauchen. Keine Quote könnte Fälle herbeizaubern, die es nicht
+gibt; darum druckt der Bau die Rückhaltemenge **je Stufe** und warnt, wenn
+eine leer bleibt — dann ist vor dem Beurteilen bekannt, dass jene Grenze
+hinterher nicht bestätigt werden kann.
 
 **5. Die Wiederholungen sind nach STUFE geschichtet, nicht nach Häufigkeit.**
 Die Regeln aus 3.2 gelten sinngemäß (Mindestabstand plus Zufallsversatz,
@@ -1705,7 +1711,18 @@ Verlässlichkeit, die nur aus Einigkeit über die grünen Kästen stammt, sagt
 Der **Provenienz-Stempel** (§7) trägt zusätzlich die acht Schwellen, unter
 denen geschichtet wurde. Ohne sie ist die Ziehung der Runde nicht
 rekonstruierbar, sobald die Zahlen ersetzt sind — und ersetzt zu werden ist
-ihr Zweck.
+ihr Zweck. `analyse` liest sie **aus dem Stempel** und nie aus dem laufenden
+`SCHWELLEN_JE_HAND`: hat der Autor einmal kalibriert, wäre der lebende Satz
+nicht mehr der, unter dem gezogen wurde, und der Bericht nennte die NEUEN
+Zahlen „geborgt".
+
+**6. Die Ergebnisdatei gehört zu EINEM Bau.** Ihre Kopfzeile trägt die Hand
+und einen Inhalts-Digest des Baus, nicht nur die Rundennummer — jede Hand hat
+eine Runde 1, jeder Neubau vergibt dieselben `S###`/`R##`-Kennungen, und eine
+Datei aus der falschen Runde bestünde eine Kennungsprüfung Bildschirm für
+Bildschirm. Zusätzlich wird die Zahl `geprueft=` gegen die gelesenen Zeilen
+gehalten: eine abgeschnittene Einfügung ist eine kurze Runde, keine
+vollständige.
 
 ### Der Auswerteplan (vorregistriert, vor den Labels)
 
@@ -1729,7 +1746,12 @@ sie nicht nachträglich umgestellt werden kann:
    30 Kästen jeder der vier bewerteten Sensoren BENENNT — ein Sensor ohne eine
    einzige Nennung ist ein toter Zweig, und zwei davon töten die Runde. Das
    sind die Gates (A)–(C) des Eintrags „Tintentreue `sep20`"; sie entscheiden,
-   ob überhaupt kalibriert wird oder ob der SENSORSATZ das Problem ist.
+   ob überhaupt kalibriert wird oder ob der SENSORSATZ das Problem ist. Sie
+   entscheiden es **im Code**: feuert eines ihrer Kill-Kriterien — oder (F),
+   oder ist die Runde kürzer, als sie gezogen wurde —, bricht `analyse` hier
+   ab, nennt jeden Grund einzeln und druckt **keinen** Block. Ein
+   einfügefertiger Vorschlag unter einem gerissenen Gate wäre die eine Weise,
+   in der dieses Werkzeug Schaden anrichten könnte.
 5. **Die Grenzen je Sensor**, nach einer Regel ohne freien Parameter:
    die grüne Grenze ist das 90-%-Quantil der Lesungen über die als `F`
    beurteilten Kästen, die gelbe dasselbe über `F` ∪ `T` (bei AIoU, wo größer

@@ -81,6 +81,7 @@ from core.eigenhand.tintentreue import (
     SENSOR_UNBESUCHT,
     SENSOREN_MIT_SCHWELLE,
     STUFEN,
+    VORLAEUFIG,
     Schwellen,
     schwellen_of,
 )
@@ -290,8 +291,13 @@ def stratify(rows: list[Box], n_label: int, rng: random.Random) -> tuple[list[Bo
     (§8b, „was er dabei NICHT sieht"). Shuffling inside the round keeps every
     prefix step-balanced to within one box and takes the pattern away.
 
-    The tail beyond `n_label` is the reserve (§3.3): never judged, step-balanced
-    by construction, and reachable again with `--only`.
+    The tail beyond `n_label` is the reserve (§3.3): never judged, and
+    reachable again with `--only`. It is NOT step-balanced — the deal takes
+    from every band until a band runs out, so a step the hand only has a
+    handful of can be spent entirely on the pass and leave nothing behind to
+    confirm its bound on. That is a property of the population, not something
+    a quota could conjure, so `cmd_build` prints the reserve per step and the
+    author sees before judging whether a confirmation pass is possible at all.
     """
     banded = [[row for row in rows if row.step == step] for step in STUFEN]
     for band in banded:
@@ -581,6 +587,23 @@ def _bounds_dict(thresholds: Schwellen) -> dict[str, float]:
     }
 
 
+def round_digest(stamp: dict, items: list[dict]) -> str:
+    """What this exact build IS — its identity plus every pixel it draws.
+
+    The build timestamp and the git state are left out on purpose: they change
+    on a rebuild that draws the same screens, and the question this digest
+    answers is „are these the same screens", not „was this the same run".
+    `digest` itself is left out because the stamp carries it once computed —
+    hashing it back in would make the number depend on whether it was there.
+    """
+    identity = {
+        k: v for k, v in stamp.items() if k not in ("built_at", "code_commit", "code_branch", "code_dirty", "digest")
+    }
+    digest = hashlib.sha256(json.dumps(identity, sort_keys=True, default=str).encode())
+    digest.update(json.dumps(items, sort_keys=True, separators=(",", ":"), default=str).encode())
+    return digest.hexdigest()[:10]
+
+
 def round_store(stamp: dict, items: list[dict]) -> str:
     """This round's own browser-storage namespace.
 
@@ -588,10 +611,7 @@ def round_store(stamp: dict, items: list[dict]) -> str:
     humanbench page is: a rebuilt page whose drawing moved must start clean
     rather than replay old verdicts by index onto new screens.
     """
-    identity = {k: v for k, v in stamp.items() if k not in ("built_at", "code_commit", "code_branch", "code_dirty")}
-    digest = hashlib.sha256(json.dumps(identity, sort_keys=True, default=str).encode())
-    digest.update(json.dumps(items, sort_keys=True, separators=(",", ":"), default=str).encode())
-    return f"tintentreue-r{stamp.get('round')}-{digest.hexdigest()[:10]}"
+    return f"tintentreue-r{stamp.get('round')}-{round_digest(stamp, items)}"
 
 
 @dataclass
@@ -614,19 +634,29 @@ def write_round(out: Path, built: Built, *, force: bool) -> Path:
     if out.exists() and any(out.iterdir()) and not force:
         raise SystemExit(f"{out} is not empty — a round is written once; pass --force to overwrite")
     out.mkdir(parents=True, exist_ok=True)
+    digest = round_digest(built.stamp, built.items)
     envelope = {
         "round": built.stamp.get("round"),
         "question": "tintentreue",
-        "store": round_store(built.stamp, built.items),
+        "store": f"tintentreue-r{built.stamp.get('round')}-{digest}",
         "items": built.items,
     }
     (out / "payload.json").write_text(json.dumps(envelope, separators=(",", ":")), encoding="utf-8")
     for name, rows in (("key.json", built.key), ("reserve.json", built.reserve)):
         (out / name).write_text(json.dumps(rows, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    # The digest joins the stamp AFTER it was computed, because `analyse` has
+    # the stamp and the key but never the items — without it the expected tag
+    # could not be rebuilt on the evaluating side.
+    built.stamp["digest"] = digest
     (out / "provenance.json").write_text(
         json.dumps(built.stamp, indent=1, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8"
     )
-    return write_page(envelope, out / "seite.html", round_label=str(built.stamp.get("round") or ""))
+    return write_page(
+        envelope,
+        out / "seite.html",
+        round_label=str(built.stamp.get("round") or ""),
+        tag=page_tag(str(built.stamp.get("hand") or ""), digest),
+    )
 
 
 # -------------------------------------------------------------- the judgements
@@ -657,9 +687,22 @@ class Verdict:
         return UNSURE in self.codes
 
 
-def result_tag(round_label: Any) -> str:
-    """The header tag the page stamps on THIS round's result file."""
-    return f"{STRIP_TAG}/{round_label}"
+def page_tag(hand: str, digest: str) -> str:
+    """The tag the page is rendered with — the round number is appended by it.
+
+    Hand AND build digest, because the round number alone names nothing: every
+    hand has a round 1, every rebuild of it mints the same `S###`/`R##` ids,
+    and a result file from the wrong one passes an id check screen for screen.
+    Widening the tag is what makes that paste refusable, and the digest is the
+    same one the page's storage is keyed on — a rebuild whose draw moved is a
+    different round here too.
+    """
+    return f"{STRIP_TAG}-{hand}-{digest}"
+
+
+def result_tag(round_label: Any, hand: str, digest: str) -> str:
+    """The full header tag of THIS build's result file, as the page writes it."""
+    return f"{page_tag(hand, digest)}/{round_label}"
 
 
 def parse_result(text: str, expect_tag: str | None = None) -> list[Verdict]:
@@ -721,6 +764,13 @@ def parse_result(text: str, expect_tag: str | None = None) -> list[Verdict]:
                 position=position,
             )
         )
+    # The same refusal the shared parser makes (`humanbench.analyse`): the
+    # header states how many screens were judged, and a paste that lost its
+    # tail would otherwise be evaluated as a complete round — with every
+    # quantile drawn from a pool nobody noticed was short.
+    claimed = int(head.group("judged"))
+    if len(verdicts) != claimed:
+        raise ResultFormatError(f"header claims {claimed} judged, file carries {len(verdicts)}")
     return verdicts
 
 
@@ -843,6 +893,52 @@ def against_the_light(judged: Sequence[Verdict], key: Mapping[str, dict]) -> dic
         "false_green_share": false_green / len(rows) if rows else 0.0,
         "false_green_of_green": false_green / len(green) if green else None,
     }
+
+
+def fatal_gates(
+    reliable: Mapping[str, Any],
+    light: Mapping[str, Any],
+    branches: Mapping[str, Any],
+    *,
+    judged: Sequence[Verdict],
+    stamp: Mapping[str, Any],
+) -> list[str]:
+    """Every kill criterion of the pre-registration, in one place.
+
+    Gates (A), (B) and (C) („Tintentreue `sep20`") decide whether calibrating
+    happens at all, and (F) whether the judgement carries. Printing them and
+    then printing a paste-ready block underneath would leave the reader to
+    enforce them by eye — so they are collected here and the block is not
+    reached while any of them fires. The short-round rule is the fourth: the
+    build already warns that a pass under its own `n_label` carries no
+    adoption claim, and the warning has to survive into the evaluation.
+
+    Returns the reasons, in the pre-registration's own order. An empty list
+    means the round may set bounds.
+    """
+    reasons: list[str] = []
+    if not reliable["enough"]:
+        reasons.append(
+            f"(F) Verlässlichkeit: {reliable['agree']}/{reliable['pairs']} Paare gleich, "
+            f"{reliable['far']} zwei Stufen auseinander — unter der Schranke"
+        )
+    agreement = light.get("agreement")
+    if agreement is not None and agreement < AGREEMENT_KILL:
+        reasons.append(f"(A) Trennschärfe: Übereinstimmung {agreement:.0%} < {AGREEMENT_KILL:.0%}")
+    if light and not light.get("monotone", True):
+        reasons.append("(A) Trennschärfe: die drei Stufen sind nicht geordnet")
+    if branches.get("kill"):
+        reasons.append(f"(B) Toter Zweig: {', '.join(branches['dead'])} benennen keinen einzigen Kasten")
+    of_green = light.get("false_green_of_green")
+    if of_green is not None and of_green > FALSE_GREEN_MAX:
+        reasons.append(
+            f"(C) Falsche Freigabe: {of_green:.0%} der ampelgrünen Kästen heißen beim Menschen "
+            f"schlecht (> {FALSE_GREEN_MAX:.0%})"
+        )
+    wanted = int(stamp.get("n_label") or N_LABEL)
+    if len(judged) < wanted:
+        reasons.append(f"Kurze Runde: {len(judged)} gewertete Kästen statt {wanted} — kein Adoptionsanspruch")
+    return reasons
 
 
 def rank_value(values: Sequence[float], quantile: float) -> float:
@@ -1074,6 +1170,7 @@ def cmd_build(args: argparse.Namespace) -> int:
 
     counts = {"population": len(rows), "label": len(label), "reserve": len(reserve), "screens": len(items)}
     counts["per_step"] = {step: sum(1 for row in label if row.step == step) for step in STUFEN}
+    counts["reserve_per_step"] = {step: sum(1 for row in reserve if row.step == step) for step in STUFEN}
     stamp = provenance(
         args,
         seed=seed,
@@ -1090,7 +1187,18 @@ def cmd_build(args: argparse.Namespace) -> int:
         f"  population {len(rows)} measured boxes, per step "
         + " · ".join(f"{step} {counts['per_step'][step]}" for step in STUFEN)
     )
-    print(f"  reserve {len(reserve)} boxes — a confirmation pass runs with --only {out / 'reserve.json'}")
+    print(
+        f"  reserve {len(reserve)} boxes, per step "
+        + " · ".join(f"{step} {counts['reserve_per_step'][step]}" for step in STUFEN)
+        + f" — a confirmation pass runs with --only {out / 'reserve.json'}"
+    )
+    empty = [step for step in STUFEN if not counts["reserve_per_step"][step]]
+    if empty:
+        print(
+            f"  warning: the reserve holds no box of: {', '.join(empty)} — the pass spent them all, "
+            f"so a confirmation run cannot re-test those bounds",
+            file=sys.stderr,
+        )
     print(f"  repeat gaps {gaps}")
     print(f"  thresholds {thresholds.stand}" + (" (vorläufig)" if thresholds.vorlaeufig else " (kalibriert)"))
     print(f"  wrote {page}")
@@ -1098,12 +1206,38 @@ def cmd_build(args: argparse.Namespace) -> int:
     return 0
 
 
+def stamped_thresholds(stamp: Mapping[str, Any]) -> Schwellen:
+    """The bounds the round was DRAWN under, rebuilt from its own stamp.
+
+    Never `schwellen_of(hand)` at evaluation time, and the stamp carries these
+    eight numbers for exactly this reason: replacing them is the whole purpose
+    of the round. Once the author has adopted a calibration, reading the live
+    set would hold an old round against numbers that did not exist when it was
+    drawn, report the new ones as „geborgt", and print a block mixing two
+    calibrations. A stamp too old to carry them falls back, and says so.
+    """
+    block = stamp.get("schwellen")
+    if not isinstance(block, Mapping):
+        return schwellen_of(str(stamp.get("hand") or ""))
+    fields = {name: block[name] for name in _bounds_dict(VORLAEUFIG) if name in block}
+    if len(fields) < len(_bounds_dict(VORLAEUFIG)):
+        return schwellen_of(str(stamp.get("hand") or ""))
+    return Schwellen(stand=str(block.get("stand") or ""), vorlaeufig=bool(block.get("vorlaeufig", True)), **fields)
+
+
 def cmd_analyse(args: argparse.Namespace) -> int:
     room = Path(args.round_dir)
     key = {entry["uid"]: entry for entry in json.loads((room / "key.json").read_text(encoding="utf-8"))}
     stamp = json.loads((room / "provenance.json").read_text(encoding="utf-8"))
-    thresholds = schwellen_of(str(stamp.get("hand") or ""))
-    verdicts = parse_result(Path(args.result).read_text(encoding="utf-8"), result_tag(stamp.get("round")))
+    thresholds = stamped_thresholds(stamp)
+    digest = str(stamp.get("digest") or "")
+    if not digest:
+        raise SystemExit(
+            f"{room / 'provenance.json'} carries no build digest — it predates the hand-scoped tag, "
+            f"so a result file cannot be matched to it. Rebuild the round."
+        )
+    expected = result_tag(stamp.get("round"), str(stamp.get("hand") or ""), digest)
+    verdicts = parse_result(Path(args.result).read_text(encoding="utf-8"), expected)
     unknown = [verdict.uid for verdict in verdicts if verdict.uid not in key]
     if unknown:
         raise SystemExit(f"the result names screens this round does not have: {', '.join(unknown[:5])}")
@@ -1137,11 +1271,16 @@ def cmd_analyse(args: argparse.Namespace) -> int:
     excluded = sum(1 for verdict in verdicts if UNRATABLE in verdict.codes)
     print(f"\n3 Abbildung angewandt: {len(judged)} Kästen gewertet, {excluded} nicht beurteilbar (ausgeschlossen)")
 
-    # 4 — the light against the human, with and without the unsure ones.
+    # 4 — the light against the human, with and without the unsure ones. The
+    # gates are read on „alle": the unsure-free pass is the robustness check
+    # beside it, never a second chance at a gate.
+    headline: dict[str, Any] = {}
     for label, rows in (("alle", judged), ("ohne unsichere", unsure_free)):
         if not rows:
             continue
         seen = against_the_light(rows, key)
+        if label == "alle":
+            headline = seen
         of_green = seen["false_green_of_green"]
         print(
             f"\n4 Ampel gegen Mensch ({label}, n = {seen['n']}): Übereinstimmung {seen['agreement']:.0%} "
@@ -1168,8 +1307,16 @@ def cmd_analyse(args: argparse.Namespace) -> int:
             + ("KILL (Gate (B))" if branches["kill"] else f"unter dem Kill von {DEAD_BRANCH_KILL}")
         )
 
-    if not reliable["enough"]:
-        print("\n5 Keine Grenze gesetzt — die Verlässlichkeit trägt nicht (Gate (F)). Die acht Zahlen bleiben geborgt.")
+    # Every fatal gate, not only the reliability one. A round that fails (A),
+    # (B) or (C) says the SENSOR SET is the problem, and a paste-ready block
+    # printed under it would be adopted off a round its own pre-registration
+    # killed — the one way this tool could do harm.
+    blocking = fatal_gates(reliable, headline, branches, judged=judged, stamp=stamp)
+    if blocking:
+        print("\n5 Keine Grenze gesetzt — die Runde trägt keinen Adoptionsanspruch:")
+        for reason in blocking:
+            print(f"  · {reason}")
+        print("  Die acht Zahlen bleiben geborgt, und `VORLAEUFIG` bleibt unberührt.")
         return 0
 
     # 5 — the bounds.

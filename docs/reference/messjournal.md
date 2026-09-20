@@ -17863,10 +17863,17 @@ Prävalenz dieser Runde ist keine Aussage über die Hand** — weshalb die
 Falsch-Grün-Rate von Gate (C) über die **ampelgrünen** Kästen gelesen wird
 und nicht über alle gewerteten; nur die erste Zahl ist gegen die Ziehung
 unempfindlich, und `analyse` druckt beide. Der Rest ist
-Rückhaltemenge und wird mit `--only` bestätigt, nie neu gewürfelt. Die acht
+Rückhaltemenge — nicht stufen-ausgewogen, denn ausgeteilt wird, bis ein Band
+leer ist: eine dünne Stufe kann der Durchgang aufbrauchen, und der Bau druckt
+die Rückhaltemenge je Stufe und warnt, wenn eine leer bleibt — und sie wird
+mit `--only` bestätigt, nie neu gewürfelt. Die acht
 geborgten Schwellen, unter denen geschichtet wurde, stehen im
 Provenienz-Stempel — ohne sie ist die Ziehung nicht mehr rekonstruierbar,
-sobald die Zahlen ersetzt sind.
+sobald die Zahlen ersetzt sind; `analyse` liest sie darum aus dem Stempel und
+nie aus dem laufenden `SCHWELLEN_JE_HAND`. Der Stempel trägt zusätzlich einen
+Inhalts-Digest des Baus, und Hand plus Digest stehen in der Kopfzeile der
+Ergebnisdatei: die Rundennummer allein benennt nichts, weil jede Hand eine
+Runde 1 hat und jeder Neubau dieselben Kennungen vergibt.
 
 **Der Auswerteplan, in bindender Reihenfolge** (Code, damit er nicht
 umgestellt werden kann): (1) **Verlässlichkeit zuerst** über die blinden
@@ -17904,9 +17911,13 @@ Grenze geborgt, bleibt es stehen, und der gedruckte Block trägt
 **Die Gates, mit Kill-Kriterien.** Die Adoptions-Gates **(A)–(E)** stehen im
 Eintrag „Tintentreue `sep20`" und gelten unverändert (Trennschärfe · kein
 toter Zweig · keine falsche Freigabe · ein Satz, ein Datum · keine
-Bench-Berührung); (A), (B) und (C) rechnet `analyse` selbst und druckt sie
-benannt, damit keines von ihnen still übersprungen werden kann. Diese
-Vorregistrierung fügt die Gates der RUNDE hinzu:
+Bench-Berührung); (A), (B) und (C) rechnet `analyse` selbst, druckt sie
+benannt und **bricht vor Schritt 5 ab**, sobald eines ihrer Kill-Kriterien
+feuert — ebenso bei (F) und bei einer Runde, die kürzer ist als ihre eigene
+Ziehung. Es wird dann kein einfügefertiger Block gedruckt: ein Vorschlag
+unter einem gerissenen Gate wäre die eine Weise, in der dieses Werkzeug
+Schaden anrichten könnte. Diese Vorregistrierung fügt die Gates der RUNDE
+hinzu:
 **(F) Verlässlichkeit vor jeder Zahl** — liegt sie unter der Schranke oben,
 wird keine Schwelle gesetzt, auch keine einzelne. *Kill:* eine Grenze, die
 aus einer Runde unter der Schranke übernommen wird. **(G) Besetzung** — eine
