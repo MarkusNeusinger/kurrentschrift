@@ -734,9 +734,10 @@ class TestStrips:
 
         listing = await api.client.request("GET", f"/eigenhand/strips/{HAND}", headers=api.admin_headers())
         boxes = listing.json()["strips"][0]["boxes"]
+        geometry = {"rect_px", "nominal_baseline_row", "nominal_xh_px"}
         # Every box: its index (the crop's address), its word, the SAME items
         # the Bestand counts for it, and where it sits in the stored strip.
-        assert [{k: v for k, v in box.items() if k != "rect_px"} for box in boxes] == [
+        assert [{k: v for k, v in box.items() if k not in geometry} for box in boxes] == [
             {"index": i, "word": w, "items": coverage.word_items(shaping_form_of(plan, w))} for i, w in enumerate(words)
         ]
         # The rectangles are the word crop's own, in strip pixels: inside the
@@ -746,6 +747,12 @@ class TestStrips:
         assert all(r is not None for r in rects)
         assert [r[0] for r in rects] == sorted(r[0] for r in rects)
         assert all(0 <= r[0] < r[2] <= stored["width_px"] and r[1] == 0 and r[3] == stored["height_px"] for r in rects)
+        # …and the PRINTED ruling beside them, in the same pixels: it is what
+        # the strip editor draws a box on that carries no Bahn yet (and calls
+        # „Saat"). One Grundlinie for the whole row, because one row was
+        # printed with one lineature.
+        assert len({box["nominal_xh_px"] for box in boxes}) == 1
+        assert all(0 < box["nominal_xh_px"] < box["nominal_baseline_row"] <= stored["height_px"] for box in boxes)
 
         # A word: case-insensitive substring — the search box's contract.
         fragment = words[1][1:3]
@@ -1283,6 +1290,14 @@ class TestStreifenPfad:
         boxes = (await self._get(api)).json()["boxes"]
         assert [box["word"] for box in boxes] == load_plan()["strips"]["S0001"]["words"]
         assert boxes[0]["rect_px"][2] <= stored["width_px"]
+        # The printed ruling travels with them, and it is the SAME arithmetic
+        # the rectangles came from (`frame_for_box`) rather than a second
+        # derivation: a box whose Bahn does not exist yet — the follower gave
+        # up, and its Skip-Eintrag carries neither frame nor scale — is exactly
+        # the one the author draws by hand, and the editor needs a frame for it.
+        frame = frame_for_box(stored["row"], stored["crop_origin_mm"], stored["width_px"], stored["height_px"], 0)
+        assert boxes[0]["nominal_baseline_row"] == frame["baseline_row"]
+        assert boxes[0]["nominal_xh_px"] == frame["xh_px"]
 
     @pytest.mark.asyncio
     async def test_the_paths_are_served_uncacheable_and_never_ride_on_the_listing(self, api: Harness):

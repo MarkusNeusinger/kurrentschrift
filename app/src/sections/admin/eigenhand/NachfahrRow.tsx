@@ -18,7 +18,8 @@ import { Link as RouterLink } from 'react-router-dom';
 
 import { InfoHint } from '@/components/InfoHint';
 import { de, fmt } from '@/locales/admin';
-import type { EigenhandTintentreueSensor, EigenhandTintentreueStufe } from '@/lib/api';
+import type { EigenhandTintentreueSensor } from '@/lib/api';
+import { AmpelChip } from '@/sections/admin/eigenhand/AmpelChip';
 import { verfahrenLabel } from '@/sections/admin/eigenhand/pfadHerkunft';
 import { TINTENTREUE_GRUND } from '@/sections/admin/eigenhand/stripBoxRows';
 import type { StripBoxRow } from '@/sections/admin/eigenhand/stripBoxRows';
@@ -28,10 +29,6 @@ import { WorkRow } from '@/sections/admin/shell/WorkList';
 import { TOUCH_TARGET } from '@/styles/hitArea';
 import { garamond, paper } from '@/styles/paper';
 
-// The one place colour is attached to a step. The WORD travels with it in every
-// case, so nothing here is carried by hue alone (design-system.md §2, Idee 19)
-// — and the grey state takes the default chip rather than a fourth colour,
-// because „nicht beurteilt" is the absence of a measurement.
 // The same two words the Herkunfts-Chip of a strip uses, through the same
 // helper: an unknown Verfahren stays RAW there and has to stay raw here, or a
 // foreign follower would be relabelled into the Tintenpfad on one surface and
@@ -39,13 +36,6 @@ import { garamond, paper } from '@/styles/paper';
 const VERFAHREN_LABELS = {
   tintenpfad: de.admin.eigenhand.verfahrenTintenpfad,
   authored: de.admin.eigenhand.verfahrenAuthored,
-};
-
-const STUFE_COLOR: Record<EigenhandTintentreueStufe, 'success' | 'warning' | 'error' | 'default'> = {
-  folgt: 'success',
-  'folgt teils': 'warning',
-  'folgt nicht': 'error',
-  'nicht beurteilt': 'default',
 };
 
 /** A sensor reading as one line — „–" for a sensor this run did not compute,
@@ -72,6 +62,7 @@ export function NachfahrRow({
   onToggle,
   rowProps,
   onMark,
+  onTrace,
 }: {
   row: StripBoxRow;
   hand: string;
@@ -80,6 +71,9 @@ export function NachfahrRow({
   rowProps?: Record<string, string>;
   /** File this box as an Auftrag (kind=word, specimen_kind='strip', V7). */
   onMark: () => void;
+  /** Open the strip editor on this box — absent where drawing is not the step
+   * this row asks for (`traceableBox`). */
+  onTrace?: () => void;
 }) {
   const t = de.admin.eigenhand.nachfahren;
   const urteil = row.tintentreue;
@@ -107,19 +101,7 @@ export function NachfahrRow({
               server as plain German — the step on the chip, the reason beside
               it, because „folgt nicht" without „Absetzer (Bahn)" says what but
               never which sensor found it. */}
-          {/* `flexShrink: 0` on every chip of this row, and it is not cosmetic:
-              in the narrow chip box of a phone row a MUI chip shrinks below its
-              own text and ellipsises it, so „folgt nicht" shipped as „folgt …"
-              — the one word that carries the verdict, cut at the phone width
-              where the list is read on the tablet's narrow side (measured at
-              390 px). */}
-          <Chip
-            size="small"
-            color={STUFE_COLOR[urteil.stufe]}
-            variant={urteil.stufe === 'nicht beurteilt' ? 'outlined' : 'filled'}
-            label={urteil.stufe}
-            sx={{ flexShrink: 0 }}
-          />
+          <AmpelChip urteil={urteil} />
           <Typography variant="caption" color="textSecondary">
             {urteil.grund}
           </Typography>
@@ -174,6 +156,16 @@ export function NachfahrRow({
               {fmt(t.tafelFehltAction, { key })}
             </Button>
           ))}
+          {/* The step this whole list leads to: drawing the Bahn by hand. It
+              stands on an `authored` row too — correcting his own line, or its
+              letter boundaries, is the author's own business; what is never
+              offered there is a re-FOLLOW (archiv R7), which is the terminal
+              command below and not this button. */}
+          {onTrace && (
+            <Button size="small" variant="outlined" onClick={onTrace} sx={{ minHeight: TOUCH_TARGET }}>
+              {t.trace}
+            </Button>
+          )}
           {/* „kein Korb-Eintrag (V9)" — a missing Tafel-Duktus is not a
               complaint about anything generated, so the row offers the jump to
               the plate INSTEAD of the flag rather than beside it. Two mutually

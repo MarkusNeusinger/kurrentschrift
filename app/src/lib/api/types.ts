@@ -1125,6 +1125,12 @@ export interface EigenhandStripBox {
   // that minus this rectangle. `null` for a Bogen printed before the cut
   // geometry existed.
   rect_px?: number[] | null;
+  // The PRINTED ruling of the box in those same strip pixels — NOMINAL, where
+  // the writer was asked to write rather than where the hand wrote. It is the
+  // frame the strip editor draws in for a box that carries no Bahn yet (and
+  // labels „Saat"); a box WITH one uses the Bahn's own stored registration.
+  nominal_baseline_row?: number | null;
+  nominal_xh_px?: number | null;
 }
 
 // One written word's followed pen path — the Streifen-Pfad of one box. The
