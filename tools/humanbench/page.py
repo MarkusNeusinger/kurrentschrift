@@ -199,6 +199,12 @@ QUESTIONS: dict[str, tuple[Choice, ...]] = {"ink": CHOICES, "authentic": AUTHENT
 # from. „Nicht beurteilbar" is the `K` of §2 one layer down: not a severity but
 # an exclusion, for a crop that shows the wrong thing rather than a Bahn that
 # does.
+#
+# The tag is a constant rather than a literal in the defaults table because the
+# sibling builder holds a pasted result file against it — one spelling, or the
+# check would pass on a file this page never wrote.
+STRIP_TAG = "TINTENTREUE"
+
 STRIP_CATEGORIES: tuple[Category, ...] = (
     Category("F", "1", "Folgt", "solo", "Folgt", tone="good"),
     Category("T", "2", "Folgt teils", "solo", "Folgt teils"),
@@ -256,13 +262,18 @@ _DEFAULTS: dict[str, dict[str, str]] = {
         ),
     },
     "tintentreue": {
-        "tag": "TINTENTREUE",
+        "tag": STRIP_TAG,
         "eyebrow": "Tintentreue-Kalibrierung",
         "headline": "Folgt die Bahn der Tinte?",
+        # „Die obere Reihe" would be wrong here and the fit set's wording is
+        # where it comes from: four solos at `span 2` over a four-column grid
+        # fill TWO rows, so „Folgt nicht" and „Nicht beurteilbar" sit on the
+        # second one. In a blind round the instruction is part of the
+        # instrument, so it names the buttons by size rather than by row.
         "lede": (
-            "*Eine Stufe je Kasten* — die obere Reihe. Die Merkmale darunter *addieren sich* und "
-            "löschen die Stufe nicht: sie sagen, woran es liegt. Beurteilt wird die gezeichnete "
-            "Bahn gegen die Tinte, *nicht die Schrift*."
+            "*Eine Stufe je Kasten* — eine der vier breiten Schaltflächen oben. Die Merkmale "
+            "darunter *addieren sich* und löschen die Stufe nicht: sie sagen, woran es liegt. "
+            "Beurteilt wird die gezeichnete Bahn gegen die Tinte, *nicht die Schrift*."
         ),
         "lede_fine": (
             "Die Bahn ist an jedem Absetzer getrennt gezeichnet — eine Lücke ist ein Federheber und "

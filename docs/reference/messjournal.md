@@ -17814,8 +17814,10 @@ Schwellen einmal justiert, datiert eingefroren, nie ein Regler. **Frage F**
 (2026-09-20): das Kalibrier-Instrument steht im Bauplan der Phase 2 und wird
 als LETZTER Posten gebaut.
 
-**Das Instrument, und warum es ein Nachbau ist.** `tools/humanbench` liest
-eingefrorene Fixture-Crops und bricht bei abweichender Wurzel ab, und seine
+**Das Instrument, und warum es ein Nachbau ist.** `tools/humanbench`
+schneidet seine Crops aus einer Wortbank-Fixture-Wurzel und weist ein
+Verzeichnis ohne `manifest.json` ab — die Streifen-Pixel liegen in gar keiner
+Fixture-Wurzel —, und seine
 Taxonomie hat sechs Fit-Kategorien gegen drei Ampelstufen. Geteilt wird
 deshalb nur die SEITE (`tools/humanbench/page.py`, vierter Kategoriensatz
 `STRIP_CATEGORIES` neben den bestehenden — Casing, Zeitnahme, Wiederaufnahme,
@@ -17851,8 +17853,16 @@ Zustand und jeder Skip-Eintrag fällt heraus, weil an ihm nichts zu
 kalibrieren ist. Geschichtet wird nach der VORLÄUFIGEN Stufe, reihum
 ausgeteilt, innerhalb der Schicht gesät gemischt — sonst besteht eine Runde
 über eine eingespielte Hand fast nur aus grünen Kästen, und die gesuchte
-Grenze liegt dort, wo keine Fälle sind. Der Preis steht dabei: **die
-Prävalenz dieser Runde ist keine Aussage über die Hand.** Der Rest ist
+Grenze liegt dort, wo keine Fälle sind. **Jede Austeil-Runde wird vor dem
+Anhängen noch einmal gemischt**: reihum in Bandreihenfolge ausgeteilt, nennte
+die POSITION eines Bildschirms genau die Stufe, gegen die er gehalten wird
+(1 grün, 2 gelb, 3 rot, von vorn) — ein Tell, den die Blindstellung sonst
+selbst einbaut. Jeder Präfix bleibt dabei bis auf einen Kasten
+stufen-ausgewogen. Der Preis der Schichtung steht dabei: **die
+Prävalenz dieser Runde ist keine Aussage über die Hand** — weshalb die
+Falsch-Grün-Rate von Gate (C) über die **ampelgrünen** Kästen gelesen wird
+und nicht über alle gewerteten; nur die erste Zahl ist gegen die Ziehung
+unempfindlich, und `analyse` druckt beide. Der Rest ist
 Rückhaltemenge und wird mit `--only` bestätigt, nie neu gewürfelt. Die acht
 geborgten Schwellen, unter denen geschichtet wurde, stehen im
 Provenienz-Stempel — ohne sie ist die Ziehung nicht mehr rekonstruierbar,
@@ -17863,7 +17873,8 @@ umgestellt werden kann): (1) **Verlässlichkeit zuerst** über die blinden
 Wiederholungen, nach STUFE geschichtet statt nach Häufigkeit; (2)
 **Besetzung** je Stufe; (3) Abbildung anwenden, `X` ausschließen, `U`
 zweimal rechnen; (4) **Ampel gegen Mensch** — Übereinstimmung, Monotonie,
-Falsch-Grün-Rate gegen die vorläufigen Zahlen; (5) **die Grenzen je Sensor**;
+Falsch-Grün-Rate gegen die vorläufigen Zahlen, und als Schritt 4b **Gate (B)**:
+wie viele Kästen jeder der vier bewerteten Sensoren benennt; (5) **die Grenzen je Sensor**;
 (6) **Sprünge und Haken** als benanntes offenes Stück; (7) **ein Satz, ein
 Datum**.
 
@@ -17893,7 +17904,9 @@ Grenze geborgt, bleibt es stehen, und der gedruckte Block trägt
 **Die Gates, mit Kill-Kriterien.** Die Adoptions-Gates **(A)–(E)** stehen im
 Eintrag „Tintentreue `sep20`" und gelten unverändert (Trennschärfe · kein
 toter Zweig · keine falsche Freigabe · ein Satz, ein Datum · keine
-Bench-Berührung). Diese Vorregistrierung fügt die Gates der RUNDE hinzu:
+Bench-Berührung); (A), (B) und (C) rechnet `analyse` selbst und druckt sie
+benannt, damit keines von ihnen still übersprungen werden kann. Diese
+Vorregistrierung fügt die Gates der RUNDE hinzu:
 **(F) Verlässlichkeit vor jeder Zahl** — liegt sie unter der Schranke oben,
 wird keine Schwelle gesetzt, auch keine einzelne. *Kill:* eine Grenze, die
 aus einer Runde unter der Schranke übernommen wird. **(G) Besetzung** — eine
@@ -17917,6 +17930,7 @@ gitignorierten Speicher, und der einzige zulässige Weg dorthin ist das LESEN
 über die admin-gegatete API bzw. den lokalen Speicher — ein direkter
 SQLAlchemy-Zugriff aus einem Kalibrierskript träfe von hier aus die
 PRODUKTIONS-Datenbank und ist verboten. Geprüft ist allein die REGEL — Ziehung,
-Schichtung, Blindstellung, Bildmaß gegen Kasten-Rechteck, Parser,
+Schichtung, Blindstellung (auch: die Position nennt die Stufe nicht),
+Bildmaß gegen Kasten-Rechteck, Parser samt Runden-Kopfzeile, toter Zweig,
 Quantil-Schnitt, Rundungsrichtung und die Verweigerung einer Grenze unter der
 Schranke — gegen `tests/test_eigenhand_tintentreue_calibration.py`.

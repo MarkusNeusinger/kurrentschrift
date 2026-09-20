@@ -28,8 +28,9 @@ either is a bug in this file.
 
 WHY A SIBLING RATHER THAN A MODE OF ``tools.humanbench.build``. Four
 properties of that builder do not hold here, and each alone would be enough:
-it cuts its crops out of the FROZEN fixture roots and refuses a different one;
-its taxonomy has six fit categories against three traffic-light steps; its
+it cuts its crops out of a word-bench fixture root and refuses a directory
+without a ``manifest.json``, while the strip pixels are in no fixture root at
+all; its taxonomy has six fit categories against three traffic-light steps; its
 object is a letter inside a plate word rather than a word box of the author's
 own hand; and its page is published as an Artifact, which these crops may
 never be. What the two rounds share is therefore exactly one thing, and it is
@@ -78,6 +79,7 @@ from core.eigenhand.tintentreue import (
     SENSOR_EXKURSION,
     SENSOR_SPRUENGE,
     SENSOR_UNBESUCHT,
+    SENSOREN_MIT_SCHWELLE,
     STUFEN,
     Schwellen,
     schwellen_of,
@@ -85,7 +87,7 @@ from core.eigenhand.tintentreue import (
 from tools.eigenhand.apiclient import admin_token, api_base, request_bytes, request_json
 from tools.eigenhand.store import check_hand_id
 from tools.humanbench.analyse import RESULT_HEAD, RESULT_LINE, TALLY_LINE, ResultFormatError
-from tools.humanbench.page import STRIP_CATEGORIES, write_page
+from tools.humanbench.page import STRIP_CATEGORIES, STRIP_TAG, write_page
 
 
 # ---------------------------------------------------------- the pre-registered
@@ -131,20 +133,24 @@ GREEN_QUANTILE = 0.90
 # creates work in the wrong place (gate (C) of „Tintentreue `sep20`").
 ROUND_DIGITS = 2
 
-# The Absetzer is an integer rule rather than a quantile: its yellow bound
-# drops from ±1 to 0 only if at least this many boxes are off by exactly one
-# run and most of them are judged „folgt nicht".
-ABSETZER_TIGHTEN_MIN = 5
+# The Absetzer (`KEY_ABSETZER = "paper_lifts"`) is an integer rule rather than a
+# quantile: its yellow bound drops from ±1 to 0 only if at least this many boxes
+# are off by exactly one run and most of them are judged „folgt nicht".
+PEN_LIFT_TIGHTEN_MIN = 5
 # Jumps and hairpins carry no bound today. One is PROPOSED only on this many
 # flagged boxes AND a clean separation — anything less would be the unanchored
 # threshold the pre-registration exists to prevent.
 JUMPS_MIN_POSITIVES = 5
 
-# Gates (A) and (C) of „Tintentreue `sep20`", restated as numbers so the report
-# can name them without a lookup.
+# Gates (A), (B) and (C) of „Tintentreue `sep20`", restated as numbers so the
+# report can name them without a lookup.
 AGREEMENT_GATE = 0.70
 AGREEMENT_KILL = 0.50
 FALSE_GREEN_MAX = 0.10
+# Gate (B): a graded sensor that names no box over the whole pass is a dead
+# branch. Two of the four dead kills the round — the sensor set is then the
+# thing to re-cut, and no bound is frozen on top of it.
+DEAD_BRANCH_KILL = 2
 
 # The verdict vocabulary comes from the instrument itself so parser and page
 # cannot drift apart.
@@ -277,6 +283,13 @@ def stratify(rows: list[Box], n_label: int, rng: random.Random) -> tuple[list[Bo
     cases are thin. The price is stated rather than hidden: the prevalence of
     this round says nothing about the hand.
 
+    Each round the deal takes is SHUFFLED before it is appended, and that is
+    not cosmetic: dealt strictly in band order, the position of a screen would
+    name the step the machine gave it — screen 1 green, screen 2 yellow, screen
+    3 red, and round again — which is exactly the tell the judge must not have
+    (§8b, „was er dabei NICHT sieht"). Shuffling inside the round keeps every
+    prefix step-balanced to within one box and takes the pattern away.
+
     The tail beyond `n_label` is the reserve (§3.3): never judged, step-balanced
     by construction, and reachable again with `--only`.
     """
@@ -285,9 +298,9 @@ def stratify(rows: list[Box], n_label: int, rng: random.Random) -> tuple[list[Bo
         rng.shuffle(band)
     dealt: list[Box] = []
     for index in range(max((len(band) for band in banded), default=0)):
-        for band in banded:
-            if index < len(band):
-                dealt.append(band[index])
+        group = [band[index] for band in banded if index < len(band)]
+        rng.shuffle(group)
+        dealt.extend(group)
     return dealt[:n_label], dealt[n_label:]
 
 
@@ -440,7 +453,10 @@ def drawing_of(base: str, token: str, hand: str, box: Box, paths: Mapping[str, A
     entry = entries.get(box.box_index)
     if entry is None or not entry.get("strokes"):
         raise SystemExit(f"{box.strip}/{box.fassung} box {box.box_index}: measured, but no stored Bahn — stale read?")
-    frames = {frame.get("box_index"): frame for frame in (paths.get("boxes") or [])}
+    # `boxes[]` keys its rows `index` and `pfade[]` keys its rows `box_index`
+    # — two names for the same address, one route (`api.schemas`:
+    # `EigenhandStripBoxOut.index` against `EigenhandPfad.box_index`).
+    frames = {frame.get("index"): frame for frame in (paths.get("boxes") or []) if isinstance(frame, dict)}
     frame = frames.get(box.box_index) or {}
     rect = frame.get("rect_px")
     if not rect or len(rect) < 4:
@@ -641,7 +657,12 @@ class Verdict:
         return UNSURE in self.codes
 
 
-def parse_result(text: str) -> list[Verdict]:
+def result_tag(round_label: Any) -> str:
+    """The header tag the page stamps on THIS round's result file."""
+    return f"{STRIP_TAG}/{round_label}"
+
+
+def parse_result(text: str, expect_tag: str | None = None) -> list[Verdict]:
     """Parse the text the page's „fertig" screen emits.
 
     The three line shapes come from `tools.humanbench.analyse` rather than from
@@ -649,12 +670,24 @@ def parse_result(text: str) -> list[Verdict]:
     one, and two spellings of its format would drift the first time either
     moves. What is this round's own is the VOCABULARY — a fit verdict pasted in
     here has to be refused rather than read as an unknown code.
+
+    The vocabulary alone does not separate the two rounds, which is why
+    `expect_tag` exists: both mint `S###`/`R##` ids, and `A`, `U` and `-` are
+    legal in either, so a fit result can be read a long way in before a letter
+    shows up that does not belong. The header names the round it came out of,
+    and holding it against the one being evaluated is the cheap answer.
     """
     lines = [line for line in text.splitlines() if line.strip()]
     if not lines:
         raise ResultFormatError("empty result")
-    if not RESULT_HEAD.match(lines[0]):
+    head = RESULT_HEAD.match(lines[0])
+    if not head:
         raise ResultFormatError(f"no header line, got {lines[0]!r}")
+    if expect_tag is not None and head.group("tag") != expect_tag:
+        raise ResultFormatError(
+            f"the result is headed {head.group('tag')!r} but this round is {expect_tag!r} — "
+            f"wrong round, or a fit round's file?"
+        )
     verdicts: list[Verdict] = []
     seen: set[str] = set()
     tallies = False
@@ -752,6 +785,28 @@ def _first_showings(verdicts: Sequence[Verdict], key: Mapping[str, dict]) -> lis
     ]
 
 
+def dead_branches(judged: Sequence[Verdict], key: Mapping[str, dict]) -> dict[str, Any]:
+    """Step 4, gate (B) — does every graded sensor NAME a box over the pass?
+
+    The light reports one sensor per box („woran es lag"), and that name is
+    what the key carries. A sensor that never comes up across the whole pass is
+    a dead branch: it is graded, it is printed, and nothing ever routes through
+    it. Freezing a bound onto such a branch would freeze a number that has no
+    case behind it, so the pre-registration kills the round at
+    `DEAD_BRANCH_KILL` of them rather than calibrating around it.
+
+    Counted on the FIRST showings only, for the same reason every other figure
+    here is: a repeat would weight its own sensor twice.
+    """
+    counts = dict.fromkeys(SENSOREN_MIT_SCHWELLE, 0)
+    for verdict in judged:
+        named = (key.get(verdict.uid) or {}).get("sensor")
+        if named in counts:
+            counts[named] += 1
+    dead = [sensor for sensor, count in counts.items() if count == 0]
+    return {"counts": counts, "dead": dead, "kill": len(dead) >= DEAD_BRANCH_KILL}
+
+
 def against_the_light(judged: Sequence[Verdict], key: Mapping[str, dict]) -> dict[str, Any]:
     """Step 4 — the provisional traffic light held against the human.
 
@@ -759,6 +814,13 @@ def against_the_light(judged: Sequence[Verdict], key: Mapping[str, dict]) -> dic
     of the three steps, and the false-green rate — a box the judge calls bad
     that the light calls „folgt". The last one is reported separately because
     it is the only error class that creates work in the wrong place.
+
+    The false-green figure comes back twice. `false_green_share` is over ALL
+    judged boxes and is the number the pre-registration named; `false_green_of_green`
+    is over the light-green ones alone. Only the second is invariant under the
+    stratification — the share of green boxes in this round is a property of
+    the draw, not of the hand (§8b, rule 4) — so it is the one the kill
+    criterion is read on, and both are printed so the difference is visible.
     """
     rows = [(verdict, key.get(verdict.uid) or {}) for verdict in judged]
     matched = sum(1 for verdict, entry in rows if STEP_OF_CODE.get(verdict.step or "") == entry.get("stufe"))
@@ -777,7 +839,9 @@ def against_the_light(judged: Sequence[Verdict], key: Mapping[str, dict]) -> dic
         "good_share": good_share,
         "monotone": all(first >= second for first, second in zip(measured, measured[1:], strict=False)),
         "false_green": false_green,
+        "n_green": len(green),
         "false_green_share": false_green / len(rows) if rows else 0.0,
+        "false_green_of_green": false_green / len(green) if green else None,
     }
 
 
@@ -875,11 +939,11 @@ def cuts(judged: Sequence[Verdict], key: Mapping[str, dict], thresholds: Schwell
     return out
 
 
-def absetzer_cut(judged: Sequence[Verdict], key: Mapping[str, dict], thresholds: Schwellen) -> dict[str, Any]:
+def pen_lift_cut(judged: Sequence[Verdict], key: Mapping[str, dict], thresholds: Schwellen) -> dict[str, Any]:
     """Step 5, the integer half — the Absetzer bound is a rule, not a quantile.
 
     It drops from ±1 to 0 only where the round actually shows that one
-    unexplained pen event is already fatal: at least `ABSETZER_TIGHTEN_MIN`
+    unexplained pen event is already fatal: at least `PEN_LIFT_TIGHTEN_MIN`
     boxes off by exactly one run, most of them judged „folgt nicht".
     """
     off_by_one: list[Verdict] = []
@@ -892,7 +956,7 @@ def absetzer_cut(judged: Sequence[Verdict], key: Mapping[str, dict], thresholds:
         if abs(float(reading) - float(expected)) == 1:
             off_by_one.append(verdict)
     fails = sum(1 for verdict in off_by_one if verdict.step == FAILS)
-    tighten = len(off_by_one) >= ABSETZER_TIGHTEN_MIN and fails * 2 > len(off_by_one)
+    tighten = len(off_by_one) >= PEN_LIFT_TIGHTEN_MIN and fails * 2 > len(off_by_one)
     return {
         "n": len(off_by_one),
         "fails": fails,
@@ -1039,7 +1103,7 @@ def cmd_analyse(args: argparse.Namespace) -> int:
     key = {entry["uid"]: entry for entry in json.loads((room / "key.json").read_text(encoding="utf-8"))}
     stamp = json.loads((room / "provenance.json").read_text(encoding="utf-8"))
     thresholds = schwellen_of(str(stamp.get("hand") or ""))
-    verdicts = parse_result(Path(args.result).read_text(encoding="utf-8"))
+    verdicts = parse_result(Path(args.result).read_text(encoding="utf-8"), result_tag(stamp.get("round")))
     unknown = [verdict.uid for verdict in verdicts if verdict.uid not in key]
     if unknown:
         raise SystemExit(f"the result names screens this round does not have: {', '.join(unknown[:5])}")
@@ -1078,16 +1142,31 @@ def cmd_analyse(args: argparse.Namespace) -> int:
         if not rows:
             continue
         seen = against_the_light(rows, key)
+        of_green = seen["false_green_of_green"]
         print(
             f"\n4 Ampel gegen Mensch ({label}, n = {seen['n']}): Übereinstimmung {seen['agreement']:.0%} "
             f"(Gate ≥ {AGREEMENT_GATE:.0%}, Kill < {AGREEMENT_KILL:.0%}) · "
-            f"{'monoton' if seen['monotone'] else 'NICHT MONOTON'} · "
-            f"falsch grün {seen['false_green']} ({seen['false_green_share']:.0%}, Kill > {FALSE_GREEN_MAX:.0%})"
+            f"{'monoton' if seen['monotone'] else 'NICHT MONOTON'}"
+        )
+        print(
+            f"  falsch grün {seen['false_green']} von {seen['n_green']} ampelgrünen "
+            f"({'—' if of_green is None else format(of_green, '.0%')}, Kill > {FALSE_GREEN_MAX:.0%}) · "
+            f"über alle gewerteten {seen['false_green_share']:.0%}"
         )
         shares = " · ".join(
             f"{step} {'—' if share is None else format(share, '.0%')}" for step, share in seen["good_share"].items()
         )
         print(f"  Anteil {STUFEN[0]} je Ampelstufe: {shares}")
+
+    # 4, gate (B) — a graded sensor that names nothing is a dead branch.
+    branches = dead_branches(judged, key)
+    named = " · ".join(f"{sensor} {count}" for sensor, count in branches["counts"].items())
+    print(f"\n4b Kein toter Zweig — benannte Kästen je Sensor: {named}")
+    if branches["dead"]:
+        print(
+            f"  ohne Nennung: {', '.join(branches['dead'])} — "
+            + ("KILL (Gate (B))" if branches["kill"] else f"unter dem Kill von {DEAD_BRANCH_KILL}")
+        )
 
     if not reliable["enough"]:
         print("\n5 Keine Grenze gesetzt — die Verlässlichkeit trägt nicht (Gate (F)). Die acht Zahlen bleiben geborgt.")
@@ -1105,8 +1184,10 @@ def cmd_analyse(args: argparse.Namespace) -> int:
                 f"  {sensor}: grün {row['green']} / gelb {row['yellow']} "
                 f"(geborgt {borrowed[0]} / {borrowed[1]}, n = {row['n_green']}/{row['n_yellow']})"
             )
-    absetzer = absetzer_cut(judged, key, thresholds)
-    print(f"  {SENSOR_ABSETZER}: {absetzer['why']} ({absetzer['fails']} von {absetzer['n']} Kästen mit Abweichung 1)")
+    pen_lifts = pen_lift_cut(judged, key, thresholds)
+    print(
+        f"  {SENSOR_ABSETZER}: {pen_lifts['why']} ({pen_lifts['fails']} von {pen_lifts['n']} Kästen mit Abweichung 1)"
+    )
 
     # 6 — the open item.
     jumps = jumps_proposal(judged, key)
@@ -1119,11 +1200,11 @@ def cmd_analyse(args: argparse.Namespace) -> int:
 
     # 7 — one set, one date. The adoption itself is the author's commit.
     print("\n7 Ein Satz, ein Datum — Vorschlag für `SCHWELLEN_JE_HAND` (Übernahme ist ein Schritt des Autors):")
-    print(_schwellen_block(str(stamp.get("hand") or ""), derived, absetzer, thresholds))
+    print(_thresholds_block(str(stamp.get("hand") or ""), derived, pen_lifts, thresholds))
     return 0
 
 
-def _schwellen_block(hand: str, derived: Mapping[str, dict], absetzer: Mapping[str, Any], borrowed: Schwellen) -> str:
+def _thresholds_block(hand: str, derived: Mapping[str, dict], pen_lifts: Mapping[str, Any], borrowed: Schwellen) -> str:
     """The pasteable block — with every value that stayed borrowed named as such.
 
     Printed rather than written: adopting a calibration edits `core/`, dates a
@@ -1150,7 +1231,7 @@ def _schwellen_block(hand: str, derived: Mapping[str, dict], absetzer: Mapping[s
         fields.append((yellow_field, yellow, yellow_measured))
     # The Absetzer counts as measured once the rule could actually fire — the
     # round then KEPT ±1 rather than never having tested it.
-    fields.append(("absetzer_gelb", absetzer["gelb"], absetzer["n"] >= ABSETZER_TIGHTEN_MIN))
+    fields.append(("absetzer_gelb", pen_lifts["gelb"], pen_lifts["n"] >= PEN_LIFT_TIGHTEN_MIN))
     today = datetime.now(UTC).date().isoformat()
     complete = all(measured for _, _, measured in fields)
     label = "    vorlaeufig=False," if complete else "    vorlaeufig=True,  # nicht jede Grenze ist gemessen"

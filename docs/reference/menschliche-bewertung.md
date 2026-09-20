@@ -1540,12 +1540,13 @@ keiner Messung.
 Vier Eigenschaften des bestehenden Instruments passen nicht, und jede einzelne
 wäre schon ein Grund:
 
-* **Die Wurzel.** `build.py` zieht seine Ausschnitte aus den eingefrorenen
-  Fixture-Wurzeln und bricht bei einer abweichenden Wurzel ab
-  (`--expect-root`). Die Streifen-Pixel liegen ausschließlich in der geteilten
-  Datenbank und im gitignorierten lokalen Speicher; der einzige zulässige Weg
-  zu ihnen ist das LESEN über die admin-gegatete API
-  (`tools/eigenhand/apiclient.py`, `tools/eigenhand/store.py`).
+* **Die Wurzel.** `build.py` schneidet seine Ausschnitte aus einer
+  Wortbank-Fixture-Wurzel (`--fixtures`) und weist ein Verzeichnis ohne
+  `manifest.json` ab. Die Streifen-Pixel liegen in gar keiner Fixture-Wurzel:
+  sie stehen ausschließlich in der geteilten Datenbank und im gitignorierten
+  lokalen Speicher, und der einzige zulässige Weg zu ihnen ist das LESEN über
+  die admin-gegatete API (`tools/eigenhand/apiclient.py`,
+  `tools/eigenhand/store.py`).
 * **Die Taxonomie.** Sechs Fit-Kategorien gegen **drei** Ampelstufen. Eine
   Abbildung „`A`+`W` → folgt teils" wäre eine Behauptung, die niemand
   gemessen hat, und sie käme genau dort in die Rechnung, wo diese Runde eine
@@ -1678,11 +1679,19 @@ ausgeteilt, mit gesätem Mischen innerhalb der Schicht (3.1). Grund ist
 derselbe wie dort — jeder Präfix deckt die Bandbreite ab —, plus einer, der
 hier dazukommt: ohne Schichtung besteht eine Runde über eine eingespielte
 Hand fast nur aus grünen Kästen, und die Grenze, die gesucht wird, liegt
-gerade dort, wo keine Fälle sind. Was das kostet, ist benannt: die
-**Prävalenz der Runde ist keine Aussage über die Hand**. Ungemessene Kästen
-(jeder graue Zustand, jeder Skip-Eintrag) kommen gar nicht erst in die
-Grundgesamtheit — es gibt an ihnen nichts zu kalibrieren. Der Rest ist die
-**Rückhaltemenge** (3.3) und wird mit `--only` bestätigt, nicht neu gewürfelt.
+gerade dort, wo keine Fälle sind. **Jede Austeil-Runde wird vor dem Anhängen
+noch einmal gemischt**, und das ist kein Schönheitsschritt: reihum in
+Bandreihenfolge ausgeteilt, hieße Bildschirm 1 grün, 2 gelb, 3 rot und wieder
+von vorn — die Position nennte genau die Stufe, die der Beurteiler nicht
+sehen darf. So bleibt jeder Präfix bis auf einen Kasten stufen-ausgewogen,
+und die Reihenfolge verrät nichts. Was die Schichtung kostet, ist benannt:
+die **Prävalenz der Runde ist keine Aussage über die Hand** — und deshalb
+wird die Falsch-Grün-Rate (Gate (C)) über die **ampelgrünen** Kästen gelesen
+und nicht über alle, denn nur die erste Zahl ist gegen die Ziehung
+unempfindlich. Ungemessene Kästen (jeder graue Zustand, jeder Skip-Eintrag)
+kommen gar nicht erst in die Grundgesamtheit — es gibt an ihnen nichts zu
+kalibrieren. Der Rest ist die **Rückhaltemenge** (3.3) und wird mit `--only`
+bestätigt, nicht neu gewürfelt.
 
 **5. Die Wiederholungen sind nach STUFE geschichtet, nicht nach Häufigkeit.**
 Die Regeln aus 3.2 gelten sinngemäß (Mindestabstand plus Zufallsversatz,
@@ -1713,9 +1722,14 @@ sie nicht nachträglich umgestellt werden kann:
    tragen müsste, bleibt geborgt.
 3. **Die Abbildung anwenden**, `X` ausschließen, `U` zweimal rechnen.
 4. **Die Ampel gegen den Menschen** — Übereinstimmung, Monotonie und die
-   **Falsch-Grün-Rate**, gerechnet gegen die vorläufigen Schwellen. Das sind
-   die Gates (A)–(C) des Eintrags „Tintentreue `sep20`"; sie entscheiden, ob
-   überhaupt kalibriert wird oder ob der SENSORSATZ das Problem ist.
+   **Falsch-Grün-Rate**, gerechnet gegen die vorläufigen Schwellen. Letztere
+   wird zweimal gedruckt: über die **ampelgrünen** Kästen (so liest Gate (C)
+   sie, weil nur diese Zahl gegen die Schichtung unempfindlich ist) und über
+   alle gewerteten. Dazu, als eigener Schritt 4b, **Gate (B)**: wie viele der
+   30 Kästen jeder der vier bewerteten Sensoren BENENNT — ein Sensor ohne eine
+   einzige Nennung ist ein toter Zweig, und zwei davon töten die Runde. Das
+   sind die Gates (A)–(C) des Eintrags „Tintentreue `sep20`"; sie entscheiden,
+   ob überhaupt kalibriert wird oder ob der SENSORSATZ das Problem ist.
 5. **Die Grenzen je Sensor**, nach einer Regel ohne freien Parameter:
    die grüne Grenze ist das 90-%-Quantil der Lesungen über die als `F`
    beurteilten Kästen, die gelbe dasselbe über `F` ∪ `T` (bei AIoU, wo größer

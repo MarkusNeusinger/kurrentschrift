@@ -29,6 +29,7 @@ from pathlib import Path
 
 import pytest
 
+from api.schemas import EigenhandPfad, EigenhandStripBoxOut
 from core.eigenhand.tintentreue import (
     SENSOR_ABSETZER,
     SENSOR_AIOU,
@@ -46,11 +47,11 @@ from tools.eigenhand.tintentreue_calibration import (
     PARTLY,
     UNRATABLE,
     Box,
-    absetzer_cut,
     against_the_light,
     bound_of,
     boxes_of_hand,
     cuts,
+    dead_branches,
     drawing_of,
     insert_repeats,
     item_of,
@@ -59,10 +60,12 @@ from tools.eigenhand.tintentreue_calibration import (
     occupancy,
     panel_strokes,
     parse_result,
+    pen_lift_cut,
     pick_repeats,
     png_size,
     rank_value,
     reliability,
+    result_tag,
     stratify,
 )
 from tools.humanbench.analyse import ResultFormatError
@@ -101,8 +104,9 @@ def population(per_step: dict[str, int]) -> list[Box]:
     return rows
 
 
-def result_text(lines: list[str]) -> str:
-    return f"TINTENTREUE/1 geprueft={len(lines)} von {len(lines)}\n" + "\n".join(lines) + "\n"
+def result_text(lines: list[str], round_label: int = 1) -> str:
+    """The page's own result file — headed with the round it came out of."""
+    return f"TINTENTREUE/{round_label} geprueft={len(lines)} von {len(lines)}\n" + "\n".join(lines) + "\n"
 
 
 # ------------------------------------------------------------------- the draw
@@ -117,6 +121,17 @@ class TestDraw:
         label, reserve = stratify(rows, 9, random.Random(1))
         assert len(label) == 9 and len(reserve) == 21
         assert {row.step for row in label[:6]} == set(STUFEN)
+
+    def test_the_position_of_a_screen_does_not_name_its_step(self):
+        """Dealt strictly in band order, screen 1 would be green, screen 2
+        yellow, screen 3 red and round again — the position would name the very
+        label gates (A) and (C) hold the judge against. So each round of the
+        deal is shuffled before it is appended: every prefix stays step-balanced
+        to within one box and the rhythm is gone."""
+        rows = population({STUFEN[0]: 30, STUFEN[1]: 30, STUFEN[2]: 30})
+        label, _ = stratify(rows, 90, random.Random(7))
+        by_position = [{row.step for index, row in enumerate(label) if index % 3 == offset} for offset in range(3)]
+        assert all(len(steps) > 1 for steps in by_position)
 
     def test_the_tail_is_the_reserve_and_nothing_is_lost(self):
         rows = population({STUFEN[0]: 5, STUFEN[1]: 5, STUFEN[2]: 5})
@@ -249,7 +264,7 @@ class TestBlindness:
                     "xh_px": 10.0,
                 }
             ],
-            "boxes": [{"box_index": 0, "rect_px": [0, 0, 40, 20]}],
+            "boxes": [{"index": 0, "rect_px": [0, 0, 40, 20]}],
         }
         with pytest.raises(SystemExit, match="drawn offset"):
             drawing_of("http://127.0.0.1:1", "t", "mn-suetterlin", box(0, STUFEN[0]), paths)
@@ -258,6 +273,16 @@ class TestBlindness:
         paths = {"pfade": [{"box_index": 0, "strokes": [[[0, 0], [1, 1]]]}], "boxes": []}
         with pytest.raises(SystemExit, match="no box rectangle"):
             drawing_of("http://127.0.0.1:1", "t", "mn-suetterlin", box(0, STUFEN[0]), paths)
+
+    def test_the_two_lists_of_one_answer_key_the_same_box_differently(self):
+        """`GET …/pfade` answers with `pfade[]` keyed `box_index` and `boxes[]`
+        keyed `index` — one address, two spellings. Reading the wrong one makes
+        the rectangle lookup miss EVERY box and abort the build with a wrong
+        diagnosis, and only against the real API, which is the one place this
+        instrument can ever run. So the fakes above are held to the wire type."""
+        assert "index" in EigenhandStripBoxOut.model_fields
+        assert "box_index" not in EigenhandStripBoxOut.model_fields
+        assert "box_index" in EigenhandPfad.model_fields
 
     def test_a_non_png_answer_is_refused_rather_than_judged(self):
         with pytest.raises(SystemExit, match="did not answer with a PNG"):
@@ -283,6 +308,17 @@ class TestParser:
         parses perfectly and means something else entirely."""
         with pytest.raises(ResultFormatError, match="not a Tintentreue code"):
             parse_result(result_text(["S001:GW"]))
+
+    def test_a_result_headed_by_another_round_is_refused(self):
+        """The vocabulary alone does not separate the rounds: both mint `S###`
+        and `R##` ids, and `A`, `U` and `-` are legal in either. The header
+        names the round the file came out of, so it is held against this one."""
+        assert result_tag(1) == "TINTENTREUE/1"
+        with pytest.raises(ResultFormatError, match="wrong round"):
+            parse_result(result_text(["S001:F"]), "TINTENTREUE/2")
+        with pytest.raises(ResultFormatError, match="wrong round"):
+            parse_result("BEFUND/1 geprueft=1 von 1\nS001:F\n", "TINTENTREUE/1")
+        assert parse_result(result_text(["S001:F"]), "TINTENTREUE/1")[0].step == FOLLOWS
 
     def test_a_screen_judged_twice_is_refused(self):
         with pytest.raises(ResultFormatError, match="judged twice"):
@@ -345,6 +381,45 @@ class TestPlan:
         assert seen["false_green"] == 1
         assert seen["monotone"]
 
+    def test_the_false_green_rate_is_reported_over_the_green_boxes_too(self):
+        """The share over ALL judged boxes moves with the draw — the round is
+        stratified by the light's own step, so how many green boxes it holds is
+        a property of the draw, not of the hand. The share over the green ones
+        alone is invariant under that, so gate (C) is read on it."""
+        key = {
+            "S001": {"uid": "S001", "stufe": STUFEN[0]},
+            "S002": {"uid": "S002", "stufe": STUFEN[0]},
+            "S003": {"uid": "S003", "stufe": STUFEN[2]},
+            "S004": {"uid": "S004", "stufe": STUFEN[2]},
+        }
+        seen = against_the_light(judged(("S001", "F"), ("S002", "N"), ("S003", "N"), ("S004", "N")), key)
+        assert seen["n_green"] == 2
+        assert seen["false_green_of_green"] == pytest.approx(0.5)
+        assert seen["false_green_share"] == pytest.approx(0.25)
+
+    def test_a_sensor_that_names_no_box_is_a_dead_branch(self):
+        """Gate (B). A graded sensor nothing ever routes through would get a
+        frozen bound with no case behind it, so the round dies at two of four
+        rather than calibrating around them."""
+        key = {
+            "S001": {"uid": "S001", "sensor": SENSOR_UNBESUCHT},
+            "S002": {"uid": "S002", "sensor": SENSOR_EXKURSION},
+            "S003": {"uid": "S003", "sensor": None},
+        }
+        seen = dead_branches(judged(("S001", "N"), ("S002", "T"), ("S003", "F")), key)
+        assert seen["counts"][SENSOR_UNBESUCHT] == 1
+        assert set(seen["dead"]) == {SENSOR_ABSETZER, SENSOR_AIOU}
+        assert seen["kill"]
+
+    def test_a_repeat_does_not_name_its_sensor_a_second_time(self):
+        """Counted on the first showings, like every other figure here."""
+        key = {
+            "S001": {"uid": "S001", "sensor": SENSOR_UNBESUCHT},
+            "R01": {"uid": "R01", "sensor": SENSOR_UNBESUCHT, "repeat_of": "S001"},
+        }
+        rows = tool._first_showings(judged(("S001", "N"), ("R01", "N")), key)
+        assert dead_branches(rows, key)["counts"][SENSOR_UNBESUCHT] == 1
+
     def test_the_rank_is_nearest_and_never_interpolated(self):
         """An interpolated quantile would invent a reading between two boxes,
         and at thirty boxes that invented number would BE the bound."""
@@ -402,11 +477,11 @@ class TestPlan:
             for n in range(6)
         }
         rows = judged(*[(uid, "N") for uid in key])
-        tightened = absetzer_cut(rows, key, VORLAEUFIG)
+        tightened = pen_lift_cut(rows, key, VORLAEUFIG)
         assert tightened["n"] == 6 and tightened["gelb"] == 0
 
         few = dict(list(key.items())[:3])
-        stays = absetzer_cut(judged(*[(uid, "N") for uid in few]), few, VORLAEUFIG)
+        stays = pen_lift_cut(judged(*[(uid, "N") for uid in few]), few, VORLAEUFIG)
         assert stays["gelb"] == VORLAEUFIG.absetzer_gelb
 
     def test_jumps_stay_ungraded_unless_the_split_is_clean(self):
@@ -468,7 +543,9 @@ class TestRound:
                 }
                 for index in range(12)
             ],
-            "boxes": [{"box_index": index, "rect_px": [0, 0, 1, 1]} for index in range(12)],
+            # `index`, not `box_index`: that is what `EigenhandStripBoxOut`
+            # puts on the wire, and the one test below holds this fake to it.
+            "boxes": [{"index": index, "rect_px": [0, 0, 1, 1]} for index in range(12)],
         }
         monkeypatch.setattr(tool, "request_json", lambda _m, url, *a, **k: paths if url.endswith("/pfade") else state)
         monkeypatch.setattr(tool, "request_bytes", lambda *a, **k: PNG)
@@ -569,7 +646,7 @@ class TestRound:
         ]
         (room / "key.json").write_text(json.dumps(key), encoding="utf-8")
         (room / "provenance.json").write_text(json.dumps({"round": 2, "hand": "mn-suetterlin"}), encoding="utf-8")
-        (room / "urteile.txt").write_text(result_text(["S001:F", "R01:N"]), encoding="utf-8")
+        (room / "urteile.txt").write_text(result_text(["S001:F", "R01:N"], round_label=2), encoding="utf-8")
         assert tool.main(["analyse", "--round-dir", str(room), "--result", str(room / "urteile.txt")]) == 0
         out = capsys.readouterr().out
         assert "Keine Grenze gesetzt" in out and "SCHWELLEN_JE_HAND" not in out
