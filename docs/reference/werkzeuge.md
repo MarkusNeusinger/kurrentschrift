@@ -513,6 +513,37 @@ uv run python -m tools.humanbench.analyse \
     --key    data/humanbench/runde-01-vorkommen.json
 ```
 
+**`tools/eigenhand/tintentreue_calibration.py`** — der vierte Modus, und das
+einzige Geschwister außerhalb von `tools/humanbench`: der
+**Kalibrier-Durchgang** über die Wortkästen EINER Hand, der die geborgten
+Schwellen der → Tintentreue durch gemessene ersetzt (Autor-Entscheid Q10 b,
+einmal je Hand). Er wohnt hier, weil er die reservierten Eigenhand-Pixel
+liest — ausschließlich über die admin-gegatete API, nie über die Datenbank —
+und nicht aus einer eingefrorenen Fixture-Wurzel schneidet wie
+`humanbench.build`; geteilt wird nur die SEITE (`page.py`, Kategoriensatz
+`STRIP_CATEGORIES`: drei Stufen plus vier Merkmale statt sechs
+Fit-Kategorien). `build` zieht nach der VORLÄUFIGEN Stufe geschichtet,
+blendet alles Ungemessene aus, legt blinde Wiederholungen über die Stufen und
+schreibt Payload, Schlüssel, Rückhaltemenge, Stempel und die Seite;
+`analyse` rechnet den Ergebnistext in der vorregistrierten Reihenfolge durch
+(Verlässlichkeit zuerst, dann Besetzung, Ampel gegen Mensch, Quantil-Schnitt)
+und DRUCKT einen `Schwellen(…)`-Block — übernommen wird er vom Autor, nie vom
+Werkzeug. Verfahren: [`menschliche-bewertung.md`](menschliche-bewertung.md)
+§8b, Vorregistrierung: [`messjournal.md`](messjournal.md) §14
+„Tintentreue-Kalibrierung `sep20`".
+
+**Die Seite dieser Runde wird nie veröffentlicht** — anders als eine
+humanbench-Seite: ihre Ausschnitte sind die eigene Handschrift und damit der
+reservierte Datensatz. Sie wird lokal geöffnet und bleibt unter `temp/`.
+
+```bash
+ADMIN_TOKEN=… uv run python -m tools.eigenhand.tintentreue_calibration build \
+    --hand mn-suetterlin --round 1 [--n-label 30] [--repeats 8] [--only reserve.json]
+
+uv run python -m tools.eigenhand.tintentreue_calibration analyse \
+    --round-dir temp/tintentreue-kalibrierung/r1 --result urteile.txt
+```
+
 **`tools/fitview`** — der Betrachter über die BEURTEILTEN Screens:
 fittet die im Urteils-Durchgang bewerteten Vorkommen live neu und
 zeichnet Vorher/Nachher im SELBEN Fenster-Pad/4×-Zoom-Rahmen, in dem

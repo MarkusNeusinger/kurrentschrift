@@ -17,10 +17,16 @@ working on a phone with no connection halfway through a pass.
 Two modes, chosen by the payload rather than by a flag, because the payload is
 what decides which question can be asked:
 
-* **single** (one panel per item) — the six categories of
-  ``docs/reference/menschliche-bewertung.md`` §2 with their keys 1-7, multiple
+* **single** (one panel per item) — a category set with its keys, multiple
   choice, plus an optional spot marker: one point per image, clicking elsewhere
-  moves it, clicking it again removes it.
+  moves it, clicking it again removes it. Two sets exist, picked by the
+  payload's ``question``: the six fit categories of
+  ``docs/reference/menschliche-bewertung.md`` §2 (``ink``), and the three
+  Tintentreue steps plus four defects of §8b (``tintentreue``), the
+  calibration pass over a hand's own word boxes. Its builder is a sibling and
+  lives with the pixels it reads (``tools/eigenhand/tintentreue_calibration``),
+  because those are the reserved own-hand strips rather than a frozen fixture
+  root — what the two rounds share is this page and nothing else.
 * **paired** (two panels per item) — the categories are replaced by a two-way
   preference (left better / right better / no difference). The panels are
   labelled „Links"/„Rechts" and nothing else: no arm name, no order hint, and
@@ -92,7 +98,15 @@ class Category:
 
     ``kind`` decides the behaviour, not the code: ``solo`` answers the whole
     question on its own (picking one clears the findings), ``finding`` items add
-    up, and ``modifier`` combines with anything including a solo.
+    up and CLEAR a solo, ``detail`` items add up and LEAVE the solo standing,
+    and ``modifier`` combines with anything including a solo.
+
+    ``finding`` and ``detail`` differ by one question: does the solo exclude
+    them? In the fit taxonomy it does — „Gut" and a defect cannot both be true
+    of one fit — so a finding clears it. In the Tintentreue taxonomy the solo
+    is the STEP, which is the verdict itself, and a defect only says which
+    sensor should have seen it; clearing the step there would throw the answer
+    away every time the judge names its reason.
     """
 
     code: str
@@ -172,7 +186,47 @@ AUTHENTIC_CHOICES: tuple[Choice, ...] = (
 
 QUESTIONS: dict[str, tuple[Choice, ...]] = {"ink": CHOICES, "authentic": AUTHENTIC_CHOICES}
 
-_KIND_ORDER = {"solo": 0, "finding": 1, "modifier": 2}
+# The calibration pass over a hand's own written word boxes
+# (`menschliche-bewertung.md` §8b): the three steps of the Tintentreue traffic
+# light, plus the four defects that name a sensor. The words are the light's
+# own on purpose — the judgement is worth nothing unless it is comparable with
+# what `core.eigenhand.tintentreue` would have said — and the judge never sees
+# that answer: it lives in the builder's key file, like every other tell.
+#
+# Four steps and four defects, and the split is load-bearing. A step is the
+# VERDICT and exactly one is set; a defect adds to it and says which sensor
+# ought to have caught it, which is what the per-sensor bounds are derived
+# from. „Nicht beurteilbar" is the `K` of §2 one layer down: not a severity but
+# an exclusion, for a crop that shows the wrong thing rather than a Bahn that
+# does.
+#
+# The tag is a constant rather than a literal in the defaults table because the
+# sibling builder holds a pasted result file against it — one spelling, or the
+# check would pass on a file this page never wrote.
+STRIP_TAG = "TINTENTREUE"
+
+STRIP_CATEGORIES: tuple[Category, ...] = (
+    Category("F", "1", "Folgt", "solo", "Folgt", tone="good"),
+    Category("T", "2", "Folgt teils", "solo", "Folgt teils"),
+    Category("N", "3", "Folgt nicht", "solo", "Folgt nicht"),
+    Category("X", "4", "Nicht beurteilbar", "solo", "Nicht beurteilbar", tone="dim"),
+    Category("O", "5", "Tinte ohne Bahn", "detail", "Tinte ohne Bahn"),
+    Category("P", "6", "Bahn auf leerem Papier", "detail", "Bahn auf Papier"),
+    Category("A", "7", "Absetzer falsch", "detail", "Absetzer falsch"),
+    # Read and shown by the light but never graded, for want of an anchor
+    # (`messjournal.md` §14 „Tintentreue `sep20`"). This is the question that
+    # could give it one, which is why it is asked although no bound exists.
+    Category("H", "8", "Sprünge und Haken", "detail", "Sprünge und Haken"),
+    Category("U", "9", "Unsicher", "modifier", "davon unsicher", key_note="9 · zu jeder Wahl"),
+)
+
+# Which category set a ONE-panel round judges with. The key is the payload's
+# `question`, exactly as it is for the two-panel questions above: a round's
+# question and its buttons are one decision, and a page that took them from two
+# places could ask one question with the other's vocabulary.
+SINGLE_QUESTIONS: dict[str, tuple[Category, ...]] = {"ink": CATEGORIES, "tintentreue": STRIP_CATEGORIES}
+
+_KIND_ORDER = {"solo": 0, "finding": 1, "detail": 1, "modifier": 2}
 
 
 @dataclass
@@ -205,6 +259,26 @@ _DEFAULTS: dict[str, dict[str, str]] = {
             "Nachbartinte im Fenster ist normal — beurteile die Linie nur gegen *ihren eigenen* "
             "Buchstaben. Bei völlig danebenliegenden Fits folgt der Ausschnitt dem Fit, der "
             "Buchstabe kann also angeschnitten sein."
+        ),
+    },
+    "tintentreue": {
+        "tag": STRIP_TAG,
+        "eyebrow": "Tintentreue-Kalibrierung",
+        "headline": "Folgt die Bahn der Tinte?",
+        # „Die obere Reihe" would be wrong here and the fit set's wording is
+        # where it comes from: four solos at `span 2` over a four-column grid
+        # fill TWO rows, so „Folgt nicht" and „Nicht beurteilbar" sit on the
+        # second one. In a blind round the instruction is part of the
+        # instrument, so it names the buttons by size rather than by row.
+        "lede": (
+            "*Eine Stufe je Kasten* — eine der vier breiten Schaltflächen oben. Die Merkmale "
+            "darunter *addieren sich* und löschen die Stufe nicht: sie sagen, woran es liegt. "
+            "Beurteilt wird die gezeichnete Bahn gegen die Tinte, *nicht die Schrift*."
+        ),
+        "lede_fine": (
+            "Die Bahn ist an jedem Absetzer getrennt gezeichnet — eine Lücke ist ein Federheber und "
+            "kein Fehler. „Nicht beurteilbar“ ist für den Ausschnitt, nicht für die Bahn: blasse "
+            "Tinte, leerer Kasten, falsche Stelle."
         ),
     },
     "paired": {
@@ -539,9 +613,9 @@ def _emphasise(text: str) -> str:
     return "".join(part if i % 2 == 0 else f"<b>{part}</b>" for i, part in enumerate(parts))
 
 
-def _category_buttons() -> str:
-    """Markup for the six categories plus the modifier, in on-screen order."""
-    ordered = sorted(CATEGORIES, key=lambda c: (_KIND_ORDER[c.kind], CATEGORIES.index(c)))
+def _category_buttons(categories: tuple[Category, ...]) -> str:
+    """Markup for one category set, in on-screen order (solos first, modifier last)."""
+    ordered = sorted(categories, key=lambda c: (_KIND_ORDER[c.kind], categories.index(c)))
     rows = []
     for cat in ordered:
         classes = "cat mod" if cat.kind == "modifier" else "cat"
@@ -567,11 +641,11 @@ def _choice_buttons(choices: tuple[Choice, ...]) -> str:
     return "\n      ".join(rows)
 
 
-def _hint(mode: str, choices: tuple[Choice, ...]) -> str:
+def _hint(mode: str, categories: tuple[Category, ...], choices: tuple[Choice, ...]) -> str:
     if mode == "paired":
         keys = " / ".join(c.keys[0] for c in choices)
         return f"Tasten {keys} · Pfeiltasten · Rücktaste = zurück"
-    keys = [c.key for c in CATEGORIES]
+    keys = [c.key for c in categories]
     return f"Tasten {keys[0]}–{keys[-1]} · Enter = weiter · Rücktaste = zurück"
 
 
@@ -584,8 +658,9 @@ def _resolve_meta(items: list[dict[str, Any]], payload_meta: dict[str, Any], ove
     mode = "paired" if len(items[0]["panels"]) == 2 else "single"
 
     question = str(overrides.get("question") or payload_meta.get("question") or "ink")
-    if question not in QUESTIONS:
-        raise ValueError(f"question {question!r} is not one of {sorted(QUESTIONS)}")
+    known = sorted(set(QUESTIONS) | set(SINGLE_QUESTIONS))
+    if question not in known:
+        raise ValueError(f"question {question!r} is not one of {known}")
     # An envelope that already states its question was written by the BUILDER,
     # which derives it from the arms and records it in `provenance.json` too
     # (`build.py::draws_ink`). Overriding it here would put a different word on
@@ -600,8 +675,13 @@ def _resolve_meta(items: list[dict[str, Any]], payload_meta: dict[str, Any], ove
             "The builder derived that from the arms and the provenance stamp records it; rebuild the round "
             "rather than renaming its question at render time."
         )
-    if mode == "single" and question != "ink":
-        raise ValueError("a category round asks the categories; the two-way questions need two panels")
+    if mode == "single" and question not in SINGLE_QUESTIONS:
+        raise ValueError(
+            f"{question!r} is a two-way question and needs two panels; a one-panel round asks "
+            f"one of {sorted(SINGLE_QUESTIONS)}"
+        )
+    if mode == "paired" and question not in QUESTIONS:
+        raise ValueError(f"{question!r} is judged one panel at a time; a paired round asks one of {sorted(QUESTIONS)}")
     # The question, not just the panel count, decides how the page speaks and
     # what its result file is tagged: two paired rounds on different questions
     # measure different properties and must not be filed as one series (§8).
@@ -655,20 +735,19 @@ def build_page(payload: Any, **overrides: Any) -> str:
     """
     items, payload_meta = normalise(payload)
     meta = _resolve_meta(items, payload_meta, overrides)
-    choices = QUESTIONS[meta.question]
+    categories = SINGLE_QUESTIONS[meta.question] if meta.mode == "single" else ()
+    choices = QUESTIONS[meta.question] if meta.mode == "paired" else ()
     config = {
         "mode": meta.mode,
         "question": meta.question,
         "tag": meta.tag,
         "store": meta.store,
-        "order": [c.code for c in CATEGORIES],
-        "categories": [
-            {"code": c.code, "key": c.key, "kind": c.kind, "tally": c.tally}
-            for c in (CATEGORIES if meta.mode == "single" else ())
-        ],
-        "choices": [
-            {"code": c.code, "keys": list(c.keys), "tally": c.tally} for c in (choices if meta.mode == "paired" else ())
-        ],
+        # The RESULT order of this round's own set: it is the order the verdict
+        # letters are joined in, so taking it from the other set would emit a
+        # verdict string no parser of this round can read back.
+        "order": [c.code for c in categories],
+        "categories": [{"code": c.code, "key": c.key, "kind": c.kind, "tally": c.tally} for c in categories],
+        "choices": [{"code": c.code, "keys": list(c.keys), "tally": c.tally} for c in choices],
     }
     fine = f'<span class="fine"><br>{_emphasise(meta.lede_fine)}</span>' if meta.lede_fine else ""
     replacements = {
@@ -677,8 +756,8 @@ def build_page(payload: Any, **overrides: Any) -> str:
         "__HEADLINE__": html.escape(meta.headline),
         "__LEDE__": _emphasise(meta.lede) + fine,
         "__MODE__": meta.mode,
-        "__HINT__": html.escape(_hint(meta.mode, choices)),
-        "__CATEGORY_BUTTONS__": _category_buttons() if meta.mode == "single" else "",
+        "__HINT__": html.escape(_hint(meta.mode, categories, choices)),
+        "__CATEGORY_BUTTONS__": _category_buttons(categories) if meta.mode == "single" else "",
         "__CHOICE_BUTTONS__": _choice_buttons(choices) if meta.mode == "paired" else "",
         "__CONFIG__": _js_json(config),
         "__ITEMS__": _js_json(items),
@@ -710,12 +789,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--question",
         default="",
-        choices=("", *sorted(QUESTIONS)),
-        help="which paired question is asked: ink = follows the ink better, authentic = looks more "
-        "genuinely written [the payload's own, else ink]; it may not CONTRADICT an envelope that "
-        "already declares one",
+        choices=("", *sorted(set(QUESTIONS) | set(SINGLE_QUESTIONS))),
+        help="which question is asked: paired — ink = follows the ink better, authentic = looks more "
+        "genuinely written; single — ink = the fit categories, tintentreue = the strip calibration "
+        "[the payload's own, else ink]; it may not CONTRADICT an envelope that already declares one",
     )
-    parser.add_argument("--tag", default="", help="result header tag (default BEFUND / VERGLEICH / ECHTHEIT)")
+    parser.add_argument(
+        "--tag", default="", help="result header tag (default BEFUND / VERGLEICH / ECHTHEIT / TINTENTREUE)"
+    )
     parser.add_argument("--title", default="", help="browser tab title (default: the headline)")
     parser.add_argument("--headline", default="", help="the page's own question")
     parser.add_argument("--eyebrow", default="", help="small line above the headline")
@@ -984,7 +1065,11 @@ const PAIRED = CONFIG.mode === 'paired';
 const CATS = CONFIG.categories;
 const CHOICES = CONFIG.choices;
 const SOLO = CATS.filter((c) => c.kind === 'solo').map((c) => c.code);
-const MOD = CATS.filter((c) => c.kind === 'modifier').map((c) => c.code);
+// Everything that COMBINES with a solo instead of replacing it: the „unsicher"
+// modifier, and the `detail` marks of the Tintentreue set, whose solo is the
+// step itself. They are also the codes that do not answer a screen on their
+// own — naming the reason without naming the step is not a verdict.
+const MOD = CATS.filter((c) => c.kind === 'modifier' || c.kind === 'detail').map((c) => c.code);
 const KEYS = {};
 CATS.forEach((c) => { KEYS[c.key] = c.code; });
 CHOICES.forEach((c) => c.keys.forEach((k) => { KEYS[k] = c.code; }));

@@ -710,6 +710,15 @@ Sensor gelesen und grau als „übersprungen: …" beantwortet — beurteilt
 wird nur, was eine Bahn hat. `core/eigenhand/tintentreue.py`.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.3
 
+**Tintentreue-Kalibrierung** *(der Streifen-Modus)* — die EINE blinde Runde
+je Hand, die die geborgten Schwellen durch gemessene ersetzt: 30 Kästen, je
+genau EINE Stufe plus beliebig viele Merkmale, die die Stufe nicht löschen.
+Die Abbildung ist nicht interpretativ, gezogen wird nach der vorläufigen
+Stufe geschichtet (die Prävalenz sagt also nichts über die Hand),
+geschnitten am 90-%-Quantil und strenger gerundet. Die Seite bleibt lokal —
+sie trägt reservierte Pixel. `tools/eigenhand/tintentreue_calibration.py`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · menschliche-bewertung.md §8b
+
 **Offen (Streifen-Kasten)** *(`offen`, `_offen`)* — ob ein Wortkasten noch
 Nachfahr-Arbeit ist, aus der Tintentreue abgeleitet und je Kasten
 mitgeliefert. Erledigt sind genau zwei Zustände: `folgt`, und eine von Hand
