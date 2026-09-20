@@ -693,8 +693,10 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   `pfad --apply` hingegen hält an und nennt den Befehl, mit dem **diese
   Fassung** neu gefolgt und gespeichert wird (ohne `--replace-authored`: was
   inzwischen dort gelandet ist, ist genau das, was ein pauschales Übergehen
-  wieder aufgäbe) — und, wenn der Lauf ohne `--fassung` lief, zusätzlich die
-  Fassungen dahinter, die er nicht mehr erreicht hat. Wiederholt wird nie
+  wieder aufgäbe; mit `--api`, weil die Zeile sonst auf `$EIGENHAND_API` oder
+  die Produktion zurückfiele und eine Übung so ihre eigene Abhilfe auf die
+  echten Daten zeigen würde) — und, wenn der Lauf ohne `--fassung` lief,
+  zusätzlich die Fassungen dahinter, die er nicht mehr erreicht hat. Wiederholt wird nie
   automatisch — derselbe Merge ein zweites Mal gegen die neue Liste geschickt
   wäre genau die verlorene Änderung, die die Marke eben verweigert hat.
 - **`ingest` → `apply --haken`** (Normalfall) bzw. **`ingest` → `page` →

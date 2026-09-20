@@ -102,6 +102,7 @@ for _var in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
 
 import argparse  # noqa: E402
 import json  # noqa: E402
+import shlex  # noqa: E402
 from collections.abc import Mapping  # noqa: E402
 from datetime import date as date_cls  # noqa: E402
 from pathlib import Path  # noqa: E402
@@ -940,8 +941,13 @@ def main(argv: list[str] | None = None) -> int:
                 f"  Nothing of {row['strip']}/{row['fassung']} was stored. The merge above was made on a list "
                 "that has moved since — a box drawn in the workbench, or another run. Follow again; the fresh "
                 "read carries what landed in between:\n"
-                f"    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pfad --hand {hand} "
-                f"--strip {row['strip']} --fassung {row['fassung']}{narrowed} --apply"
+                # The RESOLVED base, named explicitly rather than left to
+                # `--api`'s fallback chain: without it the line re-runs against
+                # `$EIGENHAND_API` or, failing that, production — so a drill
+                # against a throwaway stack would hand the operator a command
+                # that writes to the real database (found in review, this PR).
+                f"    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pfad --api {shlex.quote(base)} "
+                f"--hand {hand} --strip {row['strip']} --fassung {row['fassung']}{narrowed} --apply"
                 + (
                     # The line above is per Fassung, and this run was stopped
                     # part way through the strip. Naming the rest is the

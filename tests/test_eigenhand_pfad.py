@@ -1092,8 +1092,13 @@ class TestFollowerHandover:
         message = str(refused.value)
         assert "moved on since this was read" in message  # the server's own words survive
         # The line is THIS run again, narrowing included — an operator who
-        # followed one box is not told to re-follow the whole row.
-        assert "pfad --hand mn-suetterlin --strip S0001 --fassung F01 --box 0 --apply" in message
+        # followed one box is not told to re-follow the whole row — and it
+        # names the backend that refused rather than letting `--api` fall back
+        # to production, which would point a drill's remedy at the real data.
+        assert (
+            "pfad --api https://example.invalid --hand mn-suetterlin --strip S0001 --fassung F01 --box 0 --apply"
+            in message
+        )
         # Never the destructive flag: whatever landed in between is exactly
         # what a blanket override would give up again.
         assert "--replace-authored" not in message

@@ -5,10 +5,13 @@
   so the server refuses a merge made on a list that has moved (412). What the
   operator got back was the server's words alone — correct, and addressed to a
   client rather than to the person at the keyboard. `tools.eigenhand.pfad
-  --apply` now stops with the exact follow-up run for that Fassung
-  (deliberately without `--replace-authored`: whatever landed in between is
-  precisely what a blanket override would give up again) and, when the run
-  covered a whole strip, names the Fassungen behind it that it never reached.
+  --apply` now stops with the exact follow-up run for that Fassung —
+  deliberately without `--replace-authored` (whatever landed in between is
+  precisely what a blanket override would give up again) and explicitly
+  against the backend that refused, since `--api` otherwise falls back to
+  production and a drill would hand out a remedy aimed at the real data — and,
+  when the run covered a whole strip, names the Fassungen behind it that it
+  never reached.
   `sync --from` counts that Fassung as NOT restored, names it — with the
   server's own line — beside the ones whose strip row is missing, drops its
   „already there"/„left alone" numbers because they were read off the very
