@@ -1561,8 +1561,18 @@ class EigenhandPfadeIn(BaseModel):
     missing box meant.
 
     A push that names no format means „the format this API reads" — bound to
-    the constant rather than written out as 1, so the day the constant moves
-    the default moves with it instead of quietly declaring the old semantics.
+    the constant rather than written out as 1, so the number lives in one place
+    (the redesign books both wire defaults that way, §15.6).
+
+    The catch, and the duty of the PR that bumps the constant: while the write
+    admits exactly ONE format, this default cannot lie, because the only value
+    it can take is the only value the 409 lockstep guard lets through. The
+    moment that guard admits 1 AND 2, a push that names no format would claim
+    the NEWER one and `write_pfade` would stamp the row with it — the same
+    mislabelling the stored marker exists to prevent, moved from the read to
+    the write. Before `PFAD_FORMAT` moves, `format` has to become REQUIRED
+    here. Every writer in the repo already names it (`tools/eigenhand/pfad.py`,
+    `tools/eigenhand/sync.py`, the local seed); only the test helper omits it.
     """
 
     pfade: list[EigenhandPfad]

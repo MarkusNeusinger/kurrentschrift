@@ -109,9 +109,12 @@ def fassung_record(kartei: dict, strip: str, fassung: str) -> dict | None:
 def pfad_record(entries: list[dict], pfad_format: int, pulled_on: str) -> dict:
     """The Kartei envelope around the hand-drawn Bahnen of one Fassung.
 
-    ``pfad_format`` is the API's own ``PFAD_FORMAT`` as it answered with it,
-    not this file's version: the two move independently, and a restore has to
-    declare the entries under the format they were written in.
+    ``pfad_format`` is the Streifen-Pfad format the ROW was answered under
+    (``eigenhand_strips.pfade_format``, migration 0032) — not this file's own
+    version, and not the constant of the API image either: since the read
+    answers from the row, two Fassungen of one hand may legitimately come down
+    under different numbers. The two versions move independently, and a restore
+    has to declare the entries under the format they were written in.
     """
     return {
         "format": PFAD_ARCHIVE_FORMAT,

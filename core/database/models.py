@@ -882,7 +882,10 @@ class EigenhandStrip(Base):
     # state anything could act on, and every row that existed before this
     # column was written under 1. It carries a format even where `pfade` is
     # NULL — a Fassung nobody has followed is a format-1 row waiting for its
-    # first push, which keeps the read free of a second „unknown" branch.
+    # first push, which keeps the read free of a second „unknown" branch, and
+    # which is why „still on the old format" has to be asked as
+    # `pfade_format < PFAD_FORMAT AND pfade IS NOT NULL`: the marker alone
+    # cannot tell an old drawing from no drawing at all.
     # A column of its own instead of an envelope inside `pfade`, so the
     # deferred JSON cell is never rewritten and every reader of it (the tool's
     # merge, the SPA's Rohzahlen) keeps working unchanged.

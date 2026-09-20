@@ -14,7 +14,9 @@
   cell is not rewritten at all this way, and every reader of it keeps working
   untouched. It is deliberately NOT deferred alongside `pfade`: it is one small
   integer, and „which Fassungen still stand on the old format" is a listing
-  question that must not pull a single path to answer.
+  question that must not pull a single path to answer — read together with
+  `pfade`, because a Fassung nobody has followed carries the marker too
+  (`pfade_format < PFAD_FORMAT AND pfade IS NOT NULL`).
 
 ### Changed
 
@@ -24,4 +26,6 @@
   no format still means „the format this API reads" once that number moves.
   Nothing else changes: the write still admits exactly one format and still
   produces only format 1, and it now stamps what it admitted onto the row
-  instead of forgetting it.
+  instead of forgetting it. Noted at the field: the INPUT default has to become
+  a REQUIRED field before the constant is bumped, or a push that names no
+  format would claim the newer number once the lockstep guard admits two.

@@ -4366,7 +4366,9 @@ abgelegtes Fassungs-Verzeichnis ist dagegen eine unveränderliche
 Kopiereinheit, die der Lauf am relativen Pfad überspringt — eine
 nachträglich dort abgelegte Datei käme nie ins Archiv, und der Lauf meldete
 Erfolg. Der Satz trägt ZWEI Versionen: `format` (die Form der Kartei-Zeile)
-und `pfad_format` (das `PFAD_FORMAT`, unter dem die API geantwortet hat);
+und `pfad_format` (das Streifen-Pfad-Format, unter dem die ZEILE geantwortet
+wurde — `eigenhand_strips.pfade_format`, nicht die Konstante des laufenden
+Abbilds, zwei Fassungen einer Hand dürfen also verschieden sein);
 ein Satz in unbekannter Form wird verweigert, nie als „keine Bahn" gelesen
 (unbekannt heißt NEUER, nie älter — eine archivierte Kartei wird nie
 umgeschrieben, eine Verweigerung machte jeden früheren Schnappschuss

@@ -1419,7 +1419,10 @@ Kette, ohne die kein nachgefahrener Kasten entstehen darf. Drei Glieder:
 
 Das abgelegte Artefakt trägt **zwei** Versionen: `format`
 (`PFAD_ARCHIVE_FORMAT`, die Form der Kartei-Zeile) und `pfad_format` (das
-`PFAD_FORMAT`, unter dem die API geantwortet hat) — die erste sagt, wie die
+Streifen-Pfad-Format, unter dem die ZEILE geantwortet wurde —
+`eigenhand_strips.pfade_format` seit `0032`, nicht die Konstante des
+laufenden Abbilds, zwei Fassungen einer Hand dürfen also verschieden
+sein) — die erste sagt, wie die
 Datei zu LESEN ist, die zweite, was die Einträge darin bedeuten, und nur
 mit der zweiten kann ein Restore sie korrekt deklarieren. Ein Satz in einer
 unbekannten Form wird verweigert, nie als „keine Bahn" gelesen — unbekannt
