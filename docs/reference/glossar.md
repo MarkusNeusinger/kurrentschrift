@@ -5008,17 +5008,21 @@ bewusst NICHT `manifest.json` heißt (danach suchen die Lab-Lader), und ein
 Test, der beides pinnt. Kein Byte davon ist je committet; gesichert wird
 nicht der Baum, sondern das, woraus er entsteht (Archiv + DB) — bis auf die
 → Ziehung, die in der → Streifenkartei wohnt. *Technisch:*
-`tools/eigenhand/trainingssatz.py`, Wurzel
-`tools/eigenhand/trainingssaetze/` (Umgebungsvariable
-`EIGENHAND_TRAININGSSATZ`), Test `tests/test_eigenhand_trainingssatz.py`.
+`tools/eigenhand/training_set.py`, Wurzel
+`tools/eigenhand/training-sets/` (Umgebungsvariable
+`EIGENHAND_TRAINING_SET`), Test `tests/test_eigenhand_training_set.py`. Der
+Begriff bleibt deutsch, die Bezeichner sind englisch: „training set" und
+„hold-out set" sind etabliert, und der Bezeichner-Freiraum der
+[Sprachregelung](sprachregelung.md) §5 deckt nur Befund, Tintentreue und
+Laufform.
 → Trainingsmenge; Rückhaltemenge (Eigenhand); reference/werkzeuge.md;
 reference/datenablage.md §1
 
 **Rückhaltemenge (Eigenhand)** *(mit ihrer Ziehung)* — die beiden Teile des
 → Trainingssatzes, die zurückgehalten werden, damit eine Zahl über die
-Eigenhand etwas bedeutet: `rueckhalt-folger` für die Messung einer
-Folger-Verbesserung, `rueckhalt-freigabe` für die Freigabe-Prüfung einer
-Hand; der Rest heißt `uebung`. ZWEI und nicht eine ist ein Autor-Entscheid
+Eigenhand etwas bedeutet: `holdout-follower` für die Messung einer
+Folger-Verbesserung, `holdout-release` für die Freigabe-Prüfung einer
+Hand; der Rest heißt `practice`. ZWEI und nicht eine ist ein Autor-Entscheid
 vom 2026-09-20, der zugleich FM3 der Freigabe-Maschine beantwortet. Die
 **Ziehung** ist ein eigener, einmaliger Akt mit einem Schlüssel: Einheit ist
 der STREIFEN (jede Fassung ist eine Wiederholung derselben Wörter, die
@@ -5035,8 +5039,9 @@ gespeicherte Zugehörigkeit, die der Lauf nicht mehr reproduziert, bricht ab
 wohnt in der `kartei.json` (Entscheid A: sie ist das Einzige, was jeder
 Schnappschuss voll kopiert) und ist das einzige Stück dieses Werkzeugs, das
 nicht neu herstellbar ist. *Technisch:*
-`tools/eigenhand/trainingssatz.py` (`draw` · `satz_of_strip` · `extend` ·
-`rueckhalt_of`, Kartei-Schlüssel `rueckhalt`). → Rückhaltemenge;
+`tools/eigenhand/training_set.py` (`draw` · `set_for_strip` · `extend` ·
+`holdout_of` · `archived_holdout`, Kartei-Schlüssel `holdout`). →
+Rückhaltemenge;
 Trainingssatz (Eigenhand); reference/messjournal.md §14 „Trainingssatz
 `sep20`"; proposals/freigabe-maschine.md (FM3)
 

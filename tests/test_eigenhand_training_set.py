@@ -26,26 +26,26 @@ import numpy as np
 import pytest
 
 from core.config import REPO_ROOT
-from tools.eigenhand import trainingssatz as tool
-from tools.eigenhand.trainingssatz import (
+from tools.eigenhand import training_set as tool
+from tools.eigenhand.training_set import (
+    HOLDOUT_FORMAT,
+    HOLDOUT_SETS,
     MANIFEST_NAME,
-    RUECKHALT_FORMAT,
-    RUECKHALT_SAETZE,
-    SAETZE,
-    SATZ_RUECKHALT_FOLGER,
-    SATZ_RUECKHALT_FREIGABE,
-    SATZ_UEBUNG,
+    SET_HOLDOUT_FOLLOWER,
+    SET_HOLDOUT_RELEASE,
+    SET_PRACTICE,
+    SETS,
     case_id,
     draw,
     export_root,
     extend,
-    rueckhalt_of,
-    satz_of_strip,
+    holdout_of,
+    set_for_strip,
 )
 
 
 HAND = "mn-suetterlin"
-SHARES = {SATZ_RUECKHALT_FOLGER: 0.2, SATZ_RUECKHALT_FREIGABE: 0.2}
+SHARES = {SET_HOLDOUT_FOLLOWER: 0.2, SET_HOLDOUT_RELEASE: 0.2}
 TODAY = "2026-09-20"
 
 # A tiny stand-in for the committed strip plan: the draw walks its strips, and
@@ -76,7 +76,7 @@ STRIP_ROW = {
 def _no_real_archive(monkeypatch):
     """No test here may fall through to the operator's private archive.
 
-    `archived_rueckhalt` reads `$KURRENTSCHRIFT_ARCHIVE` when no path is
+    `archived_holdout` reads `$KURRENTSCHRIFT_ARCHIVE` when no path is
     passed, and on the author's machine that variable points at the real
     clone — which would make these results depend on whose machine runs them.
     The two tests that need an archive build one under `tmp_path`.
@@ -109,7 +109,7 @@ class TestBenchSeparation:
     def _default_root(self, monkeypatch):
         # These pin the SHIPPED default, not whatever an operator happens to
         # have exported in their shell.
-        monkeypatch.delenv("EIGENHAND_TRAININGSSATZ", raising=False)
+        monkeypatch.delenv("EIGENHAND_TRAINING_SET", raising=False)
 
     def test_the_export_root_is_outside_every_bench_fixture_root(self):
         from tools.glyphbench.export_fixtures import DEFAULT_OUT_DIR as GLYPH_EXPORT_DIR
@@ -150,10 +150,10 @@ class TestBenchSeparation:
         from tools.glyphlab.cases import iter_fixture_cases
         from tools.wordlab.cases import fixture_root_for
 
-        root = tmp_path / "trainingssaetze"
-        case = root / HAND / SATZ_UEBUNG / case_id("S0001", "F01", 0)
+        root = tmp_path / "training-sets"
+        case = root / HAND / SET_PRACTICE / case_id("S0001", "F01", 0)
         case.mkdir(parents=True)
-        (case / "bahn.json").write_text("{}", encoding="utf-8")
+        (case / "path.json").write_text("{}", encoding="utf-8")
         (root / HAND / MANIFEST_NAME).write_text("{}", encoding="utf-8")
 
         assert iter_fixture_cases(fixtures_root=root) == []
@@ -184,36 +184,36 @@ class TestBenchSeparation:
 
 class TestZiehung:
     def test_the_draw_covers_every_plan_strip_and_the_sets_are_disjoint(self, tmp_path, monkeypatch):
-        record = _drawn(tmp_path, monkeypatch)["rueckhalt"]
+        record = _drawn(tmp_path, monkeypatch)["holdout"]
         assert set(record["strips"]) == set(SMALL_PLAN["strips"])
-        members = {satz: {s for s, row in record["strips"].items() if row["set"] == satz} for satz in SAETZE}
-        assert members[SATZ_RUECKHALT_FOLGER] & members[SATZ_RUECKHALT_FREIGABE] == set()
-        assert members[SATZ_UEBUNG] & members[SATZ_RUECKHALT_FOLGER] == set()
-        assert members[SATZ_UEBUNG] & members[SATZ_RUECKHALT_FREIGABE] == set()
+        members = {set_name: {s for s, row in record["strips"].items() if row["set"] == set_name} for set_name in SETS}
+        assert members[SET_HOLDOUT_FOLLOWER] & members[SET_HOLDOUT_RELEASE] == set()
+        assert members[SET_PRACTICE] & members[SET_HOLDOUT_FOLLOWER] == set()
+        assert members[SET_PRACTICE] & members[SET_HOLDOUT_RELEASE] == set()
         assert sum(len(m) for m in members.values()) == len(SMALL_PLAN["strips"])
 
     def test_membership_is_a_pure_function_of_key_hand_and_strip(self):
-        first = [satz_of_strip("key-a", HAND, f"S{n:04d}", SHARES) for n in range(1, 60)]
-        again = [satz_of_strip("key-a", HAND, f"S{n:04d}", SHARES) for n in range(1, 60)]
+        first = [set_for_strip("key-a", HAND, f"S{n:04d}", SHARES) for n in range(1, 60)]
+        again = [set_for_strip("key-a", HAND, f"S{n:04d}", SHARES) for n in range(1, 60)]
         assert first == again
         # Another key, and another hand under the same key, hold back other
         # strips — otherwise two hands would share one hold-out set by accident.
-        assert first != [satz_of_strip("key-b", HAND, f"S{n:04d}", SHARES) for n in range(1, 60)]
-        assert first != [satz_of_strip("key-a", "xy-kurrent", f"S{n:04d}", SHARES) for n in range(1, 60)]
+        assert first != [set_for_strip("key-b", HAND, f"S{n:04d}", SHARES) for n in range(1, 60)]
+        assert first != [set_for_strip("key-a", "xy-kurrent", f"S{n:04d}", SHARES) for n in range(1, 60)]
 
     def test_the_shares_land_roughly_where_they_were_asked_to(self):
-        drawn = [satz_of_strip("key-a", HAND, f"S{n:04d}", SHARES) for n in range(1, 1001)]
-        for satz in RUECKHALT_SAETZE:
-            assert 0.15 < drawn.count(satz) / len(drawn) < 0.25
+        drawn = [set_for_strip("key-a", HAND, f"S{n:04d}", SHARES) for n in range(1, 1001)]
+        for set_name in HOLDOUT_SETS:
+            assert 0.15 < drawn.count(set_name) / len(drawn) < 0.25
 
-    def test_the_order_of_the_two_rueckhalt_sets_is_part_of_the_draw(self):
+    def test_the_order_of_the_two_holdout_sets_is_part_of_the_draw(self):
         # Swapping the tuple would re-assign every strip in the band between the
         # two shares, silently and for material already trained on.
-        assert RUECKHALT_SAETZE == (SATZ_RUECKHALT_FOLGER, SATZ_RUECKHALT_FREIGABE)
-        lopsided = {SATZ_RUECKHALT_FOLGER: 0.9 - 0.5, SATZ_RUECKHALT_FREIGABE: 0.1}
-        swapped = {SATZ_RUECKHALT_FREIGABE: 0.4, SATZ_RUECKHALT_FOLGER: 0.1}
-        assert [satz_of_strip("k", HAND, f"S{n:04d}", lopsided) for n in range(1, 50)] != [
-            satz_of_strip("k", HAND, f"S{n:04d}", swapped) for n in range(1, 50)
+        assert HOLDOUT_SETS == (SET_HOLDOUT_FOLLOWER, SET_HOLDOUT_RELEASE)
+        lopsided = {SET_HOLDOUT_FOLLOWER: 0.9 - 0.5, SET_HOLDOUT_RELEASE: 0.1}
+        swapped = {SET_HOLDOUT_RELEASE: 0.4, SET_HOLDOUT_FOLLOWER: 0.1}
+        assert [set_for_strip("k", HAND, f"S{n:04d}", lopsided) for n in range(1, 50)] != [
+            set_for_strip("k", HAND, f"S{n:04d}", swapped) for n in range(1, 50)
         ]
 
     def test_a_second_draw_is_refused_and_names_the_first(self, tmp_path, monkeypatch):
@@ -226,8 +226,8 @@ class TestZiehung:
         monkeypatch.setattr(tool, "load_plan", lambda *_a: SMALL_PLAN)
         kartei = _kartei(tmp_path, monkeypatch)
         with pytest.raises(SystemExit):
-            draw(HAND, kartei, "k", {SATZ_RUECKHALT_FOLGER: 0.6, SATZ_RUECKHALT_FREIGABE: 0.5}, TODAY)
-        for bad in ({SATZ_RUECKHALT_FOLGER: 0.0, SATZ_RUECKHALT_FREIGABE: 0.2}, {SATZ_RUECKHALT_FOLGER: 0.2}):
+            draw(HAND, kartei, "k", {SET_HOLDOUT_FOLLOWER: 0.6, SET_HOLDOUT_RELEASE: 0.5}, TODAY)
+        for bad in ({SET_HOLDOUT_FOLLOWER: 0.0, SET_HOLDOUT_RELEASE: 0.2}, {SET_HOLDOUT_FOLLOWER: 0.2}):
             with pytest.raises(SystemExit):
                 draw(HAND, kartei, "k", bad, TODAY)
 
@@ -248,25 +248,25 @@ class TestZiehung:
 
 class TestRueckhaltRecord:
     def test_no_record_reads_as_no_draw(self):
-        assert rueckhalt_of({}) is None
+        assert holdout_of({}) is None
 
     def test_a_newer_record_is_refused_rather_than_read_as_empty(self):
         with pytest.raises(SystemExit) as exc:
-            rueckhalt_of({"rueckhalt": {"format": RUECKHALT_FORMAT + 1, "strips": {}}})
+            holdout_of({"holdout": {"format": HOLDOUT_FORMAT + 1, "strips": {}}})
         assert "NEWER" in str(exc.value)
 
     def test_a_record_naming_an_unknown_set_is_refused(self):
-        record = {"format": RUECKHALT_FORMAT, "strips": {"S0001": {"set": "irgendwas"}}}
+        record = {"format": HOLDOUT_FORMAT, "strips": {"S0001": {"set": "irgendwas"}}}
         with pytest.raises(SystemExit):
-            rueckhalt_of({"rueckhalt": record})
+            holdout_of({"holdout": record})
 
     def test_a_strip_appended_to_the_plan_later_joins_under_the_recorded_key(self, tmp_path, monkeypatch):
         kartei = _drawn(tmp_path, monkeypatch)
-        record = kartei["rueckhalt"]
+        record = kartei["holdout"]
         grown = {"strips": {**SMALL_PLAN["strips"], "S0199": {"words": ["neu"]}}}
         monkeypatch.setattr(tool, "load_plan", lambda *_a: grown)
         added = extend(HAND, record, "2026-11-02")
-        assert added == [("S0199", satz_of_strip("key-a", HAND, "S0199", SHARES))]
+        assert added == [("S0199", set_for_strip("key-a", HAND, "S0199", SHARES))]
         assert record["strips"]["S0199"]["since"] == "2026-11-02"
         # And the strips that were already there keep both their side and the
         # date they joined on — a later run never re-dates a membership.
@@ -276,7 +276,7 @@ class TestRueckhaltRecord:
     def test_a_draw_filed_in_the_archive_blocks_a_second_one_after_a_lost_data_root(self, tmp_path, monkeypatch):
         # `sync --from` pushes an archived Kartei UP to the API and never
         # writes the local one, so a lost data root would otherwise let
-        # `--ziehen` draw a second time over a hand the archive already knows.
+        # `--draw` draw a second time over a hand the archive already knows.
         from tools.eigenhand.snapshot import ARCHIVE_SUBDIR
 
         drawn = _drawn(tmp_path, monkeypatch)
@@ -285,11 +285,11 @@ class TestRueckhaltRecord:
         filed.mkdir(parents=True)
         (filed / "kartei.json").write_text(json.dumps(drawn, ensure_ascii=False), encoding="utf-8")
 
-        found = tool.archived_rueckhalt(HAND, str(archive))
+        found = tool.archived_holdout(HAND, str(archive))
         assert found is not None and found[0]["key"] == "key-a" and found[1] == filed
         # A hand the archive does not know reads as „no draw filed", not as an error.
-        assert tool.archived_rueckhalt("xy-kurrent", str(archive)) is None
-        assert tool.archived_rueckhalt(HAND, None) is None
+        assert tool.archived_holdout("xy-kurrent", str(archive)) is None
+        assert tool.archived_holdout(HAND, None) is None
 
         with pytest.raises(SystemExit) as exc:
             tool._refuse_if_archived(HAND, str(archive))
@@ -298,7 +298,7 @@ class TestRueckhaltRecord:
         newer = archive / ARCHIVE_SUBDIR / HAND / "2026-11-02-0900"
         newer.mkdir(parents=True)
         (newer / "kartei.json").write_text(json.dumps(drawn, ensure_ascii=False), encoding="utf-8")
-        assert tool.archived_rueckhalt(HAND, str(archive))[1] == newer
+        assert tool.archived_holdout(HAND, str(archive))[1] == newer
 
     def test_an_export_without_a_local_draw_names_the_archived_one_instead_of_ziehen(self, tmp_path, monkeypatch):
         from tools.eigenhand.snapshot import ARCHIVE_SUBDIR
@@ -313,14 +313,14 @@ class TestRueckhaltRecord:
 
         with pytest.raises(SystemExit) as exc:
             tool.export(HAND, "https://example.invalid", "token", tmp_path / "out", TODAY, archive=str(archive))
-        assert "--ziehen" not in str(exc.value)
+        assert "--draw" not in str(exc.value)
         assert "ARCHIVE does" in str(exc.value)
 
     def test_a_recorded_membership_the_rule_no_longer_reproduces_stops_the_run(self, tmp_path, monkeypatch):
         kartei = _drawn(tmp_path, monkeypatch)
-        record = kartei["rueckhalt"]
-        moved = next(s for s, row in record["strips"].items() if row["set"] == SATZ_UEBUNG)
-        record["strips"][moved]["set"] = SATZ_RUECKHALT_FREIGABE
+        record = kartei["holdout"]
+        moved = next(s for s, row in record["strips"].items() if row["set"] == SET_PRACTICE)
+        record["strips"][moved]["set"] = SET_HOLDOUT_RELEASE
         with pytest.raises(SystemExit) as exc:
             extend(HAND, record, TODAY)
         assert moved in str(exc.value) and "authority" in str(exc.value)
@@ -405,42 +405,42 @@ class TestExport:
         _kartei(tmp_path, monkeypatch)
         with pytest.raises(SystemExit) as exc:
             tool.export(HAND, "https://example.invalid", "token", tmp_path / "out", TODAY)
-        assert "--ziehen" in str(exc.value)
+        assert "--draw" in str(exc.value)
 
     def test_a_drawn_box_lands_in_its_set_with_its_two_planes(self, tmp_path, monkeypatch):
         from tools.eigenhand.kartei import save_kartei
 
         kartei = _drawn(tmp_path, monkeypatch)
         save_kartei(HAND, kartei)
-        satz = kartei["rueckhalt"]["strips"]["S0001"]["set"]
+        set_name = kartei["holdout"]["strips"]["S0001"]["set"]
         _stub_api(
             monkeypatch, fassungen=[{"strip": "S0001", "fassung": "F01", "status": "angenommen"}], pfade=[_entry()]
         )
         out = tmp_path / "out"
         assert tool.export(HAND, "https://example.invalid", "token", out, TODAY) == 1
 
-        case = out / satz / case_id("S0001", "F01", 0)
-        payload = json.loads((case / "bahn.json").read_text(encoding="utf-8"))
-        assert payload["set"] == satz
-        assert payload["gezeichnet"] is True
-        assert payload["grenzen_von_hand"] == 1
+        case = out / set_name / case_id("S0001", "F01", 0)
+        payload = json.loads((case / "path.json").read_text(encoding="utf-8"))
+        assert payload["set"] == set_name
+        assert payload["drawn"] is True
+        assert payload["authored_boundaries"] == 1
         assert payload["strokes"] == _entry()["strokes"]
         # The ROW's own Streifen-Pfad format travels beside this file's
         # envelope version: without it „no corrected boundaries" and „written
         # before `letter_spans` existed" are the same picture.
         assert payload["pfad_format"] == 2
-        assert payload["format"] == tool.TRAININGSSATZ_FORMAT
+        assert payload["format"] == tool.TRAINING_SET_FORMAT
         # The shaped slots travel because `letter_spans[].slot` counts into
         # them; without the slot list a corrected boundary is an index into
         # nothing.
         assert [slot["text"] for slot in payload["slots"]] == list("lesen")
         assert payload["unauthored_glyphs"]
-        assert (case / "kasten.png").exists() and (case / "tinte.png").exists()
+        assert (case / "crop.png").exists() and (case / "ink.png").exists()
 
         manifest = json.loads((out / MANIFEST_NAME).read_text(encoding="utf-8"))
-        assert manifest["saetze"][satz]["faelle"] == 1
-        assert manifest["rueckhalt"]["key"] == "key-a"
-        assert "Prüfstein 2" in manifest["hinweis"]
+        assert manifest["sets"][set_name]["cases"] == 1
+        assert manifest["holdout"]["key"] == "key-a"
+        assert "Prüfstein 2" in manifest["note"]
         # The guard of the separation test, checked on the real tree this time.
         assert not list(out.rglob("manifest.json"))
 
@@ -449,13 +449,13 @@ class TestExport:
 
         kartei = _drawn(tmp_path, monkeypatch)
         save_kartei(HAND, kartei)
-        satz = kartei["rueckhalt"]["strips"]["S0001"]["set"]
+        set_name = kartei["holdout"]["strips"]["S0001"]["set"]
         out = tmp_path / "out"
         _stub_api(
             monkeypatch, fassungen=[{"strip": "S0001", "fassung": "F01", "status": "angenommen"}], pfade=[_entry()]
         )
         tool.export(HAND, "https://example.invalid", "token", out, TODAY)
-        assert (out / satz / case_id("S0001", "F01", 0)).is_dir()
+        assert (out / set_name / case_id("S0001", "F01", 0)).is_dir()
 
         # `redo --retire` withdrew it: the status comes from the archive read,
         # and a first run that filed it must not keep it filed forever.
@@ -463,32 +463,32 @@ class TestExport:
             monkeypatch, fassungen=[{"strip": "S0001", "fassung": "F01", "status": "zurueckgezogen"}], pfade=[_entry()]
         )
         assert tool.export(HAND, "https://example.invalid", "token", out, "2026-09-22") == 0
-        assert not (out / satz / case_id("S0001", "F01", 0)).exists()
+        assert not (out / set_name / case_id("S0001", "F01", 0)).exists()
         manifest = json.loads((out / MANIFEST_NAME).read_text(encoding="utf-8"))
-        assert manifest["uebersprungen"]["nicht_angenommen"] == 1
+        assert manifest["skipped"]["not_accepted"] == 1
 
     def test_pruning_refuses_to_touch_a_tree_this_tool_did_not_write(self, tmp_path):
         # The one delete path in the family, and the guard that keeps a mistyped
         # `--out` from finding anything to destroy.
         foreign = tmp_path / "somebody-elses"
-        (foreign / SATZ_UEBUNG / "keep-me").mkdir(parents=True)
+        (foreign / SET_PRACTICE / "keep-me").mkdir(parents=True)
         assert tool._prune(foreign, set(), HAND) == []
-        assert (foreign / SATZ_UEBUNG / "keep-me").is_dir()
+        assert (foreign / SET_PRACTICE / "keep-me").is_dir()
 
     def test_a_second_hand_into_one_out_is_refused_before_anything_is_cut(self, tmp_path, monkeypatch):
         # A case id names no hand, so two hands in one directory interleave in
-        # the same `<satz>/` folders and each run prunes the other's cases away.
+        # the same `<set_name>/` folders and each run prunes the other's cases away.
         from tools.eigenhand.kartei import save_kartei
 
         kartei = _drawn(tmp_path, monkeypatch)
         save_kartei(HAND, kartei)
-        satz = kartei["rueckhalt"]["strips"]["S0001"]["set"]
+        set_name = kartei["holdout"]["strips"]["S0001"]["set"]
         out = tmp_path / "shared"
         _stub_api(
             monkeypatch, fassungen=[{"strip": "S0001", "fassung": "F01", "status": "angenommen"}], pfade=[_entry()]
         )
         tool.export(HAND, "https://example.invalid", "token", out, TODAY)
-        mine = out / satz / case_id("S0001", "F01", 0)
+        mine = out / set_name / case_id("S0001", "F01", 0)
         assert mine.is_dir()
 
         with pytest.raises(SystemExit) as exc:

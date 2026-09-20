@@ -799,13 +799,16 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   BLAS-Fäden
   pinnt das Modul selbst (Vorgabewerte), weil die Kettenlösung sonst je nach
   Umgebung anders läuft.
-- **`trainingssatz`** — der lokale, gitignorte **Trainingssatz** der von Hand
+- **`training_set`** — der lokale, gitignorte **Trainingssatz** der von Hand
   nachgefahrenen Bahnen (Autor-Zusatz zu Q4: „die hand nachgefahrenen linien
   dienen auch als trainingsmenge um den folger nachhaltig immer besser zu
-  machen"). Zwei Befehle. **`--ziehen <Schlüssel>`** zieht EINMAL je Hand die
+  machen"). Der Begriff bleibt deutsch, die Bezeichner sind englisch —
+  „training set" und „hold-out set" sind etabliert
+  ([sprachregelung.md](sprachregelung.md) §5).
+  Zwei Befehle. **`--draw <Schlüssel>`** zieht EINMAL je Hand die
   zwei getrennten **Rückhaltemengen** (Autor-Entscheid 2026-09-20, zugleich die
-  Antwort auf FM3): `rueckhalt-folger` für die Folger-Arbeit,
-  `rueckhalt-freigabe` für die Freigabe-Prüfung, der Rest ist `uebung`. Gezogen
+  Antwort auf FM3): `holdout-follower` für die Folger-Arbeit,
+  `holdout-release` für die Freigabe-Prüfung, der Rest ist `practice`. Gezogen
   wird über die STREIFEN des eingefrorenen Plans — ohne Netz, ohne eine einzige
   Bahn, also am besten VOR der ersten; die Zugehörigkeit ist eine reine
   Funktion aus Schlüssel, Hand und Streifen-ID, ein später angehängter Streifen
@@ -829,12 +832,12 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   neben dem eigenen Hüllen-Format auch das `pfad_format` der ZEILE — sonst
   sähe „keine Grenzen von Hand" genauso aus wie „vor `letter_spans`
   geschrieben". Wurzel
-  `tools/eigenhand/trainingssaetze/`, gitignored, **kein Mess-Satz**: ein
+  `tools/eigenhand/training-sets/`, gitignored, **kein Mess-Satz**: ein
   Streifen hat keine Referenzspur (Prüfstein 2), darum heißt das Manifest
   bewusst nicht `manifest.json` und ein Test pinnt die Trennung von den
   Bench-Wurzeln. Zwei Verweigerungen schützen die Zusage „kein Byte im
   Repo": ein Ziel INNERHALB des Checkouts, das die eine gitignore-Regel
-  nicht deckt (`--out .`, `EIGENHAND_TRAININGSSATZ`), und eine zweite Hand
+  nicht deckt (`--out .`, `EIGENHAND_TRAINING_SET`), und eine zweite Hand
   in demselben `--out` — dort würden sich die Läufe gegenseitig die Fälle
   wegräumen, weil eine Fall-ID keine Hand trägt. Vorregistrierung der Ziehung:
   [`messjournal.md`](messjournal.md) §14 „Trainingssatz `sep20`".

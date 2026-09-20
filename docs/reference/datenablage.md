@@ -94,7 +94,7 @@ Drei Committ-Klassen, scharf getrennt:
   einen Schnitt aus schon geregelten. Es sind die Bench-Fixture-Wurzeln
   (`/tools/{glyph,word}bench/fixtures`, aus der DB exportiert) und seit
   2026-09-20 der **Trainingssatz** der von Hand nachgefahrenen Bahnen
-  (`/tools/eigenhand/trainingssaetze`, `tools/eigenhand/trainingssatz.py`).
+  (`/tools/eigenhand/training-sets`, `tools/eigenhand/training_set.py`).
   Beide sind doppelt reserviert — Eigenhand-Pixel plus gelernter Datensatz —
   und beide sind aus Archiv und Datenbank neu herstellbar; committet wird
   deshalb nie ein Byte, gesichert wird nicht der Baum, sondern das, woraus

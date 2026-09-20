@@ -248,7 +248,7 @@ die DB) — mit seiner Bedingung.
 | sep12 | Tintenpfad/Kette | [Tintenpfad-Adoption — die formale Runde auf der frischen Wurzel (A45)](#tintenpfad-adoption-sep12--die-formale-runde-auf-der-frischen-wurzel-der-tintenpfad-wird-standard-folger-a45) | Adoption · **adoptiert (A45)** · dazu eine Wurzel-Zeile ohne bewegte Headline | Ein Knopf: Folger-Wechsel Kette v5 → Tintenpfad mit den acht erklärten Schaltern, vorregistriert vor der ersten Zahl, BLAS gepinnt, Wurzel `c7f2efd9cf37…` (2026-09-12T21:33:43+00:00). Die Wurzel reproduziert die `sep10`-Headline ziffernidentisch (0,108339 / 0,148236) — neue Identität, keine Re-Baseline; der Substrat-Pin der 13 Schleifenzeilen kommt unverändert heraus. dev-19: Basis (neu gemessen) 0,045772 · 0,088356 · 0,7660 gegen Arm **0,038351 · 0,048012 · 0,7929**, gepaart **15 : 4** (Δ-Median −0,008311, p 0,019); die Vorgabe ohne die acht (`--legacy-p6`) 0,045033 · 0,090673 · 0,7867 und 7 : 12 — die Schalter SIND der Unterschied. Zähler: `cross_spurious` 10 → 3, `retrace_missing` 7 → 0, `lift_delta_total` 6 → 0, `overlap_cand` 4 → 0, Absorption 89 → 35; dagegen `cross_missing` 12 → 13. Sensoren über 63, gegen die BASIS: Papier-Umkehrungen Maske 44 → **0** (grau 49 → 3), Papier-Strecke Maske 55,57 → 1,20 xh, schlimmster Ausflug 0,323 → 0,091 xh; gegen die VORGABE, weil die Kette den Zähler gar nicht führt: Roh-Knick 10,24° → 8,17°. k0: Soll-Abstand 81 → 80, aiou-Median +0,0520 über 63 bewegte Wörter, **Gate (4) aber nicht verwertbar** — die Stack-Warnung fällt, weil der Tintenpfad keinen Struktur-Wächter hat, der Sensor auf einem Folger-PAAR also konstruktionsbedingt blind ist; das Kill-Kriterium war so zu weit geschrieben, das Verdikt hängt an den Gates (1)–(3), und die strenge Lesart liegt beim Autor. Nebenbei: `ink_bridge_xh=1.0` testet 7 Lücken und brückt **null** — auf dieser Wurzel inert, bleibt als Lesung |
 | sep13 | Tintenpfad | [Laufform A48 — die Saat-Korrespondenz](#laufform-a48-sep13--die-saat-korrespondenz-die-zuordnung-trägt-die-zeile-nicht) | Pre-Reg + gemessen · **ehrliches Negativ** an Gate (G) · Mechanismus bestätigt, nichts adoptiert | Weg (1) der §7.11-Zeile „Vorkommen aus der Tintenpfad-Bahn" (Autor-Entscheid **A48**): die Anker über die SAAT zuordnen statt über die Bogenlänge. Ein Knopf `harvest --occurrences {fit,tintenpfad}`, Vorgabe `fit` (ausgelieferter Stand byte-gleich, Wort-Records bis auf `seconds`). **Die Zuordnung trägt:** Gate (K), wie vorregistriert über die KÖRPER-ITEMS gelesen, steht bei **328 von 334 = 98,2 %** (Schranke 80 %; durchgehend bewiesen 88,9 %, über die Item-Punkte 98,8 %, Beweis-Reste Median 8,0e-15 je Slot, max 1,03e-13) — das dritte Glied der Kette ist das einzige, über das `core/compose.py` nicht Buch führt, und es wird je Punkt BEWIESEN statt geschätzt, lokal, weil der `d`-Anstieg stückweise affin ist. Daneben, und KEINE Gate-Zahl: die Identifikation greift auf **277 von 277** Slots, gesetzt werden **92,5 %** aller Anker (30 736 / 33 240) — die Anker-Quote zählt eine andere Frage, und die 2 504 fehlenden sind nachgezählt: **85,2 %** liegen gar nicht erst im komponierten Item (weggeschnitten), 14,5 % sind beweis-bedingt, **0,3 %** scheitern an der Saat. (G) fällt damit an der Schere, nicht am Beweis und nicht an der Saat. **Die Zeile trägt nicht:** die Komposition schneidet die Kopplungs-Enden weg, es fehlen **7,5 %** aller Anker (2 504 / 33 240; Median-Slot 7 von 120, die 212 unvollständigen 9), nur 65 Slots sind vollständig, und die Ganz-oder-gar-nicht-Regel lässt **58 von 277** Vorkommen übrig (Fit-Kontrolle desselben Laufs 227), Zeilen mit n ≥ 4 **5 statt 16**. Gate (F) grün (zwei Ernten byte-gleich, Diagnose nur in `seconds` verschieden), (J) grün (`core/` unberührt, 2 903 Tests mit den lokalen Fixtures, 2 892 ohne). Gate (H): Anker-Abstand zur schlüsselgleichen Kontrollkarte Median **0,0523 xh** (p90 0,1328, max 0,2891), auf den 58 gemeinsamen Vorkommen 0,0542 / 0,1436 / 0,5235 — weit über dem Ableseboden. Gate (I) asymmetrisch: gegen die stehende Karte Wörter **0,104883** (−0,003456, grün) und Paare 0,149306 (+0,001070, **rot** bei Schranke +0,0005, kein Kill); gegen die KONTROLLE auf gleicher Schlüsselmenge (0,108951 / 0,148119) Wörter −0,004068 bei **31 : 21 : 44** gepaart — mit dem Vorbehalt, dass die Arm-Zeilen auf viel weniger Vorkommen stehen (`e` n = 3 gegen 30). Rettungswege: die geschnittenen Enden fitten (Weg 2), oder `core/compose.py` einen Abtastindex mitführen lassen (Autor-Entscheid) |
 | sep20 | Eigenhand | [Tintentreue — vorläufige Schwellen](#tintentreue-sep20--vorregistrierung-der-vorläufigen-schwellen-je-kasten) | Pre-Reg · **nichts adoptiert** | Die Ampel je Wortkasten (`core/eigenhand/tintentreue.py`): drei gemessene Stufen, ein grauer Zustand mit Grund, der schlechteste Sensor entscheidet (`severity = max` + `SENSOR_ORDER`, nicht `_summarise`). Acht Startwerte samt Herkunft, alle an der PLATTE bzw. dev-19 geborgt und als „vorläufig" etikettiert, bis die EINE blinde Kalibrierung je Hand läuft (Q10 b); Format-1-Zeilen bleiben grau, `jumps`/`hairpins` bewerten mangels Anker nicht. Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile; kein Lineal bewegt, keine Wurzel angefasst |
-| sep20 | Eigenhand | [Trainingssatz — zwei Rückhaltemengen](#trainingssatz-sep20--vorregistrierung-der-zwei-rückhaltemengen) | Pre-Reg · **nichts gezogen, nichts gemessen** | Die Ziehung, nach der `tools/eigenhand/trainingssatz.py` die von Hand nachgefahrenen Bahnen teilt: `uebung` + ZWEI getrennte Rückhaltemengen (`rueckhalt-folger`, `rueckhalt-freigabe`) — Autor-Entscheid vom 2026-09-20 gegen die Plan-Empfehlung, und damit zugleich FM3 (b). Einheit ist der STREIFEN (Fassungen sind Wiederholungen, Kästen einer Zeile ein Zug); die Zugehörigkeit ist eine reine Funktion aus Schlüssel, Hand und Streifen-ID, gezogen über den EINGEFRORENEN Plan — ohne Netz, ohne eine einzige Bahn, ein zweites Ziehen verweigert, ein später angehängter Streifen wird mit Datum nachgetragen. Fünf Gates für den Tag der ersten Zahl (eigene Vorregistrierung · einmaliger Verbrauch · die beiden Mengen sehen einander nicht · keine Bench-Berührung · kein Byte im Repo). Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
+| sep20 | Eigenhand | [Trainingssatz — zwei Rückhaltemengen](#trainingssatz-sep20--vorregistrierung-der-zwei-rückhaltemengen) | Pre-Reg · **nichts gezogen, nichts gemessen** | Die Ziehung, nach der `tools/eigenhand/training_set.py` die von Hand nachgefahrenen Bahnen teilt: `practice` + ZWEI getrennte Rückhaltemengen (`holdout-follower`, `holdout-release`) — Autor-Entscheid vom 2026-09-20 gegen die Plan-Empfehlung, und damit zugleich FM3 (b). Einheit ist der STREIFEN (Fassungen sind Wiederholungen, Kästen einer Zeile ein Zug); die Zugehörigkeit ist eine reine Funktion aus Schlüssel, Hand und Streifen-ID, gezogen über den EINGEFRORENEN Plan — ohne Netz, ohne eine einzige Bahn, ein zweites Ziehen verweigert, ein später angehängter Streifen wird mit Datum nachgetragen. Fünf Gates für den Tag der ersten Zahl (eigene Vorregistrierung · einmaliger Verbrauch · die beiden Mengen sehen einander nicht · keine Bench-Berührung · kein Byte im Repo). Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -17676,7 +17676,7 @@ festhält, wie `shaping_cases.json` es für die beiden Shaper tut.
 Vorregistrierung VOR der ersten Bahn (die §11b-Praxis) — und das ist hier
 wörtlich gemeint: am Tag dieses Eintrags existiert **keine einzige** von Hand
 nachgefahrene Bahn. Gegenstand ist die **Ziehung**, mit der
-`tools/eigenhand/trainingssatz.py` das Material einer Hand in einen
+`tools/eigenhand/training_set.py` das Material einer Hand in einen
 Übungsteil und ZWEI getrennte Rückhaltemengen teilt. **Nichts gemessen,
 nichts adoptiert, keine Zahl** — und auch nicht gezogen: die Ziehung selbst
 ist ein Handgriff des Autors am Terminal, dieser Eintrag ist nur die Regel,
@@ -17716,15 +17716,15 @@ Kalibrierrunde darf das nachzählen.
 
 | Satz | Anteil | wofür er verbraucht wird |
 |---|---|---|
-| `uebung` | der Rest (bei den Vorgabewerten ≈ 0,60) | alles, woran gebaut und entwickelt wird |
-| `rueckhalt-folger` | 0,20 | die Messung einer Folger-Verbesserung an der Eigenhand — und nichts sonst |
-| `rueckhalt-freigabe` | 0,20 | die Freigabe-Prüfung einer Hand (FM3) — und nichts sonst |
+| `practice` | der Rest (bei den Vorgabewerten ≈ 0,60) | alles, woran gebaut und entwickelt wird |
+| `holdout-follower` | 0,20 | die Messung einer Folger-Verbesserung an der Eigenhand — und nichts sonst |
+| `holdout-release` | 0,20 | die Freigabe-Prüfung einer Hand (FM3) — und nichts sonst |
 
 **Die Regel, in drei Sätzen.** (1) Die Zugehörigkeit eines Streifens ist eine
 reine Funktion aus Ziehungs-**Schlüssel**, Hand-ID und Streifen-ID: ein
 sha256 über die drei, gelesen als Los in [0, 1), das in den ersten Satz
 fällt, dessen kumulierten Anteil es unterschreitet (Reihenfolge
-`rueckhalt-folger` → `rueckhalt-freigabe` → `uebung`, im Test gepinnt, weil
+`holdout-follower` → `holdout-release` → `practice`, im Test gepinnt, weil
 ein Vertauschen jeden Streifen im Band dazwischen still umhängte). (2)
 Gezogen wird über die Streifen des EINGEFRORENEN Plans, also ohne Netz und
 ohne eine einzige Bahn — die Ziehung schreibt jede Zugehörigkeit mit Datum
@@ -17760,8 +17760,8 @@ humanbench-Rückhaltemenge mit Runde 02 (§10 in
 [`qualitaetsmetrik.md`](qualitaetsmetrik.md)): eine zweite Messung auf
 derselben Menge ist ein Bestätigungssatz, der keiner mehr ist. *Kill:* eine
 zweite Zahl auf demselben Satz zählt als Übungszahl und trägt kein Verdikt.
-**(C) Die beiden Mengen sehen einander nicht.** Was `rueckhalt-folger`
-misst, erreicht `rueckhalt-freigabe` nie und umgekehrt. *Kill:* jede Messung
+**(C) Die beiden Mengen sehen einander nicht.** Was `holdout-follower`
+misst, erreicht `holdout-release` nie und umgekehrt. *Kill:* jede Messung
 über beide zusammen. **(D) Keine Bench-Berührung.** Kein Wert aus diesem
 Baum erscheint je in einem Bench-Report, und keine Bench-Wurzel zeigt
 hierher: ein Streifen hat keine Referenzspur (§12, Prüfstein 2). *Kill:*
@@ -17784,6 +17784,6 @@ Streifen genug Handarbeit trägt, um überhaupt in einer Rückhaltemenge zu
 zählen, ebenfalls. Geprüft ist hier allein die REGEL — Determinismus,
 Disjunktheit, die Verweigerung des zweiten Ziehens, der Nachtrag eines neuen
 Streifens, der Statusfilter und die Trennung von den Bench-Wurzeln — gegen
-`tests/test_eigenhand_trainingssatz.py`. Der echte Export ist lokal nicht
+`tests/test_eigenhand_training_set.py`. Der echte Export ist lokal nicht
 lauffähig: er zieht reservierte Pixel aus der geteilten Datenbank, und es
 gibt noch keine einzige Bahn, die er ziehen könnte.

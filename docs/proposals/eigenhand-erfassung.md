@@ -45,7 +45,7 @@
 > können `PFAD_FORMAT` 1 und 2 nebeneinander liegen; geschrieben wird
 > weiterhin nur Format 1. Am Ende derselben Phase steht der **Trainingssatz**
 > (§7.5): die von Hand nachgefahrenen Bahnen als lokaler, gitignorter Export
-> (`tools/eigenhand/trainingssatz.py`), geteilt in `uebung` und ZWEI getrennte
+> (`tools/eigenhand/training_set.py`), geteilt in `practice` und ZWEI getrennte
 > Rückhaltemengen — Autor-Entscheid vom 2026-09-20, der zugleich FM3 der
 > [Freigabe-Maschine](freigabe-maschine.md) beantwortet. Die Ziehung ist ein
 > eigener, einmaliger Akt über den eingefrorenen Streifenplan; vorregistriert
@@ -1379,10 +1379,10 @@ gegen die Empfehlung des Phase-2-Plans und zugleich die Antwort auf FM3 der
 [Freigabe-Maschine](freigabe-maschine.md)): eine für die Verbesserung des
 Folgers, eine für die Freigabe-Prüfung einer Hand. Der Satz oben bleibt
 sonst Wort für Wort gültig, nur „einer Rückhaltemenge" heißt jetzt
-`rueckhalt-folger` **und** `rueckhalt-freigabe`, disjunkt, der Rest ist
-`uebung`. **Gebaut ist der Export seit dem 2026-09-20**
-(`tools/eigenhand/trainingssatz.py`, Wurzel
-`tools/eigenhand/trainingssaetze/`, gitignored): er schneidet jeden Kasten
+`holdout-follower` **und** `holdout-release`, disjunkt, der Rest ist
+`practice`. **Gebaut ist der Export seit dem 2026-09-20**
+(`tools/eigenhand/training_set.py`, Wurzel
+`tools/eigenhand/training-sets/`, gitignored): er schneidet jeden Kasten
 mit Handarbeit so heraus, wie der Folger ihn liest, filtert über den
 Archiv-Read auf `angenommen` und ist ausdrücklich keine Bench-Wurzel — das
 Manifest trägt darum nicht den Namen, nach dem die Lab-Lader suchen, und ein

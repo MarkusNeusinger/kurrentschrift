@@ -10,10 +10,10 @@ follower and the Span-Zuordner can be trained and measured on (proposal §7.5,
 „Und er ist Trainingsmenge").
 
     # draw the split ONCE — no network, no Bahn needed, and refuses a second time
-    uv run python -m tools.eigenhand.trainingssatz --hand mn-suetterlin --ziehen mn-2026-09
+    uv run python -m tools.eigenhand.training_set --hand mn-suetterlin --draw mn-2026-09
 
     # export whatever hand work exists today
-    ADMIN_TOKEN=… uv run python -m tools.eigenhand.trainingssatz --hand mn-suetterlin
+    ADMIN_TOKEN=… uv run python -m tools.eigenhand.training_set --hand mn-suetterlin
 
 NOT A BENCH ROOT, and that is the load-bearing sentence of the whole module.
 A strip has no reference trace — that is Prüfstein 2 of the capture doctrine
@@ -24,7 +24,7 @@ here may ever reach a bench headline. Three things keep that from happening by
 accident rather than by discipline: this tree lives outside every
 `tools/*/fixtures` root, its manifest is deliberately NOT called
 `manifest.json` — which is exactly what the lab loaders glob for, one level
-down — and `tests/test_eigenhand_trainingssatz.py` pins both, the way
+down — and `tests/test_eigenhand_training_set.py` pins both, the way
 `tests/test_lab_fixture_wiring.py` pins the bench wiring it must not be
 confused with.
 
@@ -32,9 +32,9 @@ TWO HOLD-OUT SETS, disjoint, and one of them is not ours to spend. Author
 decision of 2026-09-20, against the recommendation in the Phase-2 plan and
 answering FM3 of the Freigabe-Maschine in the same direction: the follower's
 improvement gets its own Rückhaltemenge, and the release check of the
-Freigabe-Maschine gets a second one. So three sets in all — `uebung` is what is
-left to train on, `rueckhalt-folger` is held back from every follower
-experiment, `rueckhalt-freigabe` is held back from everything until a hand is
+Freigabe-Maschine gets a second one. So three sets in all — `practice` is what
+is left to train on, `holdout-follower` is held back from every follower
+experiment, `holdout-release` is held back from everything until a hand is
 released.
 
 THE DRAW IS AN ACT, never a side effect. It is a separate command, it takes a
@@ -119,55 +119,61 @@ from tools.eigenhand.snapshot import ARCHIVE_SUBDIR
 from tools.eigenhand.store import check_hand_id, style_of_hand
 
 
-# The three sets. `uebung` is the remainder and therefore has no share of its
-# own; the two Rückhaltemengen are named apart because they are spent by
-# different people at different times — one by every follower experiment, one
-# once per hand at its release (author decision 2026-09-20, FM3 (b)).
-SATZ_UEBUNG = "uebung"
-SATZ_RUECKHALT_FOLGER = "rueckhalt-folger"
-SATZ_RUECKHALT_FREIGABE = "rueckhalt-freigabe"
+# The three sets. „Trainingssatz" and „Rückhaltemenge" stay German in the DOCS,
+# where the domain vocabulary lives; the identifiers here are English because
+# „training set" and „hold-out set" are exactly the established terms a reader
+# recognises (`docs/reference/sprachregelung.md` §5, author decision
+# 2026-09-20 — the carve-out is Befund · Tintentreue · Laufform and nothing
+# else). `practice` is the remainder and therefore has no share of its own; the
+# two hold-out sets are named apart because they are spent by different people
+# at different times — one by every follower experiment, one once per hand at
+# its release (FM3 (b)).
+SET_PRACTICE = "practice"
+SET_HOLDOUT_FOLLOWER = "holdout-follower"
+SET_HOLDOUT_RELEASE = "holdout-release"
 # ORDER IS PART OF THE DRAW: the lot of a strip falls into the first set whose
 # cumulative share it undercuts, so swapping these two names would silently
 # re-assign every strip in the band between them. It is pinned by a test.
-RUECKHALT_SAETZE = (SATZ_RUECKHALT_FOLGER, SATZ_RUECKHALT_FREIGABE)
-SAETZE = (SATZ_UEBUNG, *RUECKHALT_SAETZE)
+HOLDOUT_SETS = (SET_HOLDOUT_FOLLOWER, SET_HOLDOUT_RELEASE)
+SETS = (SET_PRACTICE, *HOLDOUT_SETS)
 
-# What a fifth of the plan buys at 188 strips: ~38 strips per Rückhaltemenge,
+# What a fifth of the plan buys at 188 strips: ~38 strips per hold-out set,
 # ~112 left to train on. The shares are recorded WITH the draw, so this is the
 # default of the day the draw is made and never a knob afterwards — changing it
 # later would mean a second draw, which this tool refuses.
-DEFAULT_ANTEILE: dict[str, float] = {SATZ_RUECKHALT_FOLGER: 0.2, SATZ_RUECKHALT_FREIGABE: 0.2}
+DEFAULT_SHARES: dict[str, float] = {SET_HOLDOUT_FOLLOWER: 0.2, SET_HOLDOUT_RELEASE: 0.2}
 
 # The Kartei's envelope around the draw — versioned apart from KARTEI_FORMAT
 # exactly as the pulled Bahnen are, so an older tool simply does not see the
 # key instead of refusing the whole file.
-RUECKHALT_FORMAT = 1
+HOLDOUT_FORMAT = 1
 
 # The export's own manifest version, and its FILE NAME. The name is a guard,
 # not a taste: `tools.glyphlab.cases` and `tools.wordlab.cases` find a fixture
 # root by globbing `<root>/*/manifest.json`, so a file of that name one level
 # under this tree would make it loadable as a bench root by anyone who pointed
-# `--fixtures` here. Pinned by `tests/test_eigenhand_trainingssatz.py`.
-TRAININGSSATZ_FORMAT = 1
-MANIFEST_NAME = "trainingssatz.json"
+# `--fixtures` here. Pinned by `tests/test_eigenhand_training_set.py`.
+TRAINING_SET_FORMAT = 1
+MANIFEST_NAME = "training_set.json"
 
 # Said inside the artefact, not only in this docstring: the manifest is what a
 # later reader opens, and the one sentence they must not miss is that these
-# numbers may never become a bench number.
-MANIFEST_HINWEIS = (
+# numbers may never become a bench number. German, because it is a sentence for
+# the author to read, not an identifier.
+MANIFEST_NOTE = (
     "Trainingsmaterial, kein Mess-Satz: ein Streifen hat keine Referenzspur "
     "(docs/proposals/eigenhand-erfassung.md §12, Prüfstein 2). Eine Zahl gegen eine von Hand "
     "gezeichnete Bahn ist keine Bench-Zahl, und keine Bench-Wurzel zeigt hierher."
 )
 
-CASE_JSON = "bahn.json"
-CASE_CROP = "kasten.png"
-CASE_MASK = "tinte.png"
+CASE_JSON = "path.json"
+CASE_CROP = "crop.png"
+CASE_MASK = "ink.png"
 
 
 # The one path inside the repository this tree may occupy, because it is the
 # one path `.gitignore` excludes. Everything else goes outside the checkout.
-DEFAULT_EXPORT_ROOT = REPO_ROOT / "tools" / "eigenhand" / "trainingssaetze"
+DEFAULT_EXPORT_ROOT = REPO_ROOT / "tools" / "eigenhand" / "training-sets"
 
 
 def export_root() -> Path:
@@ -178,7 +184,7 @@ def export_root() -> Path:
     fixture-shaped tree next to the bench roots is an invitation to point a
     bench at it.
     """
-    override = os.environ.get("EIGENHAND_TRAININGSSATZ")
+    override = os.environ.get("EIGENHAND_TRAINING_SET")
     return Path(override) if override else DEFAULT_EXPORT_ROOT
 
 
@@ -191,7 +197,7 @@ def checked_out(out: Path) -> Path:
 
     „No byte of this tree enters the repo" is a licensing promise
     (`quellen-und-rechte.md` §5), and up to here it rested entirely on one
-    `.gitignore` line — while `--out .` and `EIGENHAND_TRAININGSSATZ` could
+    `.gitignore` line — while `--out .` and `EIGENHAND_TRAINING_SET` could
     both put reserved own-hand crops anywhere in the checkout as untracked,
     unignored files that the next wide `git add -A` would stage. Outside the
     repository nothing needs guarding; inside it, only the one ignored root
@@ -213,7 +219,7 @@ def case_id(strip: str, fassung: str, box_index: int) -> str:
     return f"{strip}-{fassung}-b{box_index:02d}"
 
 
-def satz_of_strip(key: str, hand: str, strip: str, anteile: Mapping[str, float]) -> str:
+def set_for_strip(key: str, hand: str, strip: str, shares: Mapping[str, float]) -> str:
     """Which set a strip belongs to — a pure function of the draw's key and its id.
 
     Deterministic rather than shuffled, and that is what makes the split
@@ -224,22 +230,22 @@ def satz_of_strip(key: str, hand: str, strip: str, anteile: Mapping[str, float])
     """
     digest = hashlib.sha256(f"{key}\x00{hand}\x00{strip}".encode()).digest()
     lot = int.from_bytes(digest[:8], "big") / 2**64
-    grenze = 0.0
-    for satz in RUECKHALT_SAETZE:
-        grenze += float(anteile.get(satz, 0.0))
-        if lot < grenze:
-            return satz
-    return SATZ_UEBUNG
+    boundary = 0.0
+    for set_name in HOLDOUT_SETS:
+        boundary += float(shares.get(set_name, 0.0))
+        if lot < boundary:
+            return set_name
+    return SET_PRACTICE
 
 
-def _checked_anteile(anteile: Mapping[str, Any]) -> dict[str, float]:
+def _checked_shares(shares: Mapping[str, Any]) -> dict[str, float]:
     """The two shares, or a refusal — a draw with no training half is not a draw."""
     out: dict[str, float] = {}
-    for satz in RUECKHALT_SAETZE:
-        value = anteile.get(satz)
+    for set_name in HOLDOUT_SETS:
+        value = shares.get(set_name)
         if not isinstance(value, (int, float)) or isinstance(value, bool) or not 0.0 < float(value) < 1.0:
-            raise SystemExit(f"share of {satz} must be a fraction strictly between 0 and 1, got {value!r}")
-        out[satz] = float(value)
+            raise SystemExit(f"share of {set_name} must be a fraction strictly between 0 and 1, got {value!r}")
+        out[set_name] = float(value)
     if sum(out.values()) >= 1.0:
         raise SystemExit(
             f"the two Rückhaltemengen would take {sum(out.values()):.2f} of every strip — "
@@ -248,7 +254,7 @@ def _checked_anteile(anteile: Mapping[str, Any]) -> dict[str, float]:
     return out
 
 
-def rueckhalt_of(kartei: Mapping[str, Any]) -> dict[str, Any] | None:
+def holdout_of(kartei: Mapping[str, Any]) -> dict[str, Any] | None:
     """The hand's draw as this machine holds it, or None where none was made.
 
     Refuses a record in a shape it does not know rather than reading it as „no
@@ -257,29 +263,29 @@ def rueckhalt_of(kartei: Mapping[str, Any]) -> dict[str, Any] | None:
     every shape up to the current one stays readable, the same rule
     `tools.eigenhand.kartei.pfade_of` follows for an archived Kartei.
     """
-    record = kartei.get("rueckhalt")
+    record = kartei.get("holdout")
     if record is None:
         return None
     if not isinstance(record, dict):
-        raise SystemExit("Kartei: `rueckhalt` is not a record — refusing to read the draw")
+        raise SystemExit("Kartei: `holdout` is not a record — refusing to read the draw")
     version = record.get("format")
     if not isinstance(version, int) or isinstance(version, bool) or version < 1:
         raise SystemExit(f"Kartei: the Rückhalt draw declares no format ({version!r}) — refusing to read it")
-    if version > RUECKHALT_FORMAT:
+    if version > HOLDOUT_FORMAT:
         raise SystemExit(
-            f"Kartei: the Rückhalt draw is in format {version}, this tool reads up to {RUECKHALT_FORMAT} — "
+            f"Kartei: the Rückhalt draw is in format {version}, this tool reads up to {HOLDOUT_FORMAT} — "
             "that Kartei was written by a NEWER tool; update this one"
         )
     strips = record.get("strips")
     if not isinstance(strips, dict):
         raise SystemExit("Kartei: the Rückhalt draw carries no strip memberships — refusing to read it")
     for strip, row in strips.items():
-        if not isinstance(row, dict) or row.get("set") not in SAETZE:
+        if not isinstance(row, dict) or row.get("set") not in SETS:
             raise SystemExit(f"Kartei: strip {strip} of the Rückhalt draw names no known set — refusing to read it")
     return record
 
 
-def archived_rueckhalt(hand: str, archive: str | None = None) -> tuple[dict, Path] | None:
+def archived_holdout(hand: str, archive: str | None = None) -> tuple[dict, Path] | None:
     """The newest archived draw of this hand, or None where the archive holds none.
 
     The refusal of a second draw reads the LOCAL Kartei, and that is not enough
@@ -314,7 +320,7 @@ def archived_rueckhalt(hand: str, archive: str | None = None) -> tuple[dict, Pat
             continue
         if filed.get("hand") != hand:
             continue
-        record = rueckhalt_of(filed)
+        record = holdout_of(filed)
         if record is not None:
             return record, snapshot
     return None
@@ -322,21 +328,21 @@ def archived_rueckhalt(hand: str, archive: str | None = None) -> tuple[dict, Pat
 
 def _refuse_if_archived(hand: str, archive: str | None) -> None:
     """Stop where the archive holds a draw this data root has lost."""
-    filed = archived_rueckhalt(hand, archive)
+    filed = archived_holdout(hand, archive)
     if filed is None:
         return
     record, snapshot = filed
     counts = _counts(record)
     raise SystemExit(
         f"this data root holds no draw for {hand}, but the ARCHIVE does: key {record.get('key')!r}, drawn on "
-        f"{record.get('drawn_on')} ({', '.join(f'{satz} {counts[satz]}' for satz in SAETZE)}), in {snapshot}.\n"
+        f"{record.get('drawn_on')} ({', '.join(f'{set_name} {counts[set_name]}' for set_name in SETS)}), in {snapshot}.\n"
         f"That draw is the authority and it is not regenerable. Restore this hand's Kartei from that snapshot "
         f"before drawing or exporting — `sync --from` pushes an archived Kartei UP to the API and does not "
         f"write the local one, so it is not the restore that matters here."
     )
 
 
-def draw(hand: str, kartei: dict, key: str, anteile: Mapping[str, float], today: str) -> dict:
+def draw(hand: str, kartei: dict, key: str, shares: Mapping[str, float], today: str) -> dict:
     """Draw the split once, over every strip of the committed plan.
 
     Mutates `kartei` and hands back the record. Refusing a second draw is the
@@ -346,28 +352,28 @@ def draw(hand: str, kartei: dict, key: str, anteile: Mapping[str, float], today:
     """
     if not key.strip():
         raise SystemExit("the draw needs a key — it is what makes the split reproducible")
-    existing = rueckhalt_of(kartei)
+    existing = holdout_of(kartei)
     if existing is not None:
         counts = _counts(existing)
         raise SystemExit(
             f"{hand} was already drawn on {existing.get('drawn_on')} under key {existing.get('key')!r} "
-            f"({', '.join(f'{satz} {counts[satz]}' for satz in SAETZE)}) — refusing to draw again. "
+            f"({', '.join(f'{set_name} {counts[set_name]}' for set_name in SETS)}) — refusing to draw again. "
             "A second draw moves strips across a line that material has already been trained on, and "
             "nothing downstream could tell. There is deliberately no override."
         )
-    shares = _checked_anteile(anteile)
+    shares = _checked_shares(shares)
     strips = {
-        strip: {"set": satz_of_strip(key, hand, strip, shares), "since": today}
+        strip: {"set": set_for_strip(key, hand, strip, shares), "since": today}
         for strip in sorted(load_plan()["strips"])
     }
-    record = {"format": RUECKHALT_FORMAT, "key": key, "drawn_on": today, "shares": shares, "strips": strips}
-    kartei["rueckhalt"] = record
+    record = {"format": HOLDOUT_FORMAT, "key": key, "drawn_on": today, "shares": shares, "strips": strips}
+    kartei["holdout"] = record
     return record
 
 
 def _counts(record: Mapping[str, Any]) -> dict[str, int]:
     strips = record.get("strips") or {}
-    return {satz: sum(1 for row in strips.values() if row.get("set") == satz) for satz in SAETZE}
+    return {set_name: sum(1 for row in strips.values() if row.get("set") == set_name) for set_name in SETS}
 
 
 def extend(hand: str, record: dict, today: str) -> list[tuple[str, str]]:
@@ -382,13 +388,13 @@ def extend(hand: str, record: dict, today: str) -> list[tuple[str, str]]:
     the run. That is a code change, not a data change, and the record is the
     authority — silently re-assigning would move strips across the line.
     """
-    shares = _checked_anteile(record.get("shares") or {})
+    shares = _checked_shares(record.get("shares") or {})
     key = record.get("key")
     if not isinstance(key, str) or not key:
         raise SystemExit("Kartei: the Rückhalt draw names no key — its memberships cannot be checked")
     strips: dict[str, dict] = record["strips"]
     drifted = [
-        strip for strip, row in sorted(strips.items()) if row.get("set") != satz_of_strip(key, hand, strip, shares)
+        strip for strip, row in sorted(strips.items()) if row.get("set") != set_for_strip(key, hand, strip, shares)
     ]
     if drifted:
         raise SystemExit(
@@ -397,12 +403,12 @@ def extend(hand: str, record: dict, today: str) -> list[tuple[str, str]]:
             "The RECORD is the authority; fix the rule, never the record."
         )
     added = [
-        (strip, satz_of_strip(key, hand, strip, shares))
+        (strip, set_for_strip(key, hand, strip, shares))
         for strip in sorted(load_plan()["strips"])
         if strip not in strips
     ]
-    for strip, satz in added:
-        strips[strip] = {"set": satz, "since": today}
+    for strip, set_name in added:
+        strips[strip] = {"set": set_name, "since": today}
     return added
 
 
@@ -453,7 +459,7 @@ def _occupant(hand_dir: Path) -> str | None:
     The default target is per hand (`<root>/<hand>`), but `--out` is a
     documented flag and `<root>` is the obvious thing to type — and a case id
     carries no hand, so two hands sharing one directory would interleave in the
-    same `<satz>/` folders and each run would prune the other's cases away.
+    same `<set_name>/` folders and each run would prune the other's cases away.
     Refusing costs nothing: the manifest has named the hand all along.
     """
     manifest = hand_dir / MANIFEST_NAME
@@ -491,21 +497,21 @@ def _prune(hand_dir: Path, keep: set[str], hand: str) -> list[str]:
     if _occupant(hand_dir) != hand:
         return []
     dropped: list[str] = []
-    for satz in SAETZE:
-        satz_dir = hand_dir / satz
-        if not satz_dir.is_dir():
+    for set_name in SETS:
+        set_dir = hand_dir / set_name
+        if not set_dir.is_dir():
             continue
-        for path in sorted(satz_dir.iterdir()):
+        for path in sorted(set_dir.iterdir()):
             if path.is_dir() and path.name not in keep:
                 shutil.rmtree(path)
-                dropped.append(f"{satz}/{path.name}")
+                dropped.append(f"{set_name}/{path.name}")
     return dropped
 
 
 def _case_payload(
     hand: str,
     style: str,
-    satz: str,
+    set_name: str,
     row: Mapping[str, Any],
     entry: Mapping[str, Any],
     frame: Mapping[str, Any],
@@ -525,26 +531,26 @@ def _case_payload(
     `letter_spans[].slot` indexes into.
     """
     return {
-        "format": TRAININGSSATZ_FORMAT,
+        "format": TRAINING_SET_FORMAT,
         # The ROW's own Streifen-Pfad format, kept apart from this file's
         # envelope version exactly as `kartei.pfad_record` keeps it apart from
         # `PFAD_ARCHIVE_FORMAT`. Without it a reader cannot tell „this box has
         # no corrected boundaries" from „this row predates `letter_spans` and
-        # the two sensors" — both look like `grenzen_von_hand: 0` and a thin
+        # the two sensors" — both look like `authored_boundaries: 0` and a thin
         # `meta`, and `core.eigenhand.tintentreue` greys a whole box out on the
         # difference.
         "pfad_format": pfad_format,
         "hand": hand,
         "style": style,
-        "set": satz,
+        "set": set_name,
         "strip": row["strip"],
         "fassung": row["fassung"],
         "sheet": row["sheet"],
         "row_index": row["row_index"],
         "box_index": entry["box_index"],
         "word": entry.get("word") or frame["word"],
-        "gezeichnet": is_authored(entry),
-        "grenzen_von_hand": len(authored_spans(entry)),
+        "drawn": is_authored(entry),
+        "authored_boundaries": len(authored_spans(entry)),
         "strokes": entry.get("strokes") or [],
         "registration_px": entry.get("registration_px"),
         "xh_px": entry.get("xh_px"),
@@ -578,24 +584,24 @@ def export(hand: str, base: str, token: str, out: Path, today: str, archive: str
     checked_out(out)
     _check_target(out, hand)
     kartei = load_kartei(hand)
-    record = rueckhalt_of(kartei)
+    record = holdout_of(kartei)
     if record is None:
         # Before telling anyone to draw, make sure this is a hand that never
         # was drawn rather than one whose Kartei is simply gone: sending the
-        # operator to `--ziehen` in the second case is how a second draw
+        # operator to `--draw` in the second case is how a second draw
         # happens.
         _refuse_if_archived(hand, archive)
         raise SystemExit(
             f"{hand} has no Rückhalt draw — a training export without a hold-out set is homework handed in "
             f"as an exam. Draw it once (no network, no Bahn needed):\n"
-            f"  uv run python -m tools.eigenhand.trainingssatz --hand {hand} --ziehen <key>"
+            f"  uv run python -m tools.eigenhand.training_set --hand {hand} --draw <key>"
         )
     added = extend(hand, record, today)
     if added:
         save_kartei(hand, kartei)
         print(
             f"{len(added)} strip(s) appended to the plan since the draw, assigned under its key: "
-            f"{', '.join(f'{strip} → {satz}' for strip, satz in added)}",
+            f"{', '.join(f'{strip} → {set_name}' for strip, set_name in added)}",
             flush=True,
         )
     memberships: dict[str, dict] = record["strips"]
@@ -612,27 +618,27 @@ def export(hand: str, base: str, token: str, out: Path, today: str, archive: str
     layouts: dict[str, dict] = {}
     written: list[dict] = []
     keep: set[str] = set()
-    skipped = {"nicht_angenommen": 0, "ohne_handarbeit": 0, "ohne_geometrie": 0, "ohne_streifen": 0}
+    skipped = {"not_accepted": 0, "no_hand_work": 0, "no_geometry": 0, "not_in_plan": 0}
     for row in sorted(listing.get("strips", []), key=lambda item: (item["strip"], item["fassung"])):
         strip, fassung = row["strip"], row["fassung"]
         if (strip, fassung) not in accepted:
-            skipped["nicht_angenommen"] += 1
+            skipped["not_accepted"] += 1
             continue
         url = f"{base}/eigenhand/strips/{quote(hand)}/{quote(strip)}/{quote(fassung)}/pfade"
         answered = request_json("GET", url, token) or {}
         pfad_format = answered.get("format")
         entries = _hand_work(answered.get("pfade") or [])
         if not entries:
-            skipped["ohne_handarbeit"] += 1
+            skipped["no_hand_work"] += 1
             continue
         membership = memberships.get(strip)
         if membership is None:
             # The plan is the draw's population, so a strip outside it has no
             # side — and inventing one here would be a draw made by a tool.
             print(f"  {strip}/{fassung}: not in the strip plan, so not in the draw — left out", flush=True)
-            skipped["ohne_streifen"] += 1
+            skipped["not_in_plan"] += 1
             continue
-        satz = membership["set"]
+        set_name = membership["set"]
         if row["sheet"] not in layouts:
             layouts[row["sheet"]] = (
                 request_json("GET", f"{base}/eigenhand/sheets/{quote(hand)}/{quote(row['sheet'])}/layout", token) or {}
@@ -649,44 +655,44 @@ def export(hand: str, base: str, token: str, out: Path, today: str, archive: str
                 # it cannot be placed in the strip's pixels, so it cannot be
                 # cut out either. One such box must not take the run down.
                 print(f"  {ident}: {exc} — left out", flush=True)
-                skipped["ohne_geometrie"] += 1
+                skipped["no_geometry"] += 1
                 continue
             word = frame["word"]
             case, missing = _case_for_box(prior, plane, frame, word, shaping_form_of(plan, word), ident)
-            payload = _case_payload(hand, style, satz, row, entry, frame, case, missing, pfad_format)
-            _write_case(out / satz / ident, payload, case.crop, case.mask)
+            payload = _case_payload(hand, style, set_name, row, entry, frame, case, missing, pfad_format)
+            _write_case(out / set_name / ident, payload, case.crop, case.mask)
             keep.add(ident)
             written.append(payload)
             print(
-                f"  {ident:<22} {satz:<20} {word:<16} "
-                f"{'gezeichnet' if payload['gezeichnet'] else 'gefolgt'}, "
-                f"{payload['grenzen_von_hand']} Grenze(n) von Hand",
+                f"  {ident:<22} {set_name:<20} {word:<16} "
+                f"{'gezeichnet' if payload['drawn'] else 'gefolgt'}, "
+                f"{payload['authored_boundaries']} Grenze(n) von Hand",
                 flush=True,
             )
 
     dropped = _prune(out, keep, hand)
     manifest = {
-        "format": TRAININGSSATZ_FORMAT,
-        "hinweis": MANIFEST_HINWEIS,
+        "format": TRAINING_SET_FORMAT,
+        "note": MANIFEST_NOTE,
         "hand": hand,
         "style": style,
         "exported_on": today,
         "api": base,
         "source_id": constants["source_id"],
-        "rueckhalt": {
+        "holdout": {
             "key": record.get("key"),
             "drawn_on": record.get("drawn_on"),
             "shares": record.get("shares"),
             "strips": _counts(record),
         },
-        "saetze": {
-            satz: {
-                "faelle": sum(1 for filed in written if filed["set"] == satz),
-                "streifen": len({filed["strip"] for filed in written if filed["set"] == satz}),
+        "sets": {
+            set_name: {
+                "cases": sum(1 for filed in written if filed["set"] == set_name),
+                "strips": len({filed["strip"] for filed in written if filed["set"] == set_name}),
             }
-            for satz in SAETZE
+            for set_name in SETS
         },
-        "faelle": [
+        "cases": [
             {
                 "id": case_id(filed["strip"], filed["fassung"], filed["box_index"]),
                 "set": filed["set"],
@@ -694,12 +700,12 @@ def export(hand: str, base: str, token: str, out: Path, today: str, archive: str
                 "fassung": filed["fassung"],
                 "box_index": filed["box_index"],
                 "word": filed["word"],
-                "gezeichnet": filed["gezeichnet"],
-                "grenzen_von_hand": filed["grenzen_von_hand"],
+                "drawn": filed["drawn"],
+                "authored_boundaries": filed["authored_boundaries"],
             }
             for filed in written
         ],
-        "uebersprungen": skipped,
+        "skipped": skipped,
     }
     out.mkdir(parents=True, exist_ok=True)
     (out / MANIFEST_NAME).write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
@@ -708,14 +714,14 @@ def export(hand: str, base: str, token: str, out: Path, today: str, archive: str
         # Fassung leaving the export is the point, and a silent removal would
         # look like a tool losing files.
         print(f"dropped {len(dropped)} case(s) this run no longer exports: {', '.join(dropped)}", flush=True)
-    counts = manifest["saetze"]
+    counts = manifest["sets"]
     print(
         f"{hand}: {len(written)} case(s) in {out} — "
-        + " · ".join(f"{satz} {counts[satz]['faelle']}" for satz in SAETZE)
-        + f" (skipped: {skipped['nicht_angenommen']} not accepted, "
-        f"{skipped['ohne_handarbeit']} without hand work"
-        + (f", {skipped['ohne_geometrie']} without Bogen geometry" if skipped["ohne_geometrie"] else "")
-        + (f", {skipped['ohne_streifen']} outside the plan" if skipped["ohne_streifen"] else "")
+        + " · ".join(f"{set_name} {counts[set_name]['cases']}" for set_name in SETS)
+        + f" (skipped: {skipped['not_accepted']} not accepted, "
+        f"{skipped['no_hand_work']} without hand work"
+        + (f", {skipped['no_geometry']} without Bogen geometry" if skipped["no_geometry"] else "")
+        + (f", {skipped['not_in_plan']} outside the plan" if skipped["not_in_plan"] else "")
         + ")"
     )
     return len(written)
@@ -725,21 +731,21 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     ap.add_argument("--hand", required=True, help="hand id, e.g. mn-suetterlin")
     ap.add_argument(
-        "--ziehen",
+        "--draw",
         default=None,
         metavar="KEY",
-        help="draw the two Rückhaltemengen ONCE under this key (local; refuses a second draw)",
+        help="draw the two hold-out sets ONCE under this key (local; refuses a second draw)",
     )
     ap.add_argument(
-        "--anteil-folger",
+        "--share-follower",
         type=float,
-        default=DEFAULT_ANTEILE[SATZ_RUECKHALT_FOLGER],
+        default=DEFAULT_SHARES[SET_HOLDOUT_FOLLOWER],
         help="share held back for the follower's own measurements (draw only)",
     )
     ap.add_argument(
-        "--anteil-freigabe",
+        "--share-release",
         type=float,
-        default=DEFAULT_ANTEILE[SATZ_RUECKHALT_FREIGABE],
+        default=DEFAULT_SHARES[SET_HOLDOUT_RELEASE],
         help="share held back for the Freigabe-Maschine's release check (draw only)",
     )
     ap.add_argument("--out", type=Path, default=None, help="export directory (default: the gitignored local root)")
@@ -757,17 +763,17 @@ def main(argv: list[str] | None = None) -> int:
 
     hand = check_hand_id(args.hand)
     today = args.date or date_cls.today().isoformat()
-    if args.ziehen:
+    if args.draw:
         kartei = load_kartei(hand)
-        if rueckhalt_of(kartei) is None:
+        if holdout_of(kartei) is None:
             _refuse_if_archived(hand, args.archive)
-        anteile = {SATZ_RUECKHALT_FOLGER: args.anteil_folger, SATZ_RUECKHALT_FREIGABE: args.anteil_freigabe}
-        record = draw(hand, kartei, args.ziehen, anteile, today)
+        shares = {SET_HOLDOUT_FOLLOWER: args.share_follower, SET_HOLDOUT_RELEASE: args.share_release}
+        record = draw(hand, kartei, args.draw, shares, today)
         save_kartei(hand, kartei)
         counts = _counts(record)
         print(
-            f"{hand}: drawn under key {args.ziehen!r} over {len(record['strips'])} plan strips — "
-            + " · ".join(f"{satz} {counts[satz]}" for satz in SAETZE)
+            f"{hand}: drawn under key {args.draw!r} over {len(record['strips'])} plan strips — "
+            + " · ".join(f"{set_name} {counts[set_name]}" for set_name in SETS)
         )
         print(
             "recorded in the Kartei, which every archive snapshot copies in full. It is drawn once and "

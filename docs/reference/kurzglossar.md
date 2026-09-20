@@ -734,10 +734,11 @@ und die verschiebbaren Buchstabengrenzen.
 mit den von Hand nachgefahrenen Bahnen als Lehrmaterial, geschnitten wie der
 Folger sie liest; Statusfilter aus dem Archiv-Read, ausdrücklich KEINE
 Bench-Wurzel (ein Streifen hat keine Referenzspur). Geteilt wird in `uebung`
-und ZWEI Rückhaltemengen — `rueckhalt-folger`, `rueckhalt-freigabe`. Die
+und ZWEI Rückhaltemengen — `holdout-follower`, `holdout-release`. Die
 Ziehung ist ein einmaliger Akt mit Schlüssel, Einheit ist der STREIFEN,
 gezogen über den eingefrorenen Plan (ohne Netz, ohne eine einzige Bahn); ein
-zweites Ziehen wird verweigert. `tools/eigenhand/trainingssatz.py`.
+zweites Ziehen wird verweigert. Begriff deutsch, Bezeichner englisch
+(Sprachregelung §5). `tools/eigenhand/training_set.py`.
 → [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §7.5
 
 **Fokusring** *(`focusRing`)* — der eine sichtbare Tastaturfokus: 2 px

@@ -809,21 +809,21 @@ Ziehung im §14-Eintrag; (b) zwei getrennte Mengen; (c) keine — dann gibt
 es über die Eigenhand nie eine Tinten-Zahl, und eine Auslieferung stützt
 sich auf Deckung, Beleglage, Formbewegung und das Auge.
 Empfehlung war (a); der Autor hat am 2026-09-20 (b) entschieden: **zwei
-getrennte Mengen**, `rueckhalt-folger` für die Folger-Arbeit und
-`rueckhalt-freigabe` allein für die Freigabe-Prüfung einer Hand. Eine Menge
+getrennte Mengen**, `holdout-follower` für die Folger-Arbeit und
+`holdout-release` allein für die Freigabe-Prüfung einer Hand. Eine Menge
 für beides hätte die Freigabe-Zahl an Material gemessen, an dem der Folger
 zuvor gearbeitet hat.
 Was daraus folgt — und den „VOR Schritt 4"-Zwang aus §11 zugleich auflöst:
 die Ziehung hängt nicht mehr an der Ernte. Sie läuft über die Streifen des
 eingefrorenen Plans, also ohne Netz und ohne eine einzige Fassung, ist ein
-eigener Akt mit Schlüssel (`tools/eigenhand/trainingssatz.py --ziehen`) und
+eigener Akt mit Schlüssel (`tools/eigenhand/training_set.py --draw`) und
 wird ein zweites Mal verweigert. Doktrin:
 [`eigenhand-erfassung.md`](eigenhand-erfassung.md) §7.5; Vorregistrierung:
 [`../reference/messjournal.md`](../reference/messjournal.md) §14
 „Trainingssatz `sep20`". Die Größe der beiden Mengen (je 0,20) steht dort
 und ist mit der Ziehung eingefroren.
 Was offen BLEIBT: die Rückhalte-MESSUNG selbst (M5) — wie die Zahl gegen
-`rueckhalt-freigabe` gebildet wird, braucht ihre eigene Vorregistrierung am
+`holdout-release` gebildet wird, braucht ihre eigene Vorregistrierung am
 Tag der ersten Zahl.
 
 **FM4 — Wie oft der blinde Durchgang?** *(blockiert: M5)*
@@ -899,7 +899,7 @@ Engineering-Defaults; der Autor kippt jede mit einem Wort.
 | **M2** Apply schreibt Stände | kopieren-dann-einfügen unter der Hand-Sperre, Kopf-Zeile, kein Stand ohne Änderung; PUT/DELETE als Stand-Operationen; Band-Regel; reservierte Reads `stands` · `deliveries`; `dbsnapshot` liest die Stände über das reservierte Inventar (§7); der Feder-Pool nach FM2 (i). Umbau getesteter Flüsse, Suiten ziehen mit (Q6 b) | VOR Schritt 6 — damit schon der erste Eigenhand-Apply Stand 200 anlegt | `/verify-api`, `/verify-core`; bei FM2 (i) a Vorher-/Nachher-Zahlen · nein |
 | **M3** Vorschau mit `?stand=` | die reservierte Hand-Vorschau für Wort und Glyphen; die drei Admin-Flächen ziehen von der öffentlichen Route um; die SPA-Konstante `LAUFFORM_VARIANT` wird ein Datum | = Schritt 7, um `stand` erweitert | `/verify-api`, `/verify-frontend` gegen den Wegwerf-Stack · nein |
 | **M4** Auslieferung | `POST …/deliveries`; die Stempel-Route und `&v=` in der SPA (FM5); `tools/freigabe` (`status` · `vergleich` · `deliver` · `rollback`); Runbook als Skill. Die Werkzeug-Leser aus §3, Zeile 12 folgen dem Zeiger statt der Konstanten — VOR der ersten Auslieferung eines Stands ≠ 100, sonst finden sie nach ihr keine Laufform mehr | nach Schritt 7 | `/verify-api`, `/verify-frontend` · der erste echte Aufruf ja |
-| **M5** Regression je Hand | Fixture-Export `--stand`; die Gegenprobe an der Platte (§6.3); der Bericht Deckung · Beleglage · Formbewegung; die Messung gegen `rueckhalt-freigabe` mit eigener §14-Vorregistrierung (FM3 (b) ist entschieden, die Ziehung liegt im Trainingssatz-Werkzeug); die blinde Runde für Nr. 1 (FM4) | nach Schritt 6 — die Ziehung selbst hängt an keinem Schritt mehr | `/verify-trace`-Disziplin · nein |
+| **M5** Regression je Hand | Fixture-Export `--stand`; die Gegenprobe an der Platte (§6.3); der Bericht Deckung · Beleglage · Formbewegung; die Messung gegen `holdout-release` mit eigener §14-Vorregistrierung (FM3 (b) ist entschieden, die Ziehung liegt im Trainingssatz-Werkzeug); die blinde Runde für Nr. 1 (FM4) | nach Schritt 6 — die Ziehung selbst hängt an keinem Schritt mehr | `/verify-trace`-Disziplin · nein |
 | **M6** Admin-Flächen | Bestandskopf, „Ausgeliefert", Stände-Liste, „Letzte Änderungen", Vergleichsstreifen, Übergabekarten (§8) | Phase 4 des Admin-Plans | `/verify-frontend` · nein |
 | **M7** Auslieferung Nr. 1 | der erklärte Rollenwechsel (§5.4) | eigener Autor-Entscheid, nach M4–M6 | alles · **ja** |
 
