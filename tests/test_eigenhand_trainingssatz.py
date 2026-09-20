@@ -131,12 +131,40 @@ class TestBenchSeparation:
         assert MANIFEST_NAME != "manifest.json"
         assert "manifest.json" in inspect.getsource(wordlab_cases)
 
+    def test_a_lab_loader_pointed_at_this_tree_finds_nothing(self, tmp_path):
+        # The behaviour, not the proxy: the test above pins two NAMES, and a
+        # discovery change on the loaders' side would leave it green while this
+        # tree quietly became loadable. Here the loaders actually run.
+        from tools.glyphlab.cases import iter_fixture_cases
+        from tools.wordlab.cases import fixture_root_for
+
+        root = tmp_path / "trainingssaetze"
+        case = root / HAND / SATZ_UEBUNG / case_id("S0001", "F01", 0)
+        case.mkdir(parents=True)
+        (case / "bahn.json").write_text("{}", encoding="utf-8")
+        (root / HAND / MANIFEST_NAME).write_text("{}", encoding="utf-8")
+
+        assert iter_fixture_cases(fixtures_root=root) == []
+        with pytest.raises(KeyError):
+            fixture_root_for(fixtures_root=root, style="suetterlin")
+
     def test_the_default_root_is_gitignored(self):
         # „No byte of it enters the repo" is a licensing promise
         # (quellen-und-rechte.md §5), and the tree sits under `tools/`, which is
         # otherwise committed code — so the rule has to be there by name.
         rule = "/" + export_root().resolve().relative_to(REPO_ROOT).as_posix() + "/"
         assert rule in (REPO_ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
+
+    def test_a_target_inside_the_repo_but_outside_that_rule_is_refused(self, tmp_path):
+        # The rule above is the whole licensing guarantee, and until this guard
+        # `--out .` wrote reserved own-hand crops into the checkout as
+        # untracked, unignored files.
+        assert tool.checked_out(tmp_path / "anywhere") == tmp_path / "anywhere"
+        assert tool.checked_out(tool.DEFAULT_EXPORT_ROOT / HAND)
+        for inside in (REPO_ROOT, REPO_ROOT / "tools" / "eigenhand", REPO_ROOT / "data" / "samples"):
+            with pytest.raises(SystemExit) as exc:
+                tool.checked_out(inside)
+            assert "quellen-und-rechte" in str(exc.value)
 
 
 # ------------------------------------------------------------------------ draw
@@ -342,6 +370,11 @@ class TestExport:
         assert payload["gezeichnet"] is True
         assert payload["grenzen_von_hand"] == 1
         assert payload["strokes"] == _entry()["strokes"]
+        # The ROW's own Streifen-Pfad format travels beside this file's
+        # envelope version: without it „no corrected boundaries" and „written
+        # before `letter_spans` existed" are the same picture.
+        assert payload["pfad_format"] == 2
+        assert payload["format"] == tool.TRAININGSSATZ_FORMAT
         # The shaped slots travel because `letter_spans[].slot` counts into
         # them; without the slot list a corrected boundary is an index into
         # nothing.
@@ -384,5 +417,29 @@ class TestExport:
         # `--out` from finding anything to destroy.
         foreign = tmp_path / "somebody-elses"
         (foreign / SATZ_UEBUNG / "keep-me").mkdir(parents=True)
-        assert tool._prune(foreign, set()) == []
+        assert tool._prune(foreign, set(), HAND) == []
         assert (foreign / SATZ_UEBUNG / "keep-me").is_dir()
+
+    def test_a_second_hand_into_one_out_is_refused_before_anything_is_cut(self, tmp_path, monkeypatch):
+        # A case id names no hand, so two hands in one directory interleave in
+        # the same `<satz>/` folders and each run prunes the other's cases away.
+        from tools.eigenhand.kartei import save_kartei
+
+        kartei = _drawn(tmp_path, monkeypatch)
+        save_kartei(HAND, kartei)
+        satz = kartei["rueckhalt"]["strips"]["S0001"]["set"]
+        out = tmp_path / "shared"
+        _stub_api(
+            monkeypatch, fassungen=[{"strip": "S0001", "fassung": "F01", "status": "angenommen"}], pfade=[_entry()]
+        )
+        tool.export(HAND, "https://example.invalid", "token", out, TODAY)
+        mine = out / satz / case_id("S0001", "F01", 0)
+        assert mine.is_dir()
+
+        with pytest.raises(SystemExit) as exc:
+            tool.export("xy-kurrent", "https://example.invalid", "token", out, TODAY)
+        assert HAND in str(exc.value)
+        assert mine.is_dir()
+        # And the delete path alone would have refused too, had it got that far.
+        assert tool._prune(out, set(), "xy-kurrent") == []
+        assert mine.is_dir()

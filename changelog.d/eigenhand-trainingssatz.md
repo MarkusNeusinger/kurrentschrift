@@ -31,7 +31,19 @@
   every `tools/*/fixtures` root and carries no `fixtures` in its name, its
   manifest is deliberately not called `manifest.json` — which is what the lab
   loaders glob for one level down — and `tests/test_eigenhand_trainingssatz.py`
-  pins all of it, including the gitignore rule. A strip has no reference
-  trace, so a number measured against a drawn Bahn is not a bench number
-  (`core/eigenhand/pfad.py`; eigenhand-erfassung.md §12, Prüfstein 2), and a
-  fixture-shaped tree beside the bench roots is how that gets forgotten.
+  pins all of it, including the gitignore rule and a lab loader pointed at the
+  tree finding nothing. A strip has no reference trace, so a number measured
+  against a drawn Bahn is not a bench number (`core/eigenhand/pfad.py`;
+  eigenhand-erfassung.md §12, Prüfstein 2), and a fixture-shaped tree beside
+  the bench roots is how that gets forgotten. The export also refuses a target
+  inside the checkout that the one gitignore rule does not cover, and a second
+  hand in the same `--out`.
+
+### Changed
+
+- **FM3 of the Freigabe-Maschine is decided: (b), two separate hold-out
+  sets.** `docs/proposals/freigabe-maschine.md` §10 recommended one set for
+  both the follower and the release check; the author decided against that on
+  2026-09-20. The question is struck from its Stand block, and with it the
+  hard ordering constraint „FM3 before Schritt 4": the draw runs over the
+  frozen strip plan rather than over a harvest, so it hangs on no step.

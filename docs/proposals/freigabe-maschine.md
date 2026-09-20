@@ -26,10 +26,12 @@
 > Rollback (§7). Der Admin zeigt Zahlen, Stände und Protokoll — keine Marke,
 > kein Schalter; ausliefern bleibt Terminal- und Autor-Akt (§8).
 >
-> **Was offen ist.** Sechs Rückfragen an den Autor (§10): FM1 Paare im
-> Stand · FM2 Feder · FM3 Rückhaltemenge — VOR der ersten Ernte · FM4
-> blinder Durchgang · FM5 Randcache · FM6 zwei Platten-Hände in einer
-> Schrift. Bau-Reihenfolge und die zwei harten Zwänge: §11. Jede Aussage über den heutigen Code ist am 2026-09-19 an
+> **Was offen ist.** Noch fünf der sechs Rückfragen an den Autor (§10): FM1
+> Paare im Stand · FM2 Feder · FM4 blinder Durchgang · FM5 Randcache · FM6
+> zwei Platten-Hände in einer Schrift. **FM3 Rückhaltemenge ist am
+> 2026-09-20 entschieden: (b)**, zwei getrennte Mengen — gezogen wird nicht
+> mehr vor der Ernte, sondern ist gezogen, sobald der Autor den Schlüssel
+> setzt (§10 FM3). Bau-Reihenfolge und die zwei harten Zwänge: §11. Jede Aussage über den heutigen Code ist am 2026-09-19 an
 > `origin/main` gelesen (§3).
 
 ## 1 Anlass
@@ -796,8 +798,8 @@ Empfehlung: (i) a — (c) ist mit der Maschine nicht vertretbar; (ii) a,
 sobald die Zahl aus Stufe 1 (Q11 b) vorliegt, bis dahin (b) mit Etikett.
 Ohne Entscheid: (i) b, (ii) b.
 
-**FM3 — Die Rückhaltemenge der Eigenhand** *(zu beantworten VOR Schritt 4
-aus §15.3, der Ernte; ein ausdrückliches (c) ist eine gültige Antwort)*
+**FM3 — Die Rückhaltemenge der Eigenhand** *(**entschieden 2026-09-20: (b)**
+— gegen die Empfehlung unten)*
 Kontext: die einzige Zahl über Eigenhand-Tinte braucht Streifen, die nie
 geerntet werden (§6.2, Teil 4). Leitsatz 1 verlangt für den Folger
 dieselbe Art Teilmenge.
@@ -806,12 +808,23 @@ Freigabe —, zufällig aus den angenommenen Fassungen gezogen, Größe und
 Ziehung im §14-Eintrag; (b) zwei getrennte Mengen; (c) keine — dann gibt
 es über die Eigenhand nie eine Tinten-Zahl, und eine Auslieferung stützt
 sich auf Deckung, Beleglage, Formbewegung und das Auge.
-Empfehlung: (a); die Größe schlägt die Vorregistrierung vor, der Autor
-bestätigt sie.
-Ohne Entscheid: die Ernte WARTET — die Frage wird vor Schritt 4 gestellt,
-und ein ausdrückliches (c) gibt sie frei. Still zu starten hieße (c) wählen,
-ohne es zu sagen: jeder Stand aus einer Ernte MIT dem späteren
-Rückhalte-Material bliebe unmessbar.
+Empfehlung war (a); der Autor hat am 2026-09-20 (b) entschieden: **zwei
+getrennte Mengen**, `rueckhalt-folger` für die Folger-Arbeit und
+`rueckhalt-freigabe` allein für die Freigabe-Prüfung einer Hand. Eine Menge
+für beides hätte die Freigabe-Zahl an Material gemessen, an dem der Folger
+zuvor gearbeitet hat.
+Was daraus folgt — und den „VOR Schritt 4"-Zwang aus §11 zugleich auflöst:
+die Ziehung hängt nicht mehr an der Ernte. Sie läuft über die Streifen des
+eingefrorenen Plans, also ohne Netz und ohne eine einzige Fassung, ist ein
+eigener Akt mit Schlüssel (`tools/eigenhand/trainingssatz.py --ziehen`) und
+wird ein zweites Mal verweigert. Doktrin:
+[`eigenhand-erfassung.md`](eigenhand-erfassung.md) §7.5; Vorregistrierung:
+[`../reference/messjournal.md`](../reference/messjournal.md) §14
+„Trainingssatz `sep20`". Die Größe der beiden Mengen (je 0,20) steht dort
+und ist mit der Ziehung eingefroren.
+Was offen BLEIBT: die Rückhalte-MESSUNG selbst (M5) — wie die Zahl gegen
+`rueckhalt-freigabe` gebildet wird, braucht ihre eigene Vorregistrierung am
+Tag der ersten Zahl.
 
 **FM4 — Wie oft der blinde Durchgang?** *(blockiert: M5)*
 Optionen: (a) bei jeder Auslieferung; (b) verpflichtend bei der ERSTEN
@@ -886,15 +899,17 @@ Engineering-Defaults; der Autor kippt jede mit einem Wort.
 | **M2** Apply schreibt Stände | kopieren-dann-einfügen unter der Hand-Sperre, Kopf-Zeile, kein Stand ohne Änderung; PUT/DELETE als Stand-Operationen; Band-Regel; reservierte Reads `stands` · `deliveries`; `dbsnapshot` liest die Stände über das reservierte Inventar (§7); der Feder-Pool nach FM2 (i). Umbau getesteter Flüsse, Suiten ziehen mit (Q6 b) | VOR Schritt 6 — damit schon der erste Eigenhand-Apply Stand 200 anlegt | `/verify-api`, `/verify-core`; bei FM2 (i) a Vorher-/Nachher-Zahlen · nein |
 | **M3** Vorschau mit `?stand=` | die reservierte Hand-Vorschau für Wort und Glyphen; die drei Admin-Flächen ziehen von der öffentlichen Route um; die SPA-Konstante `LAUFFORM_VARIANT` wird ein Datum | = Schritt 7, um `stand` erweitert | `/verify-api`, `/verify-frontend` gegen den Wegwerf-Stack · nein |
 | **M4** Auslieferung | `POST …/deliveries`; die Stempel-Route und `&v=` in der SPA (FM5); `tools/freigabe` (`status` · `vergleich` · `deliver` · `rollback`); Runbook als Skill. Die Werkzeug-Leser aus §3, Zeile 12 folgen dem Zeiger statt der Konstanten — VOR der ersten Auslieferung eines Stands ≠ 100, sonst finden sie nach ihr keine Laufform mehr | nach Schritt 7 | `/verify-api`, `/verify-frontend` · der erste echte Aufruf ja |
-| **M5** Regression je Hand | Fixture-Export `--stand`; die Gegenprobe an der Platte (§6.3); der Bericht Deckung · Beleglage · Formbewegung; nach FM3 die Rückhalte-Messung mit §14-Vorregistrierung; die blinde Runde für Nr. 1 (FM4) | die Rückhaltemenge VOR Schritt 4, das Übrige nach Schritt 6 | `/verify-trace`-Disziplin · nein |
+| **M5** Regression je Hand | Fixture-Export `--stand`; die Gegenprobe an der Platte (§6.3); der Bericht Deckung · Beleglage · Formbewegung; die Messung gegen `rueckhalt-freigabe` mit eigener §14-Vorregistrierung (FM3 (b) ist entschieden, die Ziehung liegt im Trainingssatz-Werkzeug); die blinde Runde für Nr. 1 (FM4) | nach Schritt 6 — die Ziehung selbst hängt an keinem Schritt mehr | `/verify-trace`-Disziplin · nein |
 | **M6** Admin-Flächen | Bestandskopf, „Ausgeliefert", Stände-Liste, „Letzte Änderungen", Vergleichsstreifen, Übergabekarten (§8) | Phase 4 des Admin-Plans | `/verify-frontend` · nein |
 | **M7** Auslieferung Nr. 1 | der erklärte Rollenwechsel (§5.4) | eigener Autor-Entscheid, nach M4–M6 | alles · **ja** |
 
-Zwei Reihenfolge-Zwänge sind hart: **M2 vor Schritt 6** (sonst überschreibt
-der erste Eigenhand-Apply noch an Ort und Stelle, nur eben in Band 200),
-und **FM3 ist VOR Schritt 4 beantwortet** — auch ein ausdrückliches (c)
-zählt als Antwort; eine Ernte ohne jede Antwort hätte das Material der
-Rückhaltemenge schon in den Aggregaten.
+Ein Reihenfolge-Zwang ist hart: **M2 vor Schritt 6** (sonst überschreibt
+der erste Eigenhand-Apply noch an Ort und Stelle, nur eben in Band 200).
+Der zweite — **FM3 vor Schritt 4** — ist seit dem Entscheid vom 2026-09-20
+erfüllt und kein Zwang mehr: die Ziehung läuft über den eingefrorenen Plan
+statt über die Ernte, hängt also an keinem Schritt (§10 FM3). Was der Zwang
+verhindern sollte, verhindert jetzt die Ziehung selbst — sie ist gemacht,
+bevor die erste Fassung geschrieben ist, nicht erst bevor geerntet wird.
 
 ## 12 Risiken
 

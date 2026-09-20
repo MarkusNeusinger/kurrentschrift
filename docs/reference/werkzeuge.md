@@ -818,11 +818,18 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   heraus, wie der Folger ihn liest (`bahn.json` + `kasten.png` + `tinte.png`);
   der Statusfilter kommt aus dem Archiv-Read (nur `angenommen`, die
   Streifenliste trägt gar keinen Status), und eine zurückgezogene Fassung
-  verlässt den Baum beim nächsten Lauf wieder. Wurzel
+  verlässt den Baum beim nächsten Lauf wieder. In jedem `bahn.json` steht
+  neben dem eigenen Hüllen-Format auch das `pfad_format` der ZEILE — sonst
+  sähe „keine Grenzen von Hand" genauso aus wie „vor `letter_spans`
+  geschrieben". Wurzel
   `tools/eigenhand/trainingssaetze/`, gitignored, **kein Mess-Satz**: ein
   Streifen hat keine Referenzspur (Prüfstein 2), darum heißt das Manifest
   bewusst nicht `manifest.json` und ein Test pinnt die Trennung von den
-  Bench-Wurzeln. Vorregistrierung der Ziehung:
+  Bench-Wurzeln. Zwei Verweigerungen schützen die Zusage „kein Byte im
+  Repo": ein Ziel INNERHALB des Checkouts, das die eine gitignore-Regel
+  nicht deckt (`--out .`, `EIGENHAND_TRAININGSSATZ`), und eine zweite Hand
+  in demselben `--out` — dort würden sich die Läufe gegenseitig die Fälle
+  wegräumen, weil eine Fall-ID keine Hand trägt. Vorregistrierung der Ziehung:
   [`messjournal.md`](messjournal.md) §14 „Trainingssatz `sep20`".
 - **`report`** — Bestandsbericht (Erstbeleg-/Ausbau-Quote, Fehlstellen,
   Druckvorschlag) und, seit dem **Streifen-Befund** (2026-09-07), die

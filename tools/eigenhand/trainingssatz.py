@@ -164,6 +164,11 @@ CASE_CROP = "kasten.png"
 CASE_MASK = "tinte.png"
 
 
+# The one path inside the repository this tree may occupy, because it is the
+# one path `.gitignore` excludes. Everything else goes outside the checkout.
+DEFAULT_EXPORT_ROOT = REPO_ROOT / "tools" / "eigenhand" / "trainingssaetze"
+
+
 def export_root() -> Path:
     """The local training-set root (gitignored; env-overridable for tests).
 
@@ -173,11 +178,33 @@ def export_root() -> Path:
     bench at it.
     """
     override = os.environ.get("EIGENHAND_TRAININGSSATZ")
-    return Path(override) if override else REPO_ROOT / "tools" / "eigenhand" / "trainingssaetze"
+    return Path(override) if override else DEFAULT_EXPORT_ROOT
 
 
 def hand_export_dir(hand: str, root: Path | None = None) -> Path:
     return (root or export_root()) / check_hand_id(hand)
+
+
+def checked_out(out: Path) -> Path:
+    """Refuse a target inside the checkout that the gitignore rule does not cover.
+
+    „No byte of this tree enters the repo" is a licensing promise
+    (`quellen-und-rechte.md` §5), and up to here it rested entirely on one
+    `.gitignore` line — while `--out .` and `EIGENHAND_TRAININGSSATZ` could
+    both put reserved own-hand crops anywhere in the checkout as untracked,
+    unignored files that the next wide `git add -A` would stage. Outside the
+    repository nothing needs guarding; inside it, only the one ignored root
+    does.
+    """
+    resolved = out.expanduser().resolve()
+    if resolved.is_relative_to(REPO_ROOT.resolve()) and not resolved.is_relative_to(DEFAULT_EXPORT_ROOT.resolve()):
+        raise SystemExit(
+            f"{resolved} is inside the repository but outside the gitignored training root "
+            f"{DEFAULT_EXPORT_ROOT} — this export is cut from reserved own-hand material and no byte of it "
+            "may enter the repo (docs/reference/quellen-und-rechte.md §5). Export outside the checkout, or "
+            "leave --out unset."
+        )
+    return out
 
 
 def case_id(strip: str, fassung: str, box_index: int) -> str:
@@ -362,17 +389,48 @@ def _write_case(target: Path, payload: dict, crop: np.ndarray, mask: np.ndarray)
     Image.fromarray((np.asarray(mask) * 255).astype(np.uint8), mode="L").save(target / CASE_MASK)
 
 
-def _prune(hand_dir: Path, keep: set[str]) -> list[str]:
+def _occupant(hand_dir: Path) -> str | None:
+    """The hand whose export already sits here, or None where none does.
+
+    The default target is per hand (`<root>/<hand>`), but `--out` is a
+    documented flag and `<root>` is the obvious thing to type — and a case id
+    carries no hand, so two hands sharing one directory would interleave in the
+    same `<satz>/` folders and each run would prune the other's cases away.
+    Refusing costs nothing: the manifest has named the hand all along.
+    """
+    manifest = hand_dir / MANIFEST_NAME
+    if not manifest.exists():
+        return None
+    try:
+        return json.loads(manifest.read_text(encoding="utf-8")).get("hand")
+    except (OSError, ValueError) as exc:
+        raise SystemExit(
+            f"{manifest} cannot be read ({exc}) — refusing to export over a tree it cannot identify"
+        ) from exc
+
+
+def _check_target(out: Path, hand: str) -> None:
+    """Refuse a target that is not this hand's — BEFORE the first case is cut."""
+    occupant = _occupant(out)
+    if occupant is not None and occupant != hand:
+        raise SystemExit(
+            f"{out} already holds the export of {occupant!r} — two hands in one directory would prune each "
+            f"other's cases away, because a case id names no hand. Leave --out unset (the default is per hand) "
+            f"or point it at a directory of its own."
+        )
+
+
+def _prune(hand_dir: Path, keep: set[str], hand: str) -> list[str]:
     """Drop case directories this run did not write — and only inside our own tree.
 
     A withdrawn Fassung has to LEAVE the export, or the status filter would
     hold for a first run and quietly stop holding for every later one. Deleting
     is safe exactly here and nowhere else: this tree is regenerable, it is not
     the archive, and the guard below refuses to remove anything under a
-    directory that does not carry this tool's own manifest — a mistyped
-    `--out` then finds nothing to destroy.
+    directory that does not carry this tool's own manifest for this very hand —
+    a mistyped `--out` then finds nothing to destroy.
     """
-    if not (hand_dir / MANIFEST_NAME).exists():
+    if _occupant(hand_dir) != hand:
         return []
     dropped: list[str] = []
     for satz in SAETZE:
@@ -398,6 +456,7 @@ def _case_payload(
     # untyped for the same reason.
     case: Any,
     missing: list[str],
+    pfad_format: int | None,
 ) -> dict:
     """Everything about one box that is not a plane — the entry, plus its address.
 
@@ -409,6 +468,14 @@ def _case_payload(
     """
     return {
         "format": TRAININGSSATZ_FORMAT,
+        # The ROW's own Streifen-Pfad format, kept apart from this file's
+        # envelope version exactly as `kartei.pfad_record` keeps it apart from
+        # `PFAD_ARCHIVE_FORMAT`. Without it a reader cannot tell „this box has
+        # no corrected boundaries" from „this row predates `letter_spans` and
+        # the two sensors" — both look like `grenzen_von_hand: 0` and a thin
+        # `meta`, and `core.eigenhand.tintentreue` greys a whole box out on the
+        # difference.
+        "pfad_format": pfad_format,
         "hand": hand,
         "style": style,
         "set": satz,
@@ -450,6 +517,8 @@ def _case_payload(
 
 def export(hand: str, base: str, token: str, out: Path, today: str) -> int:
     """Cut every hand-drawn box of one hand into its set. Returns the case count."""
+    checked_out(out)
+    _check_target(out, hand)
     kartei = load_kartei(hand)
     record = rueckhalt_of(kartei)
     if record is None:
@@ -487,7 +556,9 @@ def export(hand: str, base: str, token: str, out: Path, today: str) -> int:
             skipped["nicht_angenommen"] += 1
             continue
         url = f"{base}/eigenhand/strips/{quote(hand)}/{quote(strip)}/{quote(fassung)}/pfade"
-        entries = _hand_work((request_json("GET", url, token) or {}).get("pfade") or [])
+        answered = request_json("GET", url, token) or {}
+        pfad_format = answered.get("format")
+        entries = _hand_work(answered.get("pfade") or [])
         if not entries:
             skipped["ohne_handarbeit"] += 1
             continue
@@ -519,7 +590,7 @@ def export(hand: str, base: str, token: str, out: Path, today: str) -> int:
                 continue
             word = frame["word"]
             case, missing = _case_for_box(prior, plane, frame, word, shaping_form_of(plan, word), ident)
-            payload = _case_payload(hand, style, satz, row, entry, frame, case, missing)
+            payload = _case_payload(hand, style, satz, row, entry, frame, case, missing, pfad_format)
             _write_case(out / satz / ident, payload, case.crop, case.mask)
             keep.add(ident)
             written.append(payload)
@@ -530,7 +601,7 @@ def export(hand: str, base: str, token: str, out: Path, today: str) -> int:
                 flush=True,
             )
 
-    dropped = _prune(out, keep)
+    dropped = _prune(out, keep, hand)
     manifest = {
         "format": TRAININGSSATZ_FORMAT,
         "hinweis": MANIFEST_HINWEIS,
