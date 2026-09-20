@@ -3807,8 +3807,10 @@ alles, wie es gebaut ist. Die Nummern sind nur Adressen für die Antwort.
 **Geschmacksfragen**
 
 29. **Der Streifen-Reiter öffnet auf der LISTE, nicht auf der Galerie**
-    (#643, V14). Die Bilderwand war vor der Welle das Erste, was man dort
-    sah; sie ist jetzt der `?ansicht=galerie`-Opt-in daneben. Kipp: es ist
+    (#643, V14). Vor der Welle zeigte der Reiter Bilder — eine Kachel je
+    Fassung, und bei gesetztem Item-Filter die Wort-Galerie; seit #643 ist
+    die Zeilenliste die Vorgabe und die Bilder stehen als
+    `?ansicht=galerie` daneben. Kipp: es ist
     **kein** Ein-Zeilen-Schalter — `DEFAULT_LIST_VIEW` in
     `app/src/sections/admin/shell/listState.ts` bedient alle vier Listen,
     eine andere Vorgabe für DIESE Fläche braucht also eine eigene Angabe
