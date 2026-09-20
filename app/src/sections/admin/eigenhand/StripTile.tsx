@@ -207,7 +207,7 @@ export function StripTile({
           {showPfade && (
             <>
               {pfade.loading && <CircularProgress size={12} sx={{ mt: 1 }} />}
-              {drawn.length > 0 && placeable && <PfadCaption pfade={drawn} flecken={row.flecken} />}
+              {drawn.length > 0 && placeable && <PfadCaption pfade={drawn} />}
               {/* NOT gated by `placeable`: the numbers were measured on the
                   strip and need no cut geometry, while the overlay does. A box
                   from a Bogen printed before the cut rectangles existed can

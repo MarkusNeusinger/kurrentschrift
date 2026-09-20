@@ -42,7 +42,7 @@ import { useAdmin } from '@/context/adminState';
 import { createWorkItem, deleteWorkItem, listWorkItems, patchWorkItem } from '@/lib/api';
 import type { WorkItemKind, WorkItemOut, WorkItemStage, WorkItemStatus } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
-import { joinsUrl, lettersUrl, wordsUrl } from '@/sections/admin/shell/focus';
+import { eigenhandUrl, joinsUrl, lettersUrl, readStripBoxSpecimen, wordsUrl } from '@/sections/admin/shell/focus';
 import {
   groupKorb,
   isKorbFilterAll,
@@ -134,7 +134,19 @@ function workItemUrl(item: WorkItemOut, hand: string | null): string | null {
   if (item.kind === 'pair') {
     return item.left_key && item.right_key ? joinsUrl(item.left_key, item.right_key, hand) : null;
   }
-  if (item.kind === 'word') return item.word ? wordsUrl(item.word, item.specimen_id, hand) : null;
+  if (item.kind === 'word') {
+    // A word item filed on a written word BOX of the own hand points at the
+    // strip surface, not at the Wörter overview: its specimen is no plate
+    // (V7), and `wordsUrl` would send the reader to the Vorlage's Wortproben
+    // with a `s=S0041/F02#2` no list there can resolve. The address travels in
+    // the link even though the surface does not open on a single box yet —
+    // that is Phase 4 (V2) — so the row says where to look rather than nowhere.
+    if (item.specimen_kind === 'strip') {
+      const box = readStripBoxSpecimen(item.specimen_id);
+      return box ? eigenhandUrl('streifen', { ...box, hand }) : eigenhandUrl('streifen', { hand });
+    }
+    return item.word ? wordsUrl(item.word, item.specimen_id, hand) : null;
+  }
   return null;
 }
 

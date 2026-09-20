@@ -23,6 +23,16 @@
 // The panel is the HOST: it owns the listing, the filter, the shared zoom and
 // the three switches, and hands them to the pieces beside it — `StripTile` per
 // Fassung, `StripGallery` for the filtered view, `Lupe` for a closer look.
+//
+// Since the Nachfahr-Liste it hosts TWO surfaces over the same hand, and the
+// switch between them is the one every overview has: `?ansicht=liste` is the
+// work list with one row per word box, `?ansicht=galerie` the pictures above.
+// A second Unteransicht was refused for it (V2 — „Unterrouten erst, wenn die
+// Nachfahr-Liste eine eigene Fläche wird"), and the compact list is the
+// default because that is what V14 says an overview opens as. What the two
+// surfaces can answer differs and is not hidden: the word search narrows both,
+// the coverage ITEM only the gallery — a box row carries its word, never the
+// items that word covers.
 
 import {
   Alert,
@@ -38,6 +48,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { getEigenhandStrips } from '@/lib/api';
 import type { EigenhandFleck, EigenhandStrip, EigenhandStripFilter } from '@/lib/api';
@@ -49,6 +60,8 @@ import { de, fmt } from '@/locales/admin';
 import { byBefund } from '@/sections/admin/eigenhand/befundOrder';
 import { Lupe } from '@/sections/admin/eigenhand/Lupe';
 import type { LupeTarget } from '@/sections/admin/eigenhand/Lupe';
+import { NachfahrListe } from '@/sections/admin/eigenhand/NachfahrListe';
+import { STRIP_BOX_LIST_SPEC } from '@/sections/admin/eigenhand/stripBoxRows';
 import { boxMatches } from '@/sections/admin/eigenhand/stripFilter';
 import { GALLERY_PAGE, StripGallery } from '@/sections/admin/eigenhand/StripGallery';
 import type { Beleg } from '@/sections/admin/eigenhand/StripGallery';
@@ -56,7 +69,9 @@ import { StripTile } from '@/sections/admin/eigenhand/StripTile';
 import { ZOOMS, ZOOM_LABELS } from '@/sections/admin/eigenhand/stripZoom';
 import type { Zoom } from '@/sections/admin/eigenhand/stripZoom';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
+import { readListState, writeListState, type ListView } from '@/sections/admin/shell/listState';
 import { Panel } from '@/sections/admin/shell/Panel';
+import { ListViewSwitch } from '@/sections/admin/shell/WorkList';
 import { TOUCH_TARGET } from '@/styles/hitArea';
 import { paper } from '@/styles/paper';
 
@@ -74,6 +89,15 @@ export function StripsPanel({
   labelOf: (item: string) => string;
 }) {
   const t = de.admin.eigenhand;
+  // Which of the two surfaces is on. It is LIST state, so it lives in the URL
+  // beside the list's own filters rather than in component state — a Korb link
+  // or a pasted address opens the surface it was written on. The spec is the
+  // list's, because `ansicht` belongs to whichever list is being looked at;
+  // everything else in that spec only matters once the list is mounted.
+  const [params, setParams] = useSearchParams();
+  const view = readListState(params, STRIP_BOX_LIST_SPEC).view;
+  const setView = (next: ListView) =>
+    setParams(writeListState(params, { view: next }, STRIP_BOX_LIST_SPEC), { replace: true });
   const [strips, setStrips] = useState<EigenhandStrip[]>([]);
   const [error, setError] = useState<ApiErrorText | null>(null);
   // The listing runs on the first render too, so the panel starts in its
@@ -181,15 +205,18 @@ export function StripsPanel({
     [listed, filter, filtered],
   );
 
-  const caption = filtered
-    ? fmt(t.stripBelegeCount, { count: belege.length, strips: strips.length })
-    : strips.length
-      ? fmt(t.stripCount, { count: strips.length })
-      : t.stripImagesIntro;
+  const liste = view === 'liste';
+  const caption = liste
+    ? t.nachfahren.caption
+    : filtered
+      ? fmt(t.stripBelegeCount, { count: belege.length, strips: strips.length })
+      : strips.length
+        ? fmt(t.stripCount, { count: strips.length })
+        : t.stripImagesIntro;
 
   return (
     <Panel
-      title={t.stripImagesTitle}
+      title={liste ? `${t.stripImagesTitle} · ${t.nachfahren.title}` : t.stripImagesTitle}
       caption={caption}
       actions={
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}>
@@ -200,49 +227,62 @@ export function StripsPanel({
               three hints sit in ONE InfoHint at the head of the row. */}
           <InfoHint title={t.stripSwitchesTitle} label={t.stripSwitchesAria}>
             <Stack spacing={0.75}>
+              <Typography variant="body2">{t.nachfahren.viewHint}</Typography>
               <Typography variant="body2">{`${t.befundSort} — ${t.befundSortHint}`}</Typography>
               <Typography variant="body2">{`${t.pfadShow} — ${t.pfadShowHint}`}</Typography>
               <Typography variant="body2">{`${t.stripNoRulings} — ${t.stripNoRulingsHint}`}</Typography>
             </Stack>
           </InfoHint>
-          <FormControlLabel
-            control={<Switch size="small" checked={byWeakest} onChange={(e) => setByWeakest(e.target.checked)} />}
-            label={<Typography variant="caption">{t.befundSort}</Typography>}
-            sx={{ mr: 0 }}
-          />
-          <FormControlLabel
-            control={<Switch size="small" checked={pfade} onChange={(e) => setPfade(e.target.checked)} />}
-            label={<Typography variant="caption">{t.pfadShow}</Typography>}
-            sx={{ mr: 0 }}
-          />
-          <FormControlLabel
-            control={<Switch size="small" checked={ohneLineatur} onChange={(e) => setOhneLineatur(e.target.checked)} />}
-            label={<Typography variant="caption">{t.stripNoRulings}</Typography>}
-            sx={{ mr: 0 }}
-          />
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={zoom}
-            aria-label={t.stripZoom}
-            onChange={(_e, value: Zoom | null) => value && setZoom(value)}
-          >
-            {/* „¼ ½ 1:1 2×" measured 27–35 × 31 px — the smallest targets left
-                on the page the author works on with a finger. A group's buttons
-                touch, so they grow in BOTH edges rather than overlapping each
-                other's hit areas (§9.3). The sweep never caught them: it only
-                sees this page's shell, because no hand is resolved until one is
-                chosen and no script can operate a picker. */}
-            {ZOOMS.map((level) => (
-              <ToggleButton
-                key={level}
-                value={level}
-                sx={{ px: 1, py: 0.25, textTransform: 'none', minWidth: TOUCH_TARGET, minHeight: TOUCH_TARGET }}
+          {/* The switch stands on BOTH surfaces; the three below it belong to
+              the pictures and are gone while the list is on — a „Lineatur
+              ausblenden" over a list of rows would be a control with nothing
+              to do. */}
+          <ListViewSwitch view={view} onChange={setView} />
+          {!liste && (
+            <>
+              <FormControlLabel
+                control={<Switch size="small" checked={byWeakest} onChange={(e) => setByWeakest(e.target.checked)} />}
+                label={<Typography variant="caption">{t.befundSort}</Typography>}
+                sx={{ mr: 0 }}
+              />
+              <FormControlLabel
+                control={<Switch size="small" checked={pfade} onChange={(e) => setPfade(e.target.checked)} />}
+                label={<Typography variant="caption">{t.pfadShow}</Typography>}
+                sx={{ mr: 0 }}
+              />
+              <FormControlLabel
+                control={
+                  <Switch size="small" checked={ohneLineatur} onChange={(e) => setOhneLineatur(e.target.checked)} />
+                }
+                label={<Typography variant="caption">{t.stripNoRulings}</Typography>}
+                sx={{ mr: 0 }}
+              />
+              <ToggleButtonGroup
+                size="small"
+                exclusive
+                value={zoom}
+                aria-label={t.stripZoom}
+                onChange={(_e, value: Zoom | null) => value && setZoom(value)}
               >
-                {ZOOM_LABELS[level]}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
+                {/* „¼ ½ 1:1 2×" measured 27–35 × 31 px — the smallest targets
+                    left on the page the author works on with a finger. A
+                    group's buttons touch, so they grow in BOTH edges rather
+                    than overlapping each other's hit areas (§9.3). The sweep
+                    never caught them: it only sees this page's shell, because
+                    no hand is resolved until one is chosen and no script can
+                    operate a picker. */}
+                {ZOOMS.map((level) => (
+                  <ToggleButton
+                    key={level}
+                    value={level}
+                    sx={{ px: 1, py: 0.25, textTransform: 'none', minWidth: TOUCH_TARGET, minHeight: TOUCH_TARGET }}
+                  >
+                    {ZOOM_LABELS[level]}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            </>
+          )}
         </Stack>
       }
     >
@@ -272,10 +312,10 @@ export function StripsPanel({
             {t.stripFilterClear}
           </Button>
         )}
-        {loading && <CircularProgress size={16} />}
+        {loading && !liste && <CircularProgress size={16} />}
       </Stack>
 
-      {error && (
+      {error && !liste && (
         <Alert severity="warning" sx={{ mb: 2 }}>
           <ErrorText error={error} prefix={t.stripImagesError} />
         </Alert>
@@ -284,14 +324,26 @@ export function StripsPanel({
       {/* The empty state says WHICH emptiness this is and where the step
           stands. The command itself is no longer copied here: „no strips at
           all" was all-or-nothing, while the Übergabekarte on the Bestand knows
-          how many Fassungen still owe their image. */}
-      {!loading && !error && strips.length === 0 && (
+          how many Fassungen still owe their image. The list has its own three
+          silences and answers out of its own read, so this one belongs to the
+          pictures alone. */}
+      {!loading && !error && !liste && strips.length === 0 && (
         <Typography variant="caption" sx={{ display: 'block', color: paper.inkSoft }}>
           {filtered ? t.stripBelegeEmpty : t.stripImagesEmpty}
         </Typography>
       )}
 
-      {filtered ? (
+      {liste ? (
+        <NachfahrListe
+          // Keyed by hand like the panel itself: no page, filter or open row of
+          // the previous hand survives a switch.
+          key={hand}
+          hand={hand}
+          wort={filter.wort ?? ''}
+          item={filter.item ?? null}
+          onShowGalerie={() => setView('galerie')}
+        />
+      ) : filtered ? (
         <StripGallery
           hand={hand}
           belege={belege}

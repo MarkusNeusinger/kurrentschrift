@@ -77,6 +77,42 @@ async def test_create_and_list_per_kind(api: Harness):
     assert res.json() == []
 
 
+async def test_files_a_written_word_box_of_the_own_hand(api: Harness):
+    """V7: a red Kasten of a Streifen goes into the Korb as a WORD item whose
+    specimen is the box — a third namespace beside the two plate ones.
+
+    No new `kind` and no migration: a complaint about a written word is a word
+    item wherever the word was written, and `specimen_kind` is `String(16)`
+    without a CHECK. What must hold is that the pair travels intact through
+    create and read, so the Nachfahr-Liste's link back to the box survives.
+    """
+    _, source_id = await api.seed_style_and_source()
+    filed = await _file(
+        api,
+        source_id,
+        {
+            "kind": "word",
+            "word": "kann",
+            "specimen_kind": "strip",
+            "specimen_id": "S0041/F02#2",
+            "note": "Bahn folgt der Tinte nicht",
+        },
+    )
+    assert (filed["specimen_kind"], filed["specimen_id"]) == ("strip", "S0041/F02#2")
+
+    res = await api.client.request("GET", f"/sources/{source_id}/work-items", headers=api.admin_headers())
+    assert [(r["kind"], r["specimen_kind"], r["specimen_id"]) for r in res.json()] == [("word", "strip", "S0041/F02#2")]
+
+    # The half-given reference stays refused for the new namespace too.
+    res = await api.client.request(
+        "POST",
+        f"/sources/{source_id}/work-items",
+        json_body={"kind": "word", "word": "kann", "specimen_kind": "strip"},
+        headers=api.admin_headers(),
+    )
+    assert res.status == 422
+
+
 async def test_full_protocol_run_and_status_filter(api: Harness):
     """open → ack → done: the session restates the task, works, then closes it
     with the diagnosed stage and what changed."""
@@ -350,6 +386,9 @@ async def test_rejects_unworkable_targets_and_unknown_keys(api: Harness):
         {"kind": "word", "note": "welches Wort?"},  # word without word or specimen
         {"kind": "word", "word": "wenn", "specimen_id": "wenn"},  # specimen id without its namespace
         {"kind": "letter", "glyph_key": "n", "specimen_kind": "word"},  # namespace without id
+        # A namespace outside the three: the column has no CHECK, so the schema
+        # is the only thing keeping a typo out of the link the Korb builds.
+        {"kind": "word", "word": "kann", "specimen_kind": "streifen", "specimen_id": "S0041/F02#2"},
         {"kind": "ligature", "glyph_key": "ch"},  # not a marked level
         _letter_item(glyph_key="zz9"),  # not a registry glyph
         {"kind": "pair", "left_key": "n", "right_key": "zz9"},

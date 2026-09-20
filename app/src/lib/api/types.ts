@@ -455,10 +455,17 @@ export interface WorkItemIn {
   left_key?: string | null;
   right_key?: string | null;
   word?: string | null;
-  specimen_kind?: 'word' | 'pair' | null;
+  specimen_kind?: SpecimenKind | null;
   specimen_id?: string | null;
   note?: string;
 }
+
+// The namespaces a specimen id may live in. Two are plates (the words.json
+// namespace of the occurrences); `strip` is the third and is no plate at all —
+// a written word BOX of the author's own hand, addressed `S0041/F02#2`
+// (Vorgabe V7). It carries no `kind` of its own: a complaint about a written
+// word is a word item wherever the word was written.
+export type SpecimenKind = 'word' | 'pair' | 'strip';
 
 // The marked level. The three doctrine levels, plus 'note' (no target and no
 // writing-path stage — it closes on its resolution alone) and 'landmark' (one

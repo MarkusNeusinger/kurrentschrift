@@ -7,7 +7,14 @@
 // when the three views (Buchstaben · Übergänge · Wörter) all became places
 // where an element is inspected and complained about.
 
-import type { InstanceOut, LandmarkKind, WordInstanceOut, WordSampleOut, WorkItemIn } from '@/lib/api';
+import type {
+  InstanceOut,
+  LandmarkKind,
+  SpecimenKind,
+  WordInstanceOut,
+  WordSampleOut,
+  WorkItemIn,
+} from '@/lib/api';
 import { de } from '@/locales/admin';
 import { layer, liftConnector, paper, pigment, strokeStyle } from '@/styles/paper';
 
@@ -40,11 +47,14 @@ export type WerkbankTarget =
   | { kind: 'word'; word: string }
   | { kind: 'landmark'; glyphKey: string; variant: number; landmark: LandmarkRef };
 
-// Where the element was SEEN — the words.json namespace, exactly the pair the
+// Where the element was SEEN — the namespace and the id, exactly the pair the
 // work-item API demands together (an id without its kind may point at nothing).
+// Two of the three namespaces are plates; `strip` is a written word box of the
+// own hand (`S0041/F02#2`, V7), which is why the type is the wire's own
+// `SpecimenKind` rather than a second list beside it.
 export interface SpecimenRef {
   id: string;
-  kind: 'word' | 'pair';
+  kind: SpecimenKind;
   word: string;
 }
 

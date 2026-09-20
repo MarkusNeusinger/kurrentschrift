@@ -13,6 +13,10 @@
 //   pair              → "left→right", the key the matrix and the join view use
 //   word              → the word TEXT (a row filed by specimen id alone names
 //                       no subject a list can key on)
+//   word on a STRIP box → that BOX, and never the word text: the subject is one
+//                       written box of the own hand (V7), and counting it on the
+//                       Vorlage's Wortprobe of the same text would put an
+//                       Eigenhand task on a plate row
 //   note              → nothing; a general note points at no subject by
 //                       definition, and counting it somewhere would invent one.
 //
@@ -25,6 +29,8 @@ export type KorbCounts = {
   byGlyph: Map<string, number>;
   byPair: Map<string, number>;
   byWord: Map<string, number>;
+  /** Keyed by the box address `S0041/F02#2` — the Nachfahr-Liste's own key. */
+  byStripBox: Map<string, number>;
 };
 
 /** The key the join surfaces use for one ordered pair. */
@@ -41,7 +47,7 @@ const bump = (map: Map<string, number>, key: string): void => {
  */
 export function korbCountsOf(items: WorkItemOut[] | null): KorbCounts | null {
   if (items === null) return null;
-  const counts: KorbCounts = { byGlyph: new Map(), byPair: new Map(), byWord: new Map() };
+  const counts: KorbCounts = { byGlyph: new Map(), byPair: new Map(), byWord: new Map(), byStripBox: new Map() };
   for (const item of items) {
     if (item.status !== 'open' && item.status !== 'returned') continue;
     if (item.kind === 'letter' || item.kind === 'landmark') {
@@ -49,7 +55,12 @@ export function korbCountsOf(items: WorkItemOut[] | null): KorbCounts | null {
     } else if (item.kind === 'pair') {
       if (item.left_key && item.right_key) bump(counts.byPair, pairCountKey(item.left_key, item.right_key));
     } else if (item.kind === 'word') {
-      if (item.word) bump(counts.byWord, item.word);
+      // One subject per row: a box row is counted on its box and nowhere else.
+      if (item.specimen_kind === 'strip') {
+        if (item.specimen_id) bump(counts.byStripBox, item.specimen_id);
+      } else if (item.word) {
+        bump(counts.byWord, item.word);
+      }
     }
   }
   return counts;

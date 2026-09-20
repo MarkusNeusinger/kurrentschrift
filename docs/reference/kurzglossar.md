@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-20): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **110
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **111
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -708,6 +708,15 @@ mitgeliefert. Erledigt sind genau zwei Zustände: `folgt`, und eine von Hand
 gezeichnete, noch ungemessene Bahn (Wahrheit, kein Mangel). Alles andere ist
 offen, auch jeder Skip-Eintrag. Nicht das „offen" des Nachfahr-Stands, das
 an der Tafel-Wortprobe hängt. `GET /eigenhand/pfade/{hand}?nur=offen`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.4
+
+**Nachfahr-Liste** — die Arbeitsliste der Eigenhand, eine Zeile je WORTKASTEN:
+Tintentreue-Stufe mit benennendem Sensor, Herkunft, Absetzer-Soll und der EINE
+nächste Schritt. „übersprungen: unautoriert" springt zur Tafel, „Maske
+geändert" verlangt erst `pfad --apply`, und auf einem von Hand gezogenen
+Kasten wird nie zum Neu-Folgen eingeladen. Ordnung in Phase 2: Schwere →
+Streifen; sie steht auf `?reiter=streifen` neben der Galerie, gewählt mit
+`?ansicht=liste|galerie`. `app/src/sections/admin/eigenhand/stripBoxRows.ts`.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.4
 
 **Fokusring** *(`focusRing`)* — der eine sichtbare Tastaturfokus: 2 px

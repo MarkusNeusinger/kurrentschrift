@@ -690,8 +690,13 @@ class WorkItemIn(BaseModel):
     left_key: str | None = Field(default=None, min_length=1, max_length=32)
     right_key: str | None = Field(default=None, min_length=1, max_length=32)
     word: str | None = Field(default=None, min_length=1, max_length=64)
-    # Where the issue was seen — the words.json namespace, like the occurrences.
-    specimen_kind: Literal["word", "pair"] | None = None
+    # Where the issue was seen — the words.json namespace, like the occurrences,
+    # plus one namespace that is not a plate at all: 'strip' is a written word
+    # BOX of the author's own hand, addressed `S0041/F02#2` (Vorgabe V7 of
+    # `docs/proposals/admin-redesign.md`). It needs no migration — the column is
+    # `String(16)` without a CHECK — and no new `kind`: a complaint about a
+    # written word is a word item wherever the word was written.
+    specimen_kind: Literal["word", "pair", "strip"] | None = None
     specimen_id: str | None = Field(default=None, min_length=1, max_length=64)
     note: str = ""
 
