@@ -137,8 +137,41 @@ TINTENPFAD_SPREAD: tuple[dict[str, Any], ...] = (
 )
 
 # One pen-down stretch in template units — baseline 0, midband 1, x from the
-# word's own origin, the frame `word_instances.strokes` uses.
-SYNTHETIC_STROKE = [[0.0, 0.0], [0.5, 1.0], [1.0, 0.0]]
+# word's own origin, the frame `word_instances.strokes` uses. Seven samples
+# rather than three since the strip editor shipped: the letter boundaries index
+# SAMPLES, so a three-point line leaves a boundary nowhere to be dragged to and
+# the correction surface cannot be driven locally at all.
+SYNTHETIC_STROKE = [[0.0, 0.0], [0.25, 0.5], [0.5, 1.0], [0.75, 0.5], [1.0, 0.0], [1.25, 0.5], [1.5, 1.0]]
+
+# How many letters the synthetic boundaries cut that stretch into, at most. The
+# slots are made up like everything else here — a real assignment comes from the
+# Span-Zuordner (`tools.eigenhand.pfad --spans`), which does not exist yet — and
+# they exist so the editor's „Grenzen" mode has something to show and to move.
+MAX_SYNTHETIC_SPANS = 3
+
+
+def synthetic_spans(word: str, samples: int) -> list[dict[str, Any]] | None:
+    """Cut one synthetic stroke into `letter_spans`, evenly and without a gap.
+
+    Even cuts, because nothing here means anything: what matters is that the
+    spans are ADJACENT (that is what makes a seam draggable), that they stay
+    inside the stroke, and that they claim no sample twice — the three things
+    `core.eigenhand.pfad.check_paths` refuses on the way in.
+
+    `None` rather than `[]` where there is nothing to cut: a null says the
+    boundaries were never assigned, an empty list would say they were assigned
+    and came back empty — the same distinction the Fleckenmaske draws.
+    """
+    slots = max(1, min(MAX_SYNTHETIC_SPANS, len(word)))
+    if slots < 2 or samples < slots:
+        return None
+    size = samples // slots
+    spans: list[dict[str, Any]] = []
+    for slot in range(slots):
+        first = slot * size
+        last = samples - 1 if slot == slots - 1 else first + size - 1
+        spans.append({"stroke": 0, "slot": slot, "first": first, "last": last, "herkunft": "auto"})
+    return spans
 
 
 class AdminApi:
@@ -242,6 +275,11 @@ def pfad_entries(layout_row: dict[str, Any], geometry: dict[str, Any], spread_of
                 "xh_px": float(frame["xh_px"]),
                 "verfahren": "tintenpfad",
                 "konfiguration": {"source": "seed-local-admin", "synthetic": True},
+                # The CHECKED field of format 2 — invented like everything else
+                # here, and the only way the editor's boundary correction can be
+                # driven on a throwaway stack at all (the real assignment comes
+                # from the Span-Zuordner, which is not built yet).
+                "letter_spans": synthetic_spans(frame["word"], len(SYNTHETIC_STROKE)),
                 # A null `letter_spans` in the free `meta` on purpose: format 2
                 # keeps the boundaries in a checked field of the entry and
                 # refuses a copy here, but a NULL is legitimate and is what a

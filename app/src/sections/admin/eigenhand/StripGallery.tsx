@@ -4,12 +4,13 @@
 
 import { Box, Button, Typography } from '@mui/material';
 
-import type { EigenhandStrip, EigenhandStripBox } from '@/lib/api';
+import type { EigenhandPfadBox, EigenhandStrip, EigenhandStripBox } from '@/lib/api';
 import type { RovingList } from '@/hooks/useRovingList';
 import { de, fmt } from '@/locales/admin';
 import { CropTile } from '@/sections/admin/eigenhand/CropTile';
 import type { LupeTarget } from '@/sections/admin/eigenhand/Lupe';
 import type { Zoom } from '@/sections/admin/eigenhand/stripZoom';
+import { stripBoxSpecimen } from '@/sections/admin/shell/focus';
 import { paper } from '@/styles/paper';
 
 /** How many tiles one page of the gallery shows, and what „mehr" adds. */
@@ -26,6 +27,7 @@ export function StripGallery({
   zoom,
   ohneLineatur,
   pfade,
+  ampelByBox,
   onLupe,
   roving,
 }: {
@@ -36,6 +38,9 @@ export function StripGallery({
   zoom: Zoom;
   ohneLineatur: boolean;
   pfade: boolean;
+  /** The Tintentreue per box address, or null while the hand-wide read is
+   * unknown — a tile then says nothing rather than „nicht beurteilt". */
+  ampelByBox: ReadonlyMap<string, EigenhandPfadBox> | null;
   onLupe: (target: LupeTarget) => void;
   /** The gallery's one tab stop, owned by the panel so it outlives a filter. */
   roving: RovingList;
@@ -65,6 +70,7 @@ export function StripGallery({
             zoom={zoom}
             ohneLineatur={ohneLineatur}
             pfade={pfade}
+            ampel={ampelByBox?.get(stripBoxSpecimen(row.strip, row.fassung, box.index)) ?? null}
             onLupe={onLupe}
           />
         ))}

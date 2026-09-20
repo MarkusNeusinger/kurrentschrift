@@ -217,6 +217,46 @@ export function buildStripBoxRows(input: StripBoxRowInput): StripBoxRow[] {
   return rows;
 }
 
+/** One box as the strip editor walks it — the row stripped to what drawing on
+ * it needs, so the editor never holds a list row it would be tempted to
+ * re-derive a verdict from. */
+export type StripTraceTarget = {
+  key: string;
+  strip: string;
+  fassung: string;
+  boxIndex: number;
+  word: string;
+  /** The runs the script writes this word in — BODY runs only (Prüfstein 7). */
+  absetzerSoll: number;
+};
+
+export const traceTargetOf = (row: StripBoxRow): StripTraceTarget => ({
+  key: row.key,
+  strip: row.strip,
+  fassung: row.fassung,
+  boxIndex: row.boxIndex,
+  word: row.word,
+  absetzerSoll: row.absetzerSoll,
+});
+
+/**
+ * Whether this box can be drawn on at all — and, where it can, whether drawing
+ * is the step the row should OFFER.
+ *
+ * Two skips are out, for two different reasons. „keine Bogen-Geometrie" has no
+ * rectangle, so there is neither a crop to draw on nor a frame to store a Bahn
+ * in — §6.4 calls it „nie machbar" and the editor would open on nothing.
+ * „unautoriert" could be drawn, but the row's ONE next step is the Tafel (V9):
+ * the word needs a Duktus that does not exist yet, and offering a second,
+ * mutually exclusive step beside the redirect is how the wrong one gets taken.
+ *
+ * An `authored` box stays in: correcting his own line — or its letter
+ * boundaries — is exactly what the author may do here. What is never offered on
+ * one is a re-FOLLOW (archiv R7), and that is a different button.
+ */
+export const traceableBox = (row: StripBoxRow): boolean =>
+  row.skipGrund !== 'no_geometry' && row.skipGrund !== 'unauthored';
+
 /** Whether one row answers one chip. */
 export function matchesBoxFilter(row: StripBoxRow, filter: BoxFilter): boolean {
   if (filter === 'maske-geaendert') return row.stale;

@@ -1,17 +1,19 @@
 // One tile of the Belege gallery: the written word a coverage cell or a search
 // led to, cut out of its strip.
 
-import { Box, CircularProgress, Stack, Typography } from '@mui/material';
+import { Box, Chip, CircularProgress, Stack, Typography } from '@mui/material';
 import { useRef } from 'react';
 
-import type { EigenhandStrip, EigenhandStripBox } from '@/lib/api';
+import type { EigenhandPfadBox, EigenhandStrip, EigenhandStripBox } from '@/lib/api';
 import { InfoHint } from '@/components/InfoHint';
 import { de } from '@/locales/admin';
+import { AmpelChip } from '@/sections/admin/eigenhand/AmpelChip';
 import type { LupeTarget } from '@/sections/admin/eigenhand/Lupe';
 import { bahnenOf } from '@/sections/admin/eigenhand/pfadBahnen';
 import { PfadLayer } from '@/sections/admin/eigenhand/PfadLayer';
 import { PfadRohzahlenChips } from '@/sections/admin/eigenhand/PfadRohzahlenChips';
 import { StripImage } from '@/sections/admin/eigenhand/StripImage';
+import { TINTENTREUE_GRUND } from '@/sections/admin/eigenhand/stripBoxRows';
 import type { Zoom } from '@/sections/admin/eigenhand/stripZoom';
 import { useNearViewport } from '@/sections/admin/eigenhand/useNearViewport';
 import { useStripImage } from '@/sections/admin/eigenhand/useStripImage';
@@ -26,6 +28,7 @@ export function CropTile({
   zoom,
   ohneLineatur,
   pfade: wantPfade,
+  ampel,
   onLupe,
   rowProps,
 }: {
@@ -35,6 +38,10 @@ export function CropTile({
   zoom: Zoom;
   ohneLineatur: boolean;
   pfade: boolean;
+  /** This box's Tintentreue from the hand-wide read, or null where that read
+   * has not answered — a tile then shows no chip at all rather than claiming
+   * „nicht beurteilt", which is a verdict of its own. */
+  ampel: EigenhandPfadBox | null;
   onLupe: (target: LupeTarget) => void;
   /** This tile's place in the gallery's Roving-Liste. */
   rowProps: Record<string, string>;
@@ -64,6 +71,22 @@ export function CropTile({
         </Typography>
         {loading && <CircularProgress size={12} />}
       </Stack>
+      {/* The box's own verdict, beside its picture. The tile lost this when the
+          free-standing „Maske geändert" chip gave way to the Ampel in the list
+          (#643); §7.2 wants it on both surfaces, so the hand-wide read reaches
+          down here too. The mask state stands BESIDE the step where the step
+          does not already say it — the Ampel shows one grey state at a time. */}
+      {ampel && (
+        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5, mb: 0.5 }}>
+          <AmpelChip urteil={ampel.tintentreue} />
+          {ampel.stale && ampel.tintentreue.grund !== TINTENTREUE_GRUND.maske && (
+            <Chip size="small" color="warning" variant="outlined" label={t.pfadStale} sx={{ flexShrink: 0 }} />
+          )}
+          <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+            {ampel.tintentreue.grund}
+          </Typography>
+        </Stack>
+      )}
       {url ? (
         <StripImage
           url={url}

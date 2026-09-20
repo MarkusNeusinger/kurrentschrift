@@ -849,12 +849,7 @@ def _strip_out(
         bytes=row.bytes,
         words=words,
         boxes=[
-            EigenhandStripBoxOut(
-                index=index,
-                word=word,
-                items=coverage.word_items(shaping_form_of(plan, word)),
-                rect_px=_rect_of(frames, index, word),
-            )
+            _box_out(frames, index, word, coverage.word_items(shaping_form_of(plan, word)))
             for index, word in enumerate(words)
         ],
         befund=EigenhandBefundOut(**found.as_dict()) if found else None,
@@ -878,8 +873,8 @@ def _box_frames(row, layouts: dict | None) -> list[dict] | None:
     return frames_of_row(rows[row.row_index], list(row.crop_origin_mm or []), row.width_px, row.height_px)
 
 
-def _rect_of(frames: list[dict] | None, index: int, word: str) -> list[int] | None:
-    """The box's rectangle — only where the PRINTED box carries the same word.
+def _frame_of(frames: list[dict] | None, index: int, word: str) -> dict | None:
+    """The box's printed frame — only where the PRINTED box carries the same word.
 
     The words come from the frozen plan and the rectangles from the Bogen that
     was printed from it, so the two agree by construction. Checked anyway: if
@@ -889,7 +884,24 @@ def _rect_of(frames: list[dict] | None, index: int, word: str) -> list[int] | No
     """
     if not frames or index >= len(frames) or frames[index].get("word") != word:
         return None
-    return frames[index]["rect_px"]
+    return frames[index]
+
+
+def _box_out(frames: list[dict] | None, index: int, word: str, items: list[str]) -> EigenhandStripBoxOut:
+    """One word box as the API states it: where it sits, and on which ruling.
+
+    Both come from the same `frame_for_box` call, so a reader can never get a
+    rectangle from one Bogen and a baseline from another.
+    """
+    frame = _frame_of(frames, index, word)
+    return EigenhandStripBoxOut(
+        index=index,
+        word=word,
+        items=items,
+        rect_px=None if frame is None else frame["rect_px"],
+        nominal_baseline_row=None if frame is None else frame["baseline_row"],
+        nominal_xh_px=None if frame is None else frame["xh_px"],
+    )
 
 
 @router.get("/strips/{hand}/{strip}/{fassung}")
@@ -1232,14 +1244,9 @@ async def _pfad_row(hand: str, strip: str, fassung: str, db: AsyncSession, *, fo
 def _pfad_boxes(row, plan: dict, layout_row: dict) -> list[EigenhandStripBoxOut]:
     """The row's word boxes with their rectangles — where a path may be placed."""
     words = words_of(plan, row.strip) if row.strip in plan["strips"] else []
-    frames = frames_of_row(layout_row, list(row.crop_origin_mm or []), row.width_px, row.height_px) or []
+    frames = frames_of_row(layout_row, list(row.crop_origin_mm or []), row.width_px, row.height_px)
     return [
-        EigenhandStripBoxOut(
-            index=index,
-            word=word,
-            items=coverage.word_items(shaping_form_of(plan, word)),
-            rect_px=frames[index]["rect_px"] if index < len(frames) else None,
-        )
+        _box_out(frames, index, word, coverage.word_items(shaping_form_of(plan, word)))
         for index, word in enumerate(words)
     ]
 
