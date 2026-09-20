@@ -1186,6 +1186,101 @@ export interface EigenhandPfadList {
   boxes: EigenhandStripBox[];
 }
 
+// Die Tintentreue — „folgt der Bahn die Tinte?" per word box, DERIVED on read
+// from the sensors the follower stored (`core/eigenhand/tintentreue.py`).
+// Three measured steps and ONE grey state: grey is the absence of a
+// measurement, not a fourth step, so it carries its reason in `grund` („kein
+// Eintrag" · „von Hand gezeichnet" · „Maske geändert" · „Format 1 —
+// unvollständig gemessen" · „unvollständig gemessen"). Where a step WAS
+// measured, `grund` is the name of the sensor that decided it.
+//
+// No scalar travels, on purpose — a step, the naming sensor and the raw
+// readings. `vorlaeufig` says the thresholds are still the borrowed ones (no
+// blind round on this hand yet), and a surface has to say so rather than imply
+// a calibration that has not happened.
+export type EigenhandTintentreueStufe = 'folgt' | 'folgt teils' | 'folgt nicht' | 'nicht beurteilt';
+
+// `stufe` is null where the sensor has no reading OR no bound — told apart by
+// `wert`, and neither counts as green. `soll` is filled for the Absetzer only.
+export interface EigenhandTintentreueSensor {
+  name: string;
+  wert: number | null;
+  soll: number | null;
+  gruen: number | null;
+  gelb: number | null;
+  stufe: number | null;
+}
+
+export interface EigenhandTintentreue {
+  stufe: EigenhandTintentreueStufe;
+  grund: string;
+  gemessen: boolean;
+  sensor: string | null;
+  sensoren: EigenhandTintentreueSensor[];
+  format: number;
+  schwellen_stand: string;
+  vorlaeufig: boolean;
+}
+
+// A Fassung gets a COUNTER („3 von 4 Kästen folgen"), never an Ampelfarbe of
+// its own (author decision E, 2026-09-20) — a second verdict beside the
+// Streifen-Befund over the same Fassung is exactly what was refused. Counted
+// over ALL boxes of the Fassung, never over the ones a filter left standing.
+export interface EigenhandKastenzaehler {
+  kaesten: number;
+  gemessen: number;
+  folgt: number;
+  von_hand: number;
+}
+
+// One word box's STATE — everything but the Bahn itself. `verfahren`,
+// `erzeugt_am` and `flecken_n` are null where the box carries no entry;
+// `status`/`grund`/`detail` additionally where the row was written under
+// Streifen-Pfad format 1, which had no Skip-Eintrag.
+//
+// `absetzer_soll` is the number of joined runs the script writes this word in
+// — BODY runs only, no Markenzüge, which is what a surface labels „Absetzer
+// (Körper)". Server-side so the editor's target and the Absetzer sensor cannot
+// disagree. `stale` says the entry was followed under a Fleckenmaske of a
+// different size than the Fassung carries today, and `offen` whether the box
+// is still Nachfahr-work (the rule lives in `api/routers/eigenhand.py`).
+export interface EigenhandPfadBox {
+  box_index: number;
+  word: string;
+  absetzer_soll: number;
+  status: EigenhandPfadStatus | null;
+  grund: EigenhandPfadGrund | null;
+  detail: string | null;
+  verfahren: string | null;
+  erzeugt_am: string | null;
+  flecken_n: number | null;
+  stale: boolean;
+  offen: boolean;
+  tintentreue: EigenhandTintentreue;
+}
+
+export interface EigenhandPfadFassung {
+  strip: string;
+  fassung: string;
+  sheet: string;
+  row_index: number;
+  // The ROW's own marker, never the constant this API writes.
+  format: number;
+  // False says nobody has followed this Fassung — not the same as „followed
+  // and this box got nothing".
+  gefolgt: boolean;
+  zaehler: EigenhandKastenzaehler;
+  kaesten: EigenhandPfadBox[];
+}
+
+// Which word boxes of one hand are in which state, hand-wide and without a
+// single point of a Bahn on the wire (GET /eigenhand/pfade/{hand}). The points
+// stay behind the per-Fassung read, one Fassung at a time.
+export interface EigenhandPfadBoxes {
+  hand: string;
+  fassungen: EigenhandPfadFassung[];
+}
+
 // One circle of a Fleckenmaske — millimetres from the strip crop's own
 // top-left corner, never page coordinates. `quelle` says who put it there:
 // `auto` the detector at import time, `hand` the workbench's brush. The mask

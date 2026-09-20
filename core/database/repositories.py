@@ -1014,6 +1014,25 @@ class EigenhandRepository:
         result = await self.session.execute(self._one_strip(hand, strip, fassung).options(*self._STRIP_META_ONLY))
         return result.scalar_one_or_none()
 
+    async def strips_with_pfade(self, hand: str) -> "list[EigenhandStrip]":
+        """Every strip row of ONE HAND with its Streifen-Pfade, without its bytes.
+
+        The hand-wide twin of `strip_pfade`, and the one listing that wants the
+        deferred column: „which word boxes of this hand are in which state" is
+        a question about the paths themselves, so there is nothing to defer it
+        for. What the deferral protects is still protected — the points are
+        folded into a handful of numbers per box before anything is sent, so
+        the column is read once per row here and never put on the wire (the
+        projection is `api.routers.eigenhand.read_pfad_boxes`).
+
+        Separate from `strips_of` rather than a flag on it: every other listing
+        asks the cheap question, and a parameter would make it one careless
+        argument away from dragging every path of every Fassung along.
+        """
+        stmt = select(EigenhandStrip).options(*self._STRIP_WITHOUT_PNG).where(EigenhandStrip.hand == hand)
+        result = await self.session.execute(stmt.order_by(EigenhandStrip.strip, EigenhandStrip.fassung))
+        return list(result.scalars().all())
+
     async def strips_of(self, hand: str, strip: str | None = None) -> "list[EigenhandStrip]":
         """Strip rows WITHOUT the bytes — listings, the admin grid, the manifest."""
         stmt = select(EigenhandStrip).options(*self._STRIP_META_ONLY).where(EigenhandStrip.hand == hand)

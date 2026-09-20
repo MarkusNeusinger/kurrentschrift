@@ -42,6 +42,10 @@ count what a hand already covers.
   the image and loaded only when the view asks for it (proposal §7.5). A box
   whose stored path was drawn by HAND is never replaced by a followed one: the
   whole push is refused with 409 unless it carries ``?replace_authored=true``.
+* ``GET /eigenhand/pfade/{hand}`` — the same paths' STATE, hand-wide and
+  without a single point on the wire: which word boxes carry which Bahn, what
+  the Tintentreue says about each, and which of them are still work
+  (``?nur=offen``).
 
 The strips are the one place where own-hand PIXELS do travel (owner, 2026-08-24)
 — so that the workbench can show a written Streifen the way it shows a chart
@@ -76,6 +80,8 @@ import json
 import logging
 import unicodedata
 from datetime import date as date_cls
+from functools import lru_cache
+from typing import Any, Literal
 from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
@@ -91,8 +97,12 @@ from api.schemas import (
     EigenhandFleckenIn,
     EigenhandFleckenOut,
     EigenhandHandsOut,
+    EigenhandKastenzaehlerOut,
+    EigenhandPfadBoxesOut,
+    EigenhandPfadBoxOut,
     EigenhandPfadeIn,
     EigenhandPfadeOut,
+    EigenhandPfadFassungOut,
     EigenhandSetupIn,
     EigenhandSetupOut,
     EigenhandSetupsOut,
@@ -105,13 +115,21 @@ from api.schemas import (
     EigenhandStripOut,
     EigenhandSyncIn,
     EigenhandSyncOut,
+    EigenhandTintentreueOut,
     EigenhandUebergangsraumIn,
     EigenhandUebergangsraumOut,
     EigenhandUebergangsraumStoreOut,
 )
 from core.database import EigenhandRepository
 from core.eigenhand import bogen, coverage, crop, flecken, geometry
-from core.eigenhand.befund import BEFUND_FORMAT, befund_index, hand_nib, kringel_catalogue, measure_plane
+from core.eigenhand.befund import (
+    BEFUND_FORMAT,
+    befund_index,
+    body_runs_expected,
+    hand_nib,
+    kringel_catalogue,
+    measure_plane,
+)
 from core.eigenhand.bestand import bestand as build_bestand
 from core.eigenhand.faellig import faellig
 from core.eigenhand.flecken import FLECKEN_FORMAT
@@ -125,6 +143,7 @@ from core.eigenhand.pfad import (
     frames_of_row,
 )
 from core.eigenhand.plan import load_plan, shaping_form_of, words_of
+from core.eigenhand.tintentreue import GRUND_VON_HAND, STUFEN, Tintentreue, tintentreue, zaehler
 
 
 logger = logging.getLogger(__name__)
@@ -1348,6 +1367,171 @@ async def write_pfade(
         pfade=checked,
         boxes=_pfad_boxes(row, plan, layout_row),
     )
+
+
+# ------------------------------------------------- the paths' state, hand-wide
+
+
+@lru_cache(maxsize=1024)
+def _absetzer_soll(word: str) -> int:
+    """How many joined runs the script writes this word in — BODY runs only.
+
+    Cached because the frozen plan holds a few hundred words and this read asks
+    every one of them once per Fassung, while `shape_word` behind it is the
+    same pure function of the same string every time.
+    """
+    return body_runs_expected(word)
+
+
+def _maske_n(masken: dict, row) -> int | None:
+    """How large the Fassung's Fleckenmaske is TODAY, or None where none was taken.
+
+    None rather than 0: „nobody has looked" is not „nothing to erase", and a 0
+    would call every entry followed under a real mask stale.
+    """
+    maske = (masken.get(row.strip) or {}).get(row.fassung)
+    return None if maske is None else len(maske)
+
+
+def _stale(entry: dict[str, Any] | None, maske_n: int | None) -> bool:
+    """Whether this entry was followed under a mask of a different size."""
+    if entry is None or maske_n is None:
+        return False
+    flecken_n = entry.get("flecken_n")
+    return isinstance(flecken_n, int) and not isinstance(flecken_n, bool) and flecken_n != maske_n
+
+
+def _offen(urteil: Tintentreue) -> bool:
+    """Whether this word box is still Nachfahr-work.
+
+    Exactly two states are DONE, and everything else is open: a Bahn the
+    sensors call `folgt`, and one the author drew by hand that nothing has
+    measured yet — that is ground truth, and the grey it carries is the missing
+    measurement rather than a defect. Open therefore covers a box with no entry
+    at all, every Skip-Eintrag whatever its `grund` (the `grund` says where the
+    work goes — „unauthored" to the plate, „gave_up" to the tracing surface —
+    not whether there is any), both worse steps, and the grey states that ask
+    for a re-follow („Maske geändert", „Format 1 — unvollständig gemessen",
+    „unvollständig gemessen").
+
+    A hand-drawn Bahn the tool HAS measured and found wanting stays open, and
+    deliberately so: that is a finding about the author's own trace, and the
+    one box nobody else can correct is the last one to hide.
+    """
+    return urteil.stufe != STUFEN[0] and urteil.grund != GRUND_VON_HAND
+
+
+def _pfad_box(
+    entry: dict[str, Any] | None, *, index: int, word: str, hand: str, pfade_format: int, maske_n: int | None
+) -> tuple[EigenhandPfadBoxOut, Tintentreue]:
+    """One word box as state — the verdict comes back along for the counter."""
+    urteil = tintentreue(entry, hand=hand, pfade_format=pfade_format, maske_n=maske_n)
+    stated = entry or {}
+    box = EigenhandPfadBoxOut(
+        box_index=index,
+        word=word,
+        absetzer_soll=_absetzer_soll(word),
+        status=stated.get("status"),
+        grund=stated.get("grund"),
+        detail=stated.get("detail"),
+        verfahren=stated.get("verfahren"),
+        erzeugt_am=stated.get("erzeugt_am"),
+        flecken_n=stated.get("flecken_n"),
+        stale=_stale(entry, maske_n),
+        offen=_offen(urteil),
+        tintentreue=EigenhandTintentreueOut(**urteil.as_dict()),
+    )
+    return box, urteil
+
+
+def _pfad_fassung(
+    row, plan: dict, *, hand: str, maske_n: int | None, offen_only: bool
+) -> EigenhandPfadFassungOut | None:
+    """One Fassung's boxes with their counter, or None where a filter emptied it.
+
+    Which boxes EXIST comes from the frozen plan, exactly as in the strip
+    listing: the plan is the strip's identity, and a box with no stored entry
+    is the state the list is there to show. The counter is taken before the
+    filter — „3 von 4 Kästen folgen" answers the Fassung, not the query.
+    """
+    words = words_of(plan, row.strip) if row.strip in plan["strips"] else []
+    entries: dict[int, dict[str, Any]] = {}
+    for entry in row.pfade or []:
+        # Everything in this column went through `check_paths`, so the shape is
+        # sound — read defensively anyway: this is the one route that walks
+        # EVERY stored path of a hand, and a single odd cell would otherwise
+        # take the whole listing down rather than one box.
+        index = entry.get("box_index") if isinstance(entry, dict) else None
+        if isinstance(index, int) and not isinstance(index, bool):
+            entries[index] = entry
+    kaesten: list[EigenhandPfadBoxOut] = []
+    urteile: list[Tintentreue] = []
+    for index, word in enumerate(words):
+        box, urteil = _pfad_box(
+            entries.get(index), index=index, word=word, hand=hand, pfade_format=row.pfade_format, maske_n=maske_n
+        )
+        kaesten.append(box)
+        urteile.append(urteil)
+    gezaehlt = zaehler(urteile)
+    if offen_only:
+        kaesten = [box for box in kaesten if box.offen]
+        if not kaesten:
+            return None
+    return EigenhandPfadFassungOut(
+        strip=row.strip,
+        fassung=row.fassung,
+        sheet=row.sheet,
+        row_index=row.row_index,
+        format=row.pfade_format,
+        gefolgt=row.pfade is not None,
+        zaehler=EigenhandKastenzaehlerOut(**gezaehlt.as_dict()),
+        kaesten=kaesten,
+    )
+
+
+@router.get("/pfade/{hand}", response_model=EigenhandPfadBoxesOut)
+async def read_pfad_boxes(
+    hand: str, response: Response, nur: Literal["offen"] | None = None, db: AsyncSession = Depends(require_db)
+) -> EigenhandPfadBoxesOut:
+    """Which word boxes of one hand are in which state — no Bahn on the wire.
+
+    „Welche Kästen dieser Hand tragen welchen Zustand" is one question, and
+    answering it through the per-Fassung path read costs one request per
+    (strip, Fassung) and drags a few thousand points per word along for numbers
+    nobody asked for. This is that question as one answer: per box its
+    provenance, its Skip-Eintrag where it has one, the Tintentreue with the
+    sensor that names it, the Absetzer-Soll and whether it is still work. The
+    points stay where they are, one Fassung at a time, behind
+    `GET /eigenhand/strips/{hand}/{strip}/{fassung}/pfade`.
+
+    The projection runs in PYTHON over the loaded rows, never as a JSONB
+    operator: the HTTP suites run on SQLite, and a rule that only the shared
+    Postgres can evaluate is a rule no test here can hold.
+
+    `?nur=offen` narrows it to the boxes that still want work (`_offen`), and
+    drops a Fassung that has none left. The Fassung's counter is taken BEFORE
+    that — author decision E of 2026-09-20 gives a Fassung a counter and never
+    a colour, and a counter that moved with the filter would answer a different
+    question on every click.
+
+    `private, no-store` like the paths themselves: this is a projection of the
+    reserved own-hand pixels, one abstraction layer up. The gate stamps the
+    same header (`api.auth.require_admin`), and it is repeated here because
+    what a route promises should be readable in the route.
+    """
+    _checked_hand(hand)
+    repo = EigenhandRepository(db)
+    rows = await repo.strips_with_pfade(hand)
+    plan = load_plan()
+    style = style_of_hand(hand) or ""
+    masken = flecken.flecken_index(await repo.kartei(hand, style)) if rows else {}
+    fassungen = []
+    for row in rows:
+        stated = _pfad_fassung(row, plan, hand=hand, maske_n=_maske_n(masken, row), offen_only=nur == "offen")
+        if stated is not None:
+            fassungen.append(stated)
+    response.headers["Cache-Control"] = STRIP_CACHE_CONTROL
+    return EigenhandPfadBoxesOut(hand=hand, fassungen=fassungen)
 
 
 def _checked_strip(strip: str) -> str:
