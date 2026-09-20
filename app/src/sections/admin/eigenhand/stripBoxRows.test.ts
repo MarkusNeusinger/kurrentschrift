@@ -115,25 +115,39 @@ describe('die Schwere', () => {
     ]);
   });
 
-  it('greys a skip that is somebody else’s step, and finds nothing where the follower walked', () => {
+  it('greys a skip that is somebody else’s step, and finds nothing only where the follower gave up', () => {
     // „unautoriert" is a Tafel gap and „keine Bogen-Geometrie" is a Bogen
     // nobody can re-cut — neither is the follower coming back empty-handed.
-    expect(severityOf(box(0, { status: 'skipped', grund: 'unauthored', detail: 'sz ch' }), true)).toBe('grau');
-    expect(severityOf(box(0, { status: 'skipped', grund: 'no_geometry' }), true)).toBe('grau');
-    expect(severityOf(box(0, { status: 'skipped', grund: 'gave_up' }), true)).toBe('nichts-gefunden');
-    // No entry at all: only in a Fassung the follower HAS walked does that mean
-    // it came back with nothing.
-    expect(severityOf(box(0), true)).toBe('nichts-gefunden');
-    expect(severityOf(box(0), false)).toBe('grau');
+    expect(severityOf(box(0, { status: 'skipped', grund: 'unauthored', detail: 'sz ch' }))).toBe('grau');
+    expect(severityOf(box(0, { status: 'skipped', grund: 'no_geometry' }))).toBe('grau');
+    expect(severityOf(box(0, { status: 'skipped', grund: 'gave_up' }))).toBe('nichts-gefunden');
+  });
+
+  it('never reads a box with no entry as a finding, whatever the Fassung did', () => {
+    // `--box` narrows a RUN and says nothing about the boxes it left alone
+    // (`follow_row` writes no „not selected" on purpose), so the untouched
+    // siblings of the first per-box run must not climb over real findings.
+    const rows = rowsOf([fassung('S0041', [box(0), followed(1, 'folgt nicht')], { gefolgt: true })]);
+    expect(rows.map((row) => row.severity)).toEqual(['grau', 'rot']);
+    // It stays BELOW the measured findings — the step it was promoted over.
+    expect(sortStripBoxRows(rows).map((row) => row.word)).toEqual(['wort1', 'wort0']);
+    // The same box in a Fassung nobody has followed says exactly the same.
+    expect(severityOf(box(0))).toBe('grau');
   });
 
   it('puts the author’s own line under „erledigt", never under a measured step', () => {
-    const own = box(0, {
+    // Read off `offen`, which the server computes — not off the German reason
+    // sentence: „not open and not green" IS the hand-drawn, unmeasured box.
+    const own = box(0, { verfahren: 'authored', offen: false, tintentreue: urteil({ grund: 'von Hand gezeichnet' }) });
+    expect(severityOf(own)).toBe('von-hand');
+    // And a hand-drawn Bahn the tool HAS measured and found wanting is a
+    // finding like any other (V21) — it stays open and red.
+    const measured = box(0, {
       verfahren: 'authored',
-      offen: false,
-      tintentreue: urteil({ grund: 'von Hand gezeichnet' }),
+      offen: true,
+      tintentreue: urteil({ stufe: 'folgt nicht', grund: 'AIoU', gemessen: true, format: 2 }),
     });
-    expect(severityOf(own, true)).toBe('von-hand');
+    expect(severityOf(measured)).toBe('rot');
   });
 
   it('keeps the plan order inside one step, so equal rows never swap places', () => {
@@ -227,5 +241,19 @@ describe('the counter of the whole list', () => {
       ]),
     ]);
     expect(stripBoxTally(rows)).toEqual({ kaesten: 3, folgt: 1, vonHand: 1, offen: 1 });
+  });
+
+  it('counts „von Hand" in the tally as UNMEASURED, where the chip counts provenance', () => {
+    // An authored Bahn the tool has since measured keeps its Herkunft — so the
+    // chip holds it and the tally does not. The label says „(ungemessen)"
+    // rather than letting the two numbers look like a contradiction (V21).
+    const rows = rowsOf([
+      fassung('S0041', [
+        box(0, { verfahren: 'authored', offen: false, tintentreue: urteil({ grund: 'von Hand gezeichnet' }) }),
+        followed(1, 'folgt', { verfahren: 'authored' }),
+      ]),
+    ]);
+    expect(boxFilterCounts(rows)['von-hand']).toBe(2);
+    expect(stripBoxTally(rows).vonHand).toBe(1);
   });
 });

@@ -59,6 +59,10 @@ export function NachfahrListe({
   hand,
   /** The panel's word search (`?wort=`) — it narrows this list too. */
   wort,
+  /** Clear that search. It belongs to the PANEL, so „Filter zurücksetzen" can
+   * only undo it through the owner — without this the button would leave the
+   * screen unchanged wherever the word alone emptied the list. */
+  onClearWort,
   /** The coverage item filter (`?item=`), which only the gallery can answer. */
   item,
   /** Switch the surface back to the gallery — the way out of that mismatch. */
@@ -66,6 +70,7 @@ export function NachfahrListe({
 }: {
   hand: string;
   wort: string;
+  onClearWort: () => void;
   item: string | null;
   onShowGalerie: () => void;
 }) {
@@ -246,10 +251,17 @@ export function NachfahrListe({
       </Stack>
 
       {shown.length === 0 ? (
+        // „gefiltert" means the three axes that actually narrow this list —
+        // including the panel's word search, which the reset now reaches. Not
+        // `rows.length > 0`: with nothing ticked that offered a button which
+        // could not change anything the reader was seeing.
         <ListEmpty
-          filtered={rows.length > 0}
+          filtered={narrowed || wort.trim() !== ''}
           emptyText={t.empty}
-          onReset={() => update({ filters: [], status: BOX_STATUSES[0] })}
+          onReset={() => {
+            update({ filters: [], status: BOX_STATUSES[0] });
+            onClearWort();
+          }}
         />
       ) : (
         <Box {...roving.containerProps} sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, maxWidth: 1400 }}>

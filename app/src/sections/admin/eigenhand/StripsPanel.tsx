@@ -340,6 +340,9 @@ export function StripsPanel({
           key={hand}
           hand={hand}
           wort={filter.wort ?? ''}
+          // The search box is the panel's, so its reset is too — the mirror
+          // above empties the input when the filter drops to „no word".
+          onClearWort={() => onFilter({ ...filter, wort: undefined })}
           item={filter.item ?? null}
           onShowGalerie={() => setView('galerie')}
         />

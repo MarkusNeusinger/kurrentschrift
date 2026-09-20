@@ -4871,13 +4871,18 @@ welcher EINE Schritt als Nächstes dran ist. Genau dafür gibt es sie: die
 Umleitungen (proposals/admin-redesign.md §6.4). „übersprungen: unautoriert"
 ist keine Folger-Arbeit, sondern eine Ground-Truth-Lücke und springt zur
 Tafel (`/admin/buchstaben?g=<key>`, die Schlüssel stehen im `detail` des
-→ Skip-Eintrags); „Maske geändert" verlangt erst `pfad --apply`; und auf einem
-von Hand gezogenen Kasten wird NIE zum Neu-Folgen eingeladen — das ist die
-eigene Linie des Autors, und der Folger darf sie nicht ersetzen. Ordnung in
-Phase 2: **Schwere → Streifen** (Q13, gestuft), wobei die Schwere eine Leiter
-ist und keine Zahl — rot · Folger fand nichts · grau · gelb · von Hand · grün,
-innerhalb einer Stufe die Streifenfolge. Ohne eine einzige Messung sagt die
-Fläche das (sonst wäre „Schwere zuerst" stillschweigend die Streifenfolge).
+→ Skip-Eintrags); „Maske geändert" verlangt erst `pfad --apply`; ein Kasten
+ohne `rect_px` („keine Bogen-Geometrie") bekommt einen Satz und gar keinen
+Befehl, weil er „nie machbar" ist; und auf einem von Hand gezogenen Kasten
+wird NIE zum Neu-Folgen eingeladen — das ist die eigene Linie des Autors, und
+der Folger darf sie nicht ersetzen. Ordnung in Phase 2: **Schwere → Streifen**
+(Q13, gestuft), wobei die Schwere eine Leiter ist und keine Zahl — rot ·
+Folger fand nichts · grau · gelb · von Hand · grün, innerhalb einer Stufe die
+Streifenfolge. „Folger fand nichts" ist genau der `gave_up`-→ Skip-Eintrag:
+ein Kasten ohne Eintrag sagt nichts darüber, warum keiner da ist (`--box`
+verengt einen LAUF, nicht den Befund), und steht deshalb auf „grau". Ohne eine
+einzige Messung sagt die Fläche das (sonst wäre „Schwere zuerst"
+stillschweigend die Streifenfolge).
 Sie steht auf `?reiter=streifen` neben der Streifen-Galerie und wird mit
 demselben `?ansicht=liste|galerie`-Umschalter gewählt wie jede Übersicht (V2 —
 keine eigene Unterroute vor Phase 4); die Wortsuche gilt beiden Flächen, der

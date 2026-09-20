@@ -141,9 +141,12 @@ function workItemUrl(item: WorkItemOut, hand: string | null): string | null {
     // with a `s=S0041/F02#2` no list there can resolve. The address travels in
     // the link even though the surface does not open on a single box yet —
     // that is Phase 4 (V2) — so the row says where to look rather than nowhere.
+    // The WORD goes along beside it, and it is the half that already works:
+    // the Nachfahr-Liste filters on `wort=`, so the link opens on the handful
+    // of rows carrying that text instead of on every box of the hand.
     if (item.specimen_kind === 'strip') {
       const box = readStripBoxSpecimen(item.specimen_id);
-      return box ? eigenhandUrl('streifen', { ...box, hand }) : eigenhandUrl('streifen', { hand });
+      return eigenhandUrl('streifen', { ...box, wort: item.word, hand });
     }
     return item.word ? wordsUrl(item.word, item.specimen_id, hand) : null;
   }

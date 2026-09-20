@@ -65,10 +65,16 @@ export const STRIP_BOX_LIST_SPEC: ListSpec<BoxFilter, BoxSort, BoxStatus> = {
  *
  *   0 `rot`             — measured and bad: the Nachfahr-case the list is for.
  *   1 `nichts-gefunden` — the follower walked this box and came back with no
- *                         Bahn (`gave_up`, or no entry although the Fassung was
- *                         followed). Not measured, but certainly missing.
+ *                         Bahn. That is the `gave_up` Skip-Eintrag and NOTHING
+ *                         else: a box with no entry says only that nothing has
+ *                         ever been written for it, and guessing a cause from
+ *                         the Fassung's `gefolgt` flag would promote every box
+ *                         a `--box`-narrowed run did not touch (`follow_row`
+ *                         writes no „not selected" on purpose, and the server
+ *                         greys such a box as „kein Eintrag" — „nothing to
+ *                         judge, and nothing said about why").
  *   2 `grau`            — a state that keeps the box open without judging it:
- *                         never followed, mask changed, format 1, unmeasured —
+ *                         no entry at all, mask changed, format 1, unmeasured —
  *                         and the other skips, which are somebody else's step
  *                         („unautoriert" belongs to the Tafel, „keine
  *                         Bogen-Geometrie" to a Bogen nobody can re-cut).
@@ -83,18 +89,20 @@ export const BOX_SEVERITIES = ['rot', 'nichts-gefunden', 'grau', 'gelb', 'von-ha
 export type BoxSeverity = (typeof BOX_SEVERITIES)[number];
 
 /**
- * Two of the grey reasons `core/eigenhand/tintentreue.py` sends, as its own
- * words. Compared as strings the way `pfadHerkunft.ts` compares `verfahren`:
- * the STEP vocabulary is a closed `Literal` on the wire, the reasons are
- * sentences, and a reader that needs one of them says which.
+ * ONE of the grey reasons `core/eigenhand/tintentreue.py` sends, in its own
+ * words — and it is deliberately not used for the ranking below. `grund` is a
+ * free `str` on the wire (unlike `TintentreueStufe`, which is a closed
+ * `Literal` pinned against the core tuple), so a sentence compared here is a
+ * rename in `core` away from silently re-ordering the list. The ladder
+ * therefore reads typed fields only; this constant is left for the ROW, where
+ * the consequence of a drift is a chip shown twice rather than a wrong order.
  *
- * `maske` is needed by the row rather than by the model: the mask state is
- * shown beside the verdict, and where the verdict ALREADY says it (because
- * nothing greyer stands in front of it) a chip repeating it would be the very
- * doubling this PR removes from the strip caption.
+ * The row needs it because the mask state is shown beside the verdict, and
+ * where the verdict ALREADY says it (because nothing greyer stands in front of
+ * it) a chip repeating it would be the very doubling this PR removes from the
+ * strip caption. Pinned against `GRUND_MASKE` in `tests/test_api_eigenhand.py`.
  */
-export const TINTENTREUE_GRUND = { vonHand: 'von Hand gezeichnet', maske: 'Maske geändert' } as const;
-const GRUND_VON_HAND = TINTENTREUE_GRUND.vonHand;
+export const TINTENTREUE_GRUND = { maske: 'Maske geändert' } as const;
 
 export type StripBoxRow = {
   /** `S0041/F02#2` — the box address, the list's key AND `specimen_id` (V7). */
@@ -109,8 +117,10 @@ export type StripBoxRow = {
    * knows: under format 1 the box cannot carry a Skip-Eintrag, and the Ampel
    * greys for that reason rather than because nothing was measured. */
   format: number;
-  /** False says nobody has followed this Fassung — a different silence from
-   * „followed and this box got nothing". */
+  /** Whether this FASSUNG carries a `pfade` column at all. Context for a
+   * reader, never a finding about this box: `--box` narrows a run without
+   * saying anything about the boxes it skipped, so „the Fassung was followed"
+   * does not make an empty box a failure of the follower. */
   gefolgt: boolean;
   /** Joined body runs the script writes this word in — no Markenzüge (the
    * server's `absetzer_soll`, `core.eigenhand.befund.body_runs_expected`). */
@@ -144,16 +154,25 @@ export type StripBoxRowInput = {
   korbByBox: Map<string, number> | null;
 };
 
-/** Which of the six steps this box stands on. */
-export function severityOf(box: EigenhandPfadBox, gefolgt: boolean): BoxSeverity {
-  if (box.tintentreue.grund === GRUND_VON_HAND) return 'von-hand';
+/**
+ * Which of the six steps this box stands on — off typed fields only.
+ *
+ * The two DONE steps come from the server's own rule rather than from a second
+ * reading of it: `offen === false` holds for exactly two states (`_offen`,
+ * `api/routers/eigenhand.py`) — a Bahn the sensors call „folgt", and one the
+ * author drew that nothing has measured yet. So „not open and not green" IS
+ * „von Hand", without this module knowing the sentence the server prints for
+ * it.
+ */
+export function severityOf(box: EigenhandPfadBox): BoxSeverity {
+  if (!box.offen) return box.tintentreue.stufe === 'folgt' ? 'gruen' : 'von-hand';
+  // Read BEFORE the sensors, exactly as `tintentreue.py` does: a skip declares
+  // that there is no path, so nothing a reading could add is still open.
   if (box.status === 'skipped') return box.grund === 'gave_up' ? 'nichts-gefunden' : 'grau';
-  // No entry at all in a Fassung the follower HAS walked: it produced nothing
-  // for this box and, under format 1, could not say so.
-  if (box.verfahren === null) return gefolgt ? 'nichts-gefunden' : 'grau';
   if (box.tintentreue.stufe === 'folgt nicht') return 'rot';
   if (box.tintentreue.stufe === 'folgt teils') return 'gelb';
-  if (box.tintentreue.stufe === 'folgt') return 'gruen';
+  // Everything left is grey — including a box with no entry at all, which says
+  // nothing about why and must not be read as „the follower found nothing".
   return 'grau';
 }
 
@@ -189,7 +208,7 @@ export function buildStripBoxRows(input: StripBoxRowInput): StripBoxRow[] {
         stale: box.stale,
         offen: box.offen,
         tintentreue: box.tintentreue,
-        severity: severityOf(box, fassung.gefolgt),
+        severity: severityOf(box),
         missingKeys: missingKeysOf(box),
         korbOpen: input.korbByBox === null ? null : (input.korbByBox.get(key) ?? 0),
       });
@@ -279,6 +298,12 @@ export const stripBoxesRankable = (rows: readonly StripBoxRow[]): boolean =>
 /** „3 von 4 Kästen folgen" over the WHOLE list — a Fassung gets a counter and
  * never a colour (author decision E), and the list answers the same way: the
  * counter is taken over every row, never over the ones a filter left standing.
+ *
+ * `vonHand` is the server's `Kastenzaehler.von_hand`: hand-drawn AND not yet
+ * measured (V21's „j von Hand (ungemessen)"). That is a smaller set than the
+ * „von Hand" CHIP, which selects on provenance and keeps an authored Bahn the
+ * tool has since measured — so the label says „(ungemessen)" and the two
+ * numbers are allowed to differ without contradicting each other.
  */
 export function stripBoxTally(rows: readonly StripBoxRow[]): {
   kaesten: number;

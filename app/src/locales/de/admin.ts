@@ -1485,9 +1485,10 @@ export const admin = {
     pfadSeed: 'Saat: Tafel-Duktus',
     pfadSeedHint:
       'Reihenfolge und Richtung kommen aus dem Duktus der Grundvorlage, nicht aus dieser Hand — der Folger nimmt die Saat nur als Vorschlag, die Bahn selbst liegt auf der Tinte. Auch die Lineatur der Saat ist die GEDRUCKTE, nicht die gemessene.',
+    // Nur noch das Chip-Wort der Nachfahr-Zeile: der frei stehende Hinweis im
+    // Streifen-Untertitel ist weg (die Ampel sagt dasselbe), und seinen Text
+    // trägt jetzt `nachfahren.maskeHint` neben dem Befehl, der ihn behebt.
     pfadStale: 'Maske geändert',
-    pfadStaleHint:
-      'Die Bahn wurde unter einer anderen Fleckenmaske gefolgt als der Streifen jetzt trägt — sie ist also auf anderer Tinte gelaufen, als hier zu sehen ist. Nach dem Radieren neu folgen lassen.',
     // Die Rohzahlen je Kasten: was der Folger beim Nachfolgen mitgeschrieben
     // hat, ohne Farbe und ohne Bewertung. Die Tintentreue-Ampel kommt später
     // an dieselbe Stelle — bis dahin steht hier die Zahl. Eine einzelne
@@ -1566,7 +1567,11 @@ export const admin = {
       // Der Zähler der ganzen Liste, nie der gefilterten Auswahl: eine Zahl,
       // die mit jedem Chip wandert, beantwortet bei jedem Klick eine andere
       // Frage (Autor-Entscheid E).
-      tally: '{{kaesten}} Kästen · {{folgt}} folgen · {{vonHand}} von Hand · {{offen}} offen',
+      // „(ungemessen)" ist kein Beiwerk: der Chip „von Hand" oben zählt die
+      // HERKUNFT, dieser Zähler die von Hand gezogenen Bahnen, die noch nichts
+      // gemessen hat (V21). Sobald das Werkzeug über eine davon gelaufen ist,
+      // stehen die beiden Zahlen auseinander — mit dem Zusatz sagen sie warum.
+      tally: '{{kaesten}} Kästen · {{folgt}} folgen · {{vonHand}} von Hand (ungemessen) · {{offen}} offen',
       // Ohne eine einzige Messung ist „Schwere zuerst" stillschweigend die
       // Streifenfolge. Das wird gesagt, statt eine Rangfolge zu behaupten.
       notRanked: 'Noch ist kein Kasten gemessen — die Reihenfolge ist die des Streifenplans.',
@@ -1606,6 +1611,12 @@ export const admin = {
       tafelFehltHint:
         'Dieses Wort enthält Zeichen, die auf der Tafel noch nicht eingerichtet sind — der Folger hat deshalb gar nicht erst angefangen. Das ist Ground Truth und gehört an die Tafel, nicht in den Korb.',
       tafelFehltAction: '{{key}} einrichten',
+      // Die dritte Umleitung aus §6.4, und die einzige, die nirgendwohin
+      // führt: „nie machbar". Der Kasten hat kein Rechteck, der Folger bricht
+      // genau deshalb ab — ein Befehl darunter würde denselben Übersprung noch
+      // einmal erzeugen und so tun, als wäre das Arbeit.
+      bogenOhneGeometrie:
+        'Dieser Kasten stammt von einem Bogen, der vor der Schnitt-Geometrie gedruckt wurde — er lässt sich nicht nachfahren. Erst ein neu gedruckter und geschriebener Bogen trägt dieses Wort wieder.',
       maskeAction: 'erst neu folgen lassen',
       maskeHint:
         'Diese Bahn wurde unter einer anderen Fleckenmaske gefolgt als der Streifen jetzt trägt — sie lief also auf anderer Tinte, als hier zu sehen ist. Der Befehl unten folgt ihr mit der heutigen Maske noch einmal.',

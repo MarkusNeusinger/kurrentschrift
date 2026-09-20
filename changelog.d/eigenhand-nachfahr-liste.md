@@ -11,8 +11,11 @@
   where the Bahn comes from, how many Absetzer the script writes the word in,
   and the ONE next step: „übersprungen: unautoriert" links into the letter view
   for exactly the keys the Skip-Eintrag named — a Ground-Truth gap belongs on
-  the Tafel, not in the basket — and „Maske geändert" asks for `pfad --apply`
-  first. On a box the author drew HIMSELF the list never offers a re-follow:
+  the Tafel, not in the basket — „Maske geändert" asks for `pfad --apply`
+  first, and a Kasten off a Bogen printed before the cut geometry gets a
+  sentence and no command at all, because that one is „nie machbar" and a
+  re-follow would only write the same Skip-Eintrag again. On a box the author
+  drew HIMSELF the list never offers a re-follow:
   that line is his own, and inviting the follower to replace it with one tap is
   how it would happen by accident. The order is Schwere → Streifen (author
   decision Q13, Phase 2), and the Schwere is a LADDER, not a number — rot ·
@@ -25,9 +28,10 @@
   the box, addressed `S0041/F02#2`. No migration: the column is `String(16)`
   without a CHECK, and no new `kind` either, because a complaint about a
   written word is a word item wherever the word was written. The basket's link
-  back resolves to the strip surface with the box in the address, and such a
-  row is counted on its BOX rather than on the plate's Wortprobe of the same
-  text.
+  back resolves to the strip surface with the box in the address AND the word
+  in the list's own filter, so it opens on the rows carrying that text rather
+  than on every box of the hand; such a row is counted on its BOX rather than
+  on the plate's Wortprobe of the same text.
 
 ### Changed
 

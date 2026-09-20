@@ -3,10 +3,11 @@
 //
 // The step is the point of the row (§6.4 „Umgeleitet"): „übersprungen:
 // unautoriert" is not follower work but a Ground-Truth gap that belongs on the
-// Tafel, „Maske geändert" wants `pfad --apply` before anything else, and a box
-// the author drew HIMSELF is never offered a re-follow — that line is his own,
-// and inviting the follower to replace it is exactly the offer this surface
-// must not make (archiv R7).
+// Tafel, „Maske geändert" wants `pfad --apply` before anything else, a box
+// without `rect_px` („keine Bogen-Geometrie") is „nie machbar" and gets a
+// sentence instead of a command, and a box the author drew HIMSELF is never
+// offered a re-follow — that line is his own, and inviting the follower to
+// replace it is exactly the offer this surface must not make (archiv R7).
 //
 // Image-free like the other work lists: what the box LOOKS like is the
 // gallery's job, one switch away, and a collapsed row that loaded a crop would
@@ -254,6 +255,15 @@ export function NachfahrRow({
           // way exists — it just is not offered here.
           <Typography variant="caption" sx={{ color: paper.inkSoft }}>
             {t.authoredKeinNeuFolgen}
+          </Typography>
+        ) : row.skipGrund === 'no_geometry' ? (
+          // The third redirect of §6.4, and the one that goes nowhere: „nie
+          // machbar". `frame_for_box` raises for a Bogen printed before the cut
+          // geometry existed, and that is exactly what wrote this entry — so the
+          // re-follow command below would reproduce the same skip and pass it
+          // off as work.
+          <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+            {t.bogenOhneGeometrie}
           </Typography>
         ) : (
           <>

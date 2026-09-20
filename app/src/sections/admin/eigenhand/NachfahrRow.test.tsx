@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 //
-// The two promises of a Nachfahr-Zeile that no type checker can keep.
+// The three promises of a Nachfahr-Zeile that no type checker can keep.
 //
 // 1. A box the AUTHOR drew himself is never invited to be re-followed. That is
 //    not a nicety: the follower would replace his own line with a generated
@@ -11,6 +11,9 @@
 //    belongs on the Tafel, so the row links into the letter view FOR THE KEYS
 //    THE SKIP NAMED — a button called „einrichten" without the letter would
 //    leave the reader guessing (§6.4 „Umgeleitet").
+// 3. A box off a Bogen printed before the cut geometry gets NO command. §6.4
+//    calls it „nie machbar", and handing over a re-follow that reproduces the
+//    same skip would dress a dead end up as work.
 //
 // Image-free like its siblings: nothing here may mount a crop.
 
@@ -114,6 +117,14 @@ it('offers the box command only where the Bahn is not the author’s own', () =>
   expect(container.textContent).not.toContain('--box');
   expect(container.textContent).toContain('Von Hand gezogen');
   expect(container.textContent).toContain('--replace-authored');
+});
+
+it('offers no command at all for a Bogen printed before the cut geometry', () => {
+  // §6.4 calls this one „nie machbar": `frame_for_box` raises for exactly this
+  // Bogen, so a re-follow would write the same Skip-Eintrag again.
+  render(row({ skipGrund: 'no_geometry', skipDetail: 'box 2 has no rect_px', severity: 'grau' }), true);
+  expect(container.textContent).not.toContain('--box');
+  expect(container.textContent).toContain('vor der Schnitt-Geometrie');
 });
 
 it('sends an unauthored skip to the letter view for the keys it named', () => {
