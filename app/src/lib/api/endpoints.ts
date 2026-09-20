@@ -19,6 +19,7 @@ import type {
   EigenhandBestand,
   EigenhandFleck,
   EigenhandHands,
+  EigenhandPfadBoxes,
   EigenhandPfadList,
   EigenhandPrinted,
   EigenhandPrintRequest,
@@ -251,6 +252,25 @@ export const getEigenhandPfade = (
     {},
     retry,
   ).then(asJson<EigenhandPfadList>);
+
+// The same paths as STATE, hand-wide: which word boxes carry which Bahn, what
+// the Tintentreue says about each and which of them are still work. One
+// request instead of one per (strip, Fassung), and without a single point —
+// `getEigenhandPfade` above stays the way to the Bahn itself, one Fassung at a
+// time, when a surface actually draws one.
+// `nur: 'offen'` narrows it to the boxes that still want work and drops a
+// Fassung that has none left; the per-Fassung counter is taken BEFORE that, so
+// it answers the Fassung and not the query.
+export const getEigenhandPfadBoxes = (
+  hand: string,
+  nur?: 'offen',
+  retry?: RetryOptions,
+): Promise<EigenhandPfadBoxes> =>
+  apiFetch(
+    `${apiRoot()}/eigenhand/pfade/${encodeURIComponent(hand)}${nur ? `?nur=${encodeURIComponent(nur)}` : ''}`,
+    {},
+    retry,
+  ).then(asJson<EigenhandPfadBoxes>);
 
 export const getSource = (sourceId: string, retry?: RetryOptions): Promise<SourceOut> =>
   apiFetch(src(sourceId, ''), {}, retry).then(asJson<SourceOut>);

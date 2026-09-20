@@ -71,7 +71,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **L** — Labs §4 · Landmarken-Auftrag §5 · Landmarken-Erkennung §5 · Landmarken-Linse §5 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Stand (geplant) §5 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nicht-Hover-Regel §5 · Normalen-Fit (→ Strang-Dekodierung) §3 · Nullprobe §4
-- **O** — Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
+- **O** — Offen (Streifen-Kasten) §5 · Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Rollen-Token §5 · Route G §4 · Roving-Liste §5 · Rückgabe an Autor §5 · Rückhaltemenge §4
@@ -4344,13 +4344,7 @@ auf dem alten Format" eine Listenfrage ist.
 nur noch bei einem Format, das dieses Abbild nicht kennt. Das ist die erste
 Hälfte des Lockstep: die API nimmt die neue Form einen Release VOR dem
 ersten Schreiber an, `PFAD_FORMAT` bleibt derweil die Zahl, die dieses
-Abbild SCHREIBT — die beiden Zahlen sind bewusst nicht dieselbe. **Die
-zweite Hälfte steht seit demselben Tag:** `PFAD_FORMAT` ist 2, das Werkzeug
-schreibt die → Skip-Einträge und misst die zwei Sensoren, die der
-→ Tintentreue fehlten, und jeder Push deklariert 2. Der Abstand ist damit
-wieder null — und weil jede Zeile ihre eigene Nummer trägt, bleiben die
-unter 1 gefolgten Fassungen genau das, statt still die neue Semantik zu
-behaupten. Was
+Abbild SCHREIBT — die beiden Zahlen sind bewusst nicht dieselbe. Was
 Format 2 trägt, sind drei echte Schema-Änderungen (nicht die Sensoren 4/5:
 `meta` ist ein freier Dict, zwei Zahlen darin sind additiv und
 formatneutral): der → Skip-Eintrag, die → Span-Herkunft und der
@@ -4389,18 +4383,8 @@ echte Folger-Arbeit ist. Die Liste ist GESCHLOSSEN — ein freier String
 verschmölze die vier binnen eines Monats wieder —, und der Eintragstyp
 steht in DERSELBEN Liste statt in einer zweiten daneben, weil ein Kasten
 genau einen Zustand hat und zwei Listen sich irgendwann widersprechen.
-Geschrieben wird er vom Werkzeug, und zwar an DREI der vier Stellen, an
-denen es bis zum 2026-09-20 bloß `continue` sagte: `no_geometry`,
-`unauthored`, `gave_up`. `not_selected` schreibt es absichtlich nicht —
-`--box` grenzt den LAUF ein und sagt nichts über die übrigen Kästen, und
-weil der Schreibweg eine volle Ersetzung ist, überschriebe ein
-Ein-Wort-Lauf sonst den Rest der Zeile mit „nicht gewählt"; ein Kasten, den
-nie etwas gefolgt ist, trägt keinen Eintrag, was dieselbe Aussage ohne den
-Schaden ist. Aus demselben Grund verdrängt ein Skip NIE eine gespeicherte
-Bahn: „unautoriert" hängt daran, welche Glyphen die Tafel HEUTE trägt, und
-„aufgegeben" an den Armen dieses Laufs, also kann ein sauber gefolgter
-Kasten nächste Woche einen Skip erzeugen — das Werkzeug lässt dann seinen
-eigenen fallen und sagt es. Ein Skip darf NIE `verfahren: "authored"` behaupten: diese
+Geschrieben wird er vom Werkzeug, das heute an diesen vier Stellen bloß
+`continue` sagt. Ein Skip darf NIE `verfahren: "authored"` behaupten: diese
 Herkunft heißt „eine Bahn, die der Autor GEZEICHNET hat", und alles
 dahinter setzt eine voraus — der 409 sperrt den Kasten, `pull --pfade`
 archiviert ihn, `--replace-authored` verlangt ihn zuvor archiviert. Ein
@@ -4833,9 +4817,14 @@ concepts/design-system.md §2
 
 **Tintentreue** — die referenzfreie Ampel je Wortkasten: folgt ·
 folgt teils · folgt nicht, plus ein grauer ungemessener Zustand mit Grund
-im Text („kein Eintrag" · „von Hand gezeichnet" · „Maske geändert" ·
-„Format 1 — unvollständig gemessen" · „unvollständig gemessen", in dieser
-Vorrangfolge). Grau macht dabei die fehlende MESSUNG, nie die Herkunft:
+im Text („kein Eintrag" · „übersprungen: unautoriert / aufgegeben /
+keine Bogen-Geometrie / nicht gewählt / ohne Angabe" · „von Hand
+gezeichnet" · „Maske geändert" · „Format 1 — unvollständig gemessen" ·
+„unvollständig gemessen", in dieser Vorrangfolge). Ein → Skip-Eintrag
+wird VOR jedem Sensor gelesen: er sagt, dass es keine Bahn gibt, also
+wird auch keine beurteilt — sonst bekäme ein Kasten ohne Bahn die grüne
+Stufe, sobald ein Folger seine Aufgabe-Gründe einmal in `meta`
+mitschreibt. Grau macht dabei die fehlende MESSUNG, nie die Herkunft:
 eine nachgefahrene Bahn, die das Werkzeug gemessen hat, trägt dieselbe
 Ampel wie jede andere (V21). Der schlechteste Sensor entscheidet, bei Gleichstand
 benennt eine feste Sensor-Ordnung den Kasten; gerechnet wird mit fünf
@@ -4852,14 +4841,27 @@ benennender Sensor, Rohwerte. Sie liest keine Bench-Zahl und speist keine.
 *Technisch:* `core/eigenhand/tintentreue.py` (beim Lesen abgeleitet wie
 → Streifen-Befund), Sensoren aus `pfade[].meta.tintenpfad`; Zeilen unter
 PFAD_FORMAT 1 bleiben grau, weil Exkursion und AIoU auf ihnen nie
-gerechnet wurden. Seit dem 2026-09-20 rechnet sie das Werkzeug beim Folgen
-mit und legt sie ab (Autor-Entscheid D: „Gemessen wird gespeichert,
-beurteilt wird abgeleitet") — die Papier-Exkursion mit dem Kern des
-K-D-Sensors `tools/tracebench/excursions.py` gegen die EIGENE Tintenmaske
-des Streifens, die AIoU mit `tools/tracebench/metric.py`; beide
-referenzfrei, beide reine Beobachter der gefolgten Bahn.
-→ Rohzahlen-Chip; messjournal.md §14 „Tintentreue
-`sep20`"; proposals/admin-redesign.md §6.3
+gerechnet wurden. → Rohzahlen-Chip; Offen (Streifen-Kasten);
+messjournal.md §14 „Tintentreue `sep20`";
+proposals/admin-redesign.md §6.3
+
+**Offen (Streifen-Kasten)** — ob ein Wortkasten eines Streifens noch
+Nachfahr-Arbeit ist, serverseitig aus der → Tintentreue abgeleitet und
+je Kasten mitgeliefert (`offen`). ERLEDIGT sind genau zwei Zustände: eine
+Bahn, die die Sensoren „folgt" nennen, und eine vom Autor von Hand
+gezeichnete, die noch niemand gemessen hat — die ist Wahrheit, und ihr
+Grau ist die fehlende Messung, kein Mangel. Offen ist alles andere:
+ein Kasten ohne Eintrag, JEDER → Skip-Eintrag (sein `grund` sagt, WOHIN
+die Arbeit geht — „unautoriert" zur Tafel, „aufgegeben" zur
+Nachfahr-Fläche —, nicht ob es welche gibt), beide schlechteren Stufen
+und die grauen Zustände, die ein Neu-Folgen verlangen. Eine von Hand
+gezeichnete Bahn, die das Werkzeug gemessen und für schlecht befunden
+hat, bleibt absichtlich offen. NICHT zu verwechseln mit dem „offen" des
+→ Nachfahr-Stands: das ist der dreiwertige Stand einer WORTPROBE der
+Tafel und hängt an `authored`-Bahn vs. angeschnitten, nicht an einer
+Ampel. *Technisch:* `_offen`, `api/routers/eigenhand.py`; Filter
+`GET /eigenhand/pfade/{hand}?nur=offen`. → Tintentreue; Skip-Eintrag;
+proposals/admin-redesign.md §6.4
 
 **Trainingsmenge (nachgefahrene Bahnen) (geplant)** — die von Hand
 nachgefahrenen Streifen-Bahnen der Eigenhand (`verfahren: authored`) und
