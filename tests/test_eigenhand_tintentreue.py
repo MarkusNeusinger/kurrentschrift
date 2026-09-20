@@ -25,6 +25,7 @@ from pathlib import Path
 import pytest
 
 from core.eigenhand import tintentreue as modul
+from core.eigenhand.pfad import STATUS_SKIPPED
 from core.eigenhand.tintentreue import (
     GRUND_KEIN_EINTRAG,
     GRUND_NICHTS,
@@ -240,6 +241,17 @@ def test_a_yellow_sensor_never_loses_to_a_red_one_of_higher_rank():
 
 def test_a_box_without_an_entry_has_one_grey_state_for_four_causes():
     urteil = tintentreue(None, hand=HAND, pfade_format=1, maske_n=None)
+    assert (urteil.stufe, urteil.grund, urteil.sensoren) == (STUFE_UNGEMESSEN, GRUND_KEIN_EINTRAG, [])
+
+
+def test_a_skipped_box_stays_grey_even_when_it_carries_a_full_set_of_sensors():
+    # A Skip-Eintrag says the follower never produced a Bahn for this box, so
+    # whatever sits in its `meta` describes nothing. Without the early return
+    # the sensors are read and a skipped box reports `folgt` — measured green
+    # on a Bahn that was never drawn, which is the one verdict that must not
+    # be reachable here.
+    skip = {**_gruen(), "status": STATUS_SKIPPED, "grund": "unauthored", "strokes": []}
+    urteil = tintentreue(skip, hand=HAND, pfade_format=2, maske_n=None)
     assert (urteil.stufe, urteil.grund, urteil.sensoren) == (STUFE_UNGEMESSEN, GRUND_KEIN_EINTRAG, [])
 
 

@@ -650,8 +650,11 @@ def format_of_entries(entries: Sequence[Mapping[str, Any]]) -> int:
 
     So the declaration follows the CONTENT rather than the constant: format 2
     where any entry carries a format-2 field, what this image writes otherwise.
-    It never over-declares — a cell of plain format-1 entries obeys format 1 —
-    and it cannot quietly downgrade a row either: `check_paths` stamps every
+    Since the second release moved `PFAD_FORMAT` to 2 both branches answer 2,
+    so the distinction is currently invisible — it is kept because the floor is
+    what this image WRITES, and the day a third format arrives the two part
+    again. What the function cannot do is quietly downgrade a row:
+    `check_paths` stamps every
     entry it accepts under format 2 with a `status`, and that field is what
     brings the number back on the next push.
 
@@ -685,8 +688,10 @@ def push_body(entries: Sequence[Mapping[str, Any]]) -> tuple[list[dict[str, Any]
     acceptable and a corrected one unthinkable.
 
     The third element is the boxes whose free-meta boundaries were given up, so
-    the run can name them. Empty whenever the body stays format 1, which is
-    every push this image makes on its own.
+    the run can name them. Since the second release every body declares 2, so
+    the strip branch is the only one left and the list is empty only when no
+    entry carried a free-meta copy — which is what a run of this image produces
+    once it has followed the box itself.
     """
     pfad_format = format_of_entries(entries)
     if pfad_format < SKIP_AND_SPAN_FORMAT:
