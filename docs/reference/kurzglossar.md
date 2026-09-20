@@ -692,6 +692,14 @@ Hand korrigierte Grenze ist FELDWEISE geschützt — ein gewöhnliches
 Neu-Folgen desselben Kastens geht durch, solange es sie mitbringt.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.3
 
+**Span-Zuordner** — setzt die Buchstabengrenzen einer Bahn, hinter der keine
+Dekodierung steht (A48: für von Hand nachgefahrene Bahnen ist die Zuordnung
+neue Arbeit). Ordnet jeden Stützpunkt der Bahn einem Punkt derselben Saat zu,
+gegen die der Folger dekodiert — monoton je Zug, Züge einzeln. Ersetzt nie
+einen authored-Span und bewegt keine Koordinate einer Bahn
+(`tools/eigenhand/spans.py`, Modus `pfad --spans`).
+→ [§5](glossar.md#5-werkbank-und-prozess) · messjournal.md §14 „Span-Zuordner `sep20`"
+
 **Tintentreue** — die referenzfreie Ampel je Wortkasten über einer Bahn:
 `folgt` · `folgt teils` · `folgt nicht`, dazu ein grauer Zustand mit Grund
 im Text. Der schlechteste Sensor entscheidet, eine feste Sensor-Ordnung
@@ -701,6 +709,15 @@ bekommt nur einen Zähler, nie eine Farbe. Ein Skip-Eintrag wird vor jedem
 Sensor gelesen und grau als „übersprungen: …" beantwortet — beurteilt
 wird nur, was eine Bahn hat. `core/eigenhand/tintentreue.py`.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.3
+
+**Tintentreue-Kalibrierung** *(der Streifen-Modus)* — die EINE blinde Runde
+je Hand, die die geborgten Schwellen durch gemessene ersetzt: 30 Kästen, je
+genau EINE Stufe plus beliebig viele Merkmale, die die Stufe nicht löschen.
+Die Abbildung ist nicht interpretativ, gezogen wird nach der vorläufigen
+Stufe geschichtet (die Prävalenz sagt also nichts über die Hand),
+geschnitten am 90-%-Quantil und strenger gerundet. Die Seite bleibt lokal —
+sie trägt reservierte Pixel. `tools/eigenhand/tintentreue_calibration.py`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · menschliche-bewertung.md §8b
 
 **Offen (Streifen-Kasten)** *(`offen`, `_offen`)* — ob ein Wortkasten noch
 Nachfahr-Arbeit ist, aus der Tintentreue abgeleitet und je Kasten

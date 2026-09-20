@@ -75,8 +75,8 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Rollen-Token §5 · Route G §4 · Roving-Liste §5 · Rückgabe an Autor §5 · Rückhaltemenge §4 · Rückhaltemenge (Eigenhand) §5
-- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Skip-Eintrag §5 · Slant-Spalte §4 · Slot §2 · Span-Herkunft §5 · Span-Zuordner (geplant, → Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifen-Editor §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Subjekt-Stepper §5 · Sütterlin §1
-- **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) §5 · Trainingssatz (Eigenhand) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
+- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Skip-Eintrag §5 · Slant-Spalte §4 · Slot §2 · Span-Herkunft §5 · Span-Zuordner §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifen-Editor §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Subjekt-Stepper §5 · Sütterlin §1
+- **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue §5 · Tintentreue-Kalibrierung §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) §5 · Trainingssatz (Eigenhand) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unteransicht (Eigenhand) §5 · Unvollständige Wortprobe §5
 - **Ü** — Übergabekarte §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Varianten-Band (geplant) §5 · Verbinder-Mitschnitt §4 · Vergleichsstreifen (geplant) §5 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschlag (Streifen-Befund) §5 · Vorschub-Kalibrierung §2 · Vorschrift §1
@@ -4425,6 +4425,27 @@ Antwort von Hand, was immer sein `verfahren` behauptet. *Technisch:*
 → Buchstabengrenzen einer Bahn; Streifen-Pfad;
 proposals/admin-redesign.md §6.3
 
+**Span-Zuordner** — das Werkzeug, das die → Buchstabengrenzen einer Bahn
+setzt, hinter der KEINE Dekodierung steht. Eine gefolgte Bahn bringt ihre
+Grenzen mit, weil jeder ausgelieferte Stützpunkt den Slot des Saat-Punktes
+erbt, der ihn gesetzt hat — die Zuordnung ist dort die Ausrichtung selbst.
+Eine von Hand nachgefahrene Bahn hat davon nichts (**A48**, 2026-09-13: die
+Saat-Zuordnung trägt nur auf dekodierten Bahnen), und ohne den Zuordner
+erreichte sie den → Streifen-Editor ohne eine einzige Naht zum Ziehen. Er
+baut dieselbe Saat, gegen die der Folger dekodiert, und ordnet jedem
+Stützpunkt der Bahn einen Saat-Punkt zu; die Regel ist **monoton** (der
+Saat-Index darf beliebig weit vor, nie zurück), Züge werden einzeln
+zugeordnet, damit ein nachgetragener i-Punkt nicht auf den vorigen Buchstaben
+fällt. Er ersetzt **nie** einen authored-Span: einen Kasten, dessen Grenzen
+der Autor korrigiert hat, lässt er ganz in Ruhe, denn eine Grenze ist nur
+neben den benachbarten sinnvoll. Und er folgt nichts — ein `--spans`-Lauf
+kann keine Koordinate einer Bahn bewegen. *Technisch:*
+`tools/eigenhand/spans.py` (`match_seed` · `runs_of` · `flat_spans`), Modus
+`tools/eigenhand/pfad.py --spans`; Zahlen und die benannte Zirkularität der
+Runde in [`messjournal.md`](messjournal.md) §14 „Span-Zuordner `sep20`".
+→ Buchstabengrenzen einer Bahn; Span-Herkunft; Saat-Korrespondenz;
+Trainingsmenge (nachgefahrene Bahnen)
+
 **Bahn-Archivkette** — die drei Glieder, die eine von Hand nachgefahrene →
 Bahn aus der geteilten Datenbank ins private Archiv und zurück bringen:
 `pull --pfade` zieht die `authored`-Einträge einer Hand herunter,
@@ -4651,7 +4672,7 @@ Eigenhand, weil sich nur 24 von 140 Platten-Wörtern mit dem Streifen-Plan
 auf einer Streifen-Bahn ein Buchstabe anfängt und aufhört
 (`letter_spans`). Auf einer gefolgten Bahn schreibt sie der Folger mit; auf
 einer von Hand nachgefahrenen setzt sie der Werkzeugschritt `pfad --spans`
-automatisch (der **Span-Zuordner**, geplant). Autor-Entscheid 2026-09-18:
+automatisch (der **Span-Zuordner**). Autor-Entscheid 2026-09-18:
 die Grenzen werden im Kasten und im Editor angezeigt und sind von Hand
 korrigierbar. Eine korrigierte Grenze trägt eine
 eigene Herkunft (**authored-Span**), wird vom Zuordner nie ersetzt, wird
@@ -4673,8 +4694,9 @@ eine mitverworfene `authored`-Grenze ist also endgültig weg.
 geprüfte Feld `pfade[].letter_spans` samt → Span-Herkunft und dem
 Feld-Vergleich des authored-Schutzes steht seit dem 2026-09-20 (PFAD_FORMAT
 2), Anzeige und Korrektur im → Streifen-Editor
-(`eigenhand/letterSpans.ts`, `LetterSpanLayer.tsx`); offen ist der Zuordner
-`tools/eigenhand/pfad.py --spans`. → Span-Herkunft; Streifen-Editor;
+(`eigenhand/letterSpans.ts`, `LetterSpanLayer.tsx`), der Zuordner in
+`tools/eigenhand/spans.py` (Modus `pfad --spans`) seit dem 2026-09-20.
+→ Span-Zuordner; Span-Herkunft; Streifen-Editor;
 Trainingsmenge (nachgefahrene Bahnen); proposals/admin-redesign.md §6.4
 
 **Ebenen-Token** *(`layer`, `layerDash`)* — die Farben und Stricharten der

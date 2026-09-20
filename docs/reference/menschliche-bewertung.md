@@ -1,45 +1,45 @@
 # Menschliche Bewertung — der blinde Urteilsdurchgang über die Fits
 
-> **Status (2026-09-09): lebend.** Beschreibt das Instrument
+> **Status (2026-09-20): lebend.** Beschreibt das Instrument
 > ([`tools/humanbench`](../../tools/humanbench)) und das Verfahren eines
 > Bewertungsdurchgangs — **die Methode, nicht die Ergebnisse**. Zahlen und
-> Verdikte einer Runde wohnen in
-> [`messjournal.md`](messjournal.md) §14.
+> Verdikte einer Runde wohnen in [`messjournal.md`](messjournal.md) §14.
 >
-> **Was gilt.** Drei Modi: der Einzelbuchstaben-Durchgang, der **paarige
-> Vorher/Nachher-Durchgang** ([§8](#8-der-paarige-folgedurchgang)) und seit
+> **Was gilt.** Vier Modi: der Einzelbuchstaben-Durchgang, der **paarige
+> Vorher/Nachher-Durchgang** ([§8](#8-der-paarige-folgedurchgang)), seit
 > 2026-09-02 der **Wortmodus auf der Echtheitsfrage**
 > ([§8a](#8a-der-wortmodus--die-echtheitsfrage)), dessen Arm seit `sep07` auch
 > eine gefolgte [BAHN](#ein-arm-kann-auch-eine-bahn-sein--dann-ist-die-frage-wieder-die-genauigkeit)
-> sein darf — dann Genauigkeitsfrage und Mittellinien-Anzeige, seit `sep09`
-> wahlweise im [AUSSCHNITT](#34a-die-ausschnitt-anzeige-den-ort-zeigen-statt-ihn-im-wort-verstecken).
-> Geurteilt wird **blind** gegen die sechsteilige Fehler-Taxonomie
-> ([§2](#2-die-fehler-taxonomie)); die Konstruktionsregeln des Instruments
-> stehen jeweils neben dem Fehlerfall, für den sie eingeführt wurden
-> ([§3](#3-die-konstruktionsregeln-des-instruments)), und der Auswerteplan
-> wird vor den Labels festgeschrieben
-> ([§4](#4-die-vorregistrierung)). Aufbewahrt wird nur, was §6 nennt.
-> Seit 2026-09-06 steht der **Leitsatz des Autors** dazu
+> sein darf — dann Genauigkeitsfrage, seit `sep09` wahlweise im
+> [AUSSCHNITT](#34a-die-ausschnitt-anzeige-den-ort-zeigen-statt-ihn-im-wort-verstecken) —,
+> und seit 2026-09-20 der **Streifen-Modus**
+> ([§8b](#8b-der-streifen-modus--die-kalibrierfrage-der-tintentreue)): der
+> Kalibrier-Durchgang über die eigenen Wortkästen, eigene Frage, eigener
+> Kategoriensatz, Abbildung auf die drei Ampelstufen. Geurteilt wird **blind**
+> gegen die sechsteilige Fehler-Taxonomie ([§2](#2-die-fehler-taxonomie)); die
+> Konstruktionsregeln stehen neben dem Fehlerfall, für den sie eingeführt
+> wurden ([§3](#3-die-konstruktionsregeln-des-instruments)), der Auswerteplan
+> wird vor den Labels festgeschrieben ([§4](#4-die-vorregistrierung)),
+> aufbewahrt wird nur, was §6 nennt. Seit 2026-09-06 steht der **Leitsatz des
+> Autors** dazu
 > ([§9a](#9a-der-leitsatz-das-auge-misst-stetigkeit-die-lineale-messen-abstand)):
 > das Auge liest Stetigkeit, die Lineale lesen Abstand — der Grund, warum
 > zwei Wortrunden gegen die Zahlen ausgehen konnten.
 >
-> **Was seither passiert ist.** Die erste Wortrunde (`sep02`, Basis gegen
-> LF11) hat entschieden, wo das Wort-Lineal blind war, und dem Dokument
-> die Konstruktionsregel §3.6b eingetragen; die Runden 5 (`sep04`, J4) und
-> 6 (`sep05`, J5) haben §9a ausgelöst; Runde 7 (`sep06`, J6) hat die
-> **Sichtbarkeitsschwelle** beziffert, die erste BAHN-Runde 9 (K-E, geurteilt
-> `sep09`) sie relativiert (beides §8a). Zahlen: `messjournal.md` §14.
+> **Was seither passiert ist.** Die erste Wortrunde (`sep02`) hat dem Dokument
+> §3.6b eingetragen; die Runden 5 (J4) und 6 (J5) haben §9a ausgelöst; Runde 7
+> (J6) hat die **Sichtbarkeitsschwelle** beziffert, die erste BAHN-Runde 9
+> (K-E, `sep09`) sie relativiert (beides §8a). Zahlen: `messjournal.md` §14.
 >
 > **Was offen ist.** Die bekannten Grenzen des Verfahrens — was ein
 > blinder Durchgang grundsätzlich nicht entscheidet — stehen in
 > [§9](#9-bekannte-grenzen). Eine Runde, deren Aufbau davon abweicht,
 > gehört vorher hierhin, nicht hinterher.
 >
-> **Nachzieh-Anlass.** Jede Änderung am Instrument (Kategorien in
-> `page.py::CATEGORIES`, Stichproben- und Wiederholungsregeln in
-> `build.py`, Darstellung, neue Modi, CLI) und jede Runde, deren Aufbau
-> vom hier beschriebenen abweicht.
+> **Nachzieh-Anlass.** Jede Änderung am Instrument (Kategorien in `page.py`
+> — `CATEGORIES`/`STRIP_CATEGORIES` —, Stichproben- und Wiederholungsregeln
+> in `build.py` bzw. `tintentreue_calibration.py`, Darstellung, neue Modi,
+> CLI) und jede Runde, deren Aufbau vom hier beschriebenen abweicht.
 
 Diese Datei existiert, damit eine Wiederholung ein **Nachbau** ist und keine
 Neuplanung. Jede Regel hier hat eine Runde gekostet; sie steht mit ihrer
@@ -1519,6 +1519,293 @@ Rettungsweg 3).
 * **Die Klassen sind eine Behauptung des Runden-Autors**, keine Messung. Sie
   gehören mit ihrer Begründung in den Plan, sonst ist die klassenweise Lesart
   aus Schritt 4 eine nachträgliche Idee.
+
+---
+
+## 8b. Der Streifen-Modus — die Kalibrierfrage der Tintentreue
+
+**Angelegt 2026-09-20, vor der Runde und nicht nach ihr** — das ist der
+Nachzieh-Anlass im Kopf dieser Datei, wörtlich: eine Runde, deren Aufbau vom
+Beschriebenen abweicht, gehört vorher hierhin. Gegenstand ist die EINE blinde
+Kalibrierung je Hand, die die geborgten Schwellen der
+**Tintentreue** ersetzt (Autor-Entscheid Q10 b vom 2026-09-18;
+`messjournal.md` §14 „Tintentreue `sep20`" führt die acht Startwerte samt
+Herkunft, „Tintentreue-Kalibrierung `sep20`" die Vorregistrierung der Runde).
+Keine der acht Zahlen ist an der Hand gemessen, über die sie urteilt; die
+stärkste hängt an einem bekannten Abdeckungsversagen, die schwächste an gar
+keiner Messung.
+
+### Warum ein Nachbau und keine Konfiguration
+
+Vier Eigenschaften des bestehenden Instruments passen nicht, und jede einzelne
+wäre schon ein Grund:
+
+* **Die Wurzel.** `build.py` schneidet seine Ausschnitte aus einer
+  Wortbank-Fixture-Wurzel (`--fixtures`) und weist ein Verzeichnis ohne
+  `manifest.json` ab. Die Streifen-Pixel liegen in gar keiner Fixture-Wurzel:
+  sie stehen ausschließlich in der geteilten Datenbank und im gitignorierten
+  lokalen Speicher, und der einzige zulässige Weg zu ihnen ist das LESEN über
+  die admin-gegatete API (`tools/eigenhand/apiclient.py`,
+  `tools/eigenhand/store.py`).
+* **Die Taxonomie.** Sechs Fit-Kategorien gegen **drei** Ampelstufen. Eine
+  Abbildung „`A`+`W` → folgt teils" wäre eine Behauptung, die niemand
+  gemessen hat, und sie käme genau dort in die Rechnung, wo diese Runde eine
+  Zahl setzen soll.
+* **Der Gegenstand.** Dort ein BUCHSTABE im Federweg eines Vorlagen-Wortes,
+  hier ein **Wortkasten der eigenen Hand** mit der Bahn, die ein Folger über
+  seine Tinte gelegt hat. Ein Streifen trägt per Doktrin keine Referenzspur
+  (`../proposals/eigenhand-erfassung.md` §12, Prüfstein 2) — es gibt nichts,
+  wogegen der Abstand gemessen werden könnte, und genau deshalb urteilt hier
+  ein Mensch.
+* **Die Veröffentlichung.** Eine humanbench-Seite wird als Artifact
+  veröffentlicht (§5, Schritt 3). Eine Streifen-Seite trägt die reservierten
+  eigenen Pixel und darf das nie (§8b, Regel 1).
+
+Geteilt wird deshalb genau das, was ohne Annahme über den Gegenstand gilt:
+**die Seite** (`tools/humanbench/page.py`, ein vierter Kategoriensatz neben
+den bestehenden) mit Casing, Zeitnahme, Wiederaufnahme und Ergebnisformat.
+Der Bauer ist ein Geschwister und wohnt bei den Pixeln, die er liest:
+`tools/eigenhand/tintentreue_calibration.py`.
+
+### Die Frage
+
+> **Folgt die gezeichnete Bahn der Tinte dieses Kastens?**
+
+Eine Genauigkeitsfrage, kein Echtheitsurteil (§8): beurteilt wird die BAHN
+gegen die Tinte, unter der sie liegt, nie die Schrift selbst. Der Kasten ist
+die Handschrift des Autors — ob sie ihm gefällt, ist der **Befund**
+(`core/eigenhand/befund.py`) und eine andere Frage über dasselbe Bild. Die
+beiden dürfen nie zusammengeworfen werden: „sauber geschrieben, schlecht
+gefolgt" ist der häufige Fall, nicht die Ausnahme.
+
+### Die Kategorien
+
+Ein Kasten bekommt **genau eine Stufe** und beliebig viele **Merkmale**. Die
+Stufe ist das Urteil; ein Merkmal sagt nur, welcher Sensor es hätte sehen
+müssen. Im Code: `tools/humanbench/page.py::STRIP_CATEGORIES`.
+
+| Kürzel | Taste | Beschriftung | Art |
+|---|---|---|---|
+| `F` | 1 | Folgt | Stufe |
+| `T` | 2 | Folgt teils | Stufe |
+| `N` | 3 | Folgt nicht | Stufe |
+| `X` | 4 | Nicht beurteilbar | Stufe (Ausschluss) |
+| `O` | 5 | Tinte ohne Bahn | Merkmal |
+| `P` | 6 | Bahn auf leerem Papier | Merkmal |
+| `A` | 7 | Absetzer falsch | Merkmal |
+| `H` | 8 | Sprünge und Haken | Merkmal |
+| `U` | 9 | Unsicher | Modifikator |
+
+* **`F` — Folgt.** Die Bahn liegt über die ganze Länge auf der Tinte, in der
+  Reihenfolge, in der die Hand geschrieben hat. Keine Stelle, die man
+  markieren würde.
+* **`T` — Folgt teils.** Erkennbar dieselbe Schrift, aber mit einer Stelle,
+  die man zeigen kann: ein Stück Tinte bleibt unbesucht, ein Stück Bahn liegt
+  auf Papier, ein Absetzer sitzt falsch. Der Kasten bleibt als Nachweis
+  brauchbar; er ist keine Vorlage.
+* **`N` — Folgt nicht.** Die Bahn beschreibt nicht mehr, was da steht — ein
+  ganzer Zug fehlt, die Reihenfolge ist eine andere, die Linie läuft über
+  Papier von Buchstabe zu Buchstabe.
+* **`X` — Nicht beurteilbar.** Kein Schweregrad, sondern ein **Ausschluss**,
+  genau wie `K` in §2: der Ausschnitt zeigt die falsche Stelle, die Tinte ist
+  zu blass, der Kasten ist leer geblieben. Solche Kästen fliegen aus jeder
+  Auswertung; sie sind eine Aussage über den Streifen, nicht über die Bahn.
+* **`O` · `P` · `A` · `H` — die vier Merkmale.** Sie **addieren sich** und
+  löschen die Stufe NICHT: „folgt teils, weil ein Stück Tinte unbesucht
+  bleibt" ist eine Antwort, „folgt nicht, und zwar wegen zweier Dinge"
+  ebenfalls. (Im Fit-Modus löscht eine Fehlerart das `G` — dort schließen
+  sich „gut" und „Fehler" aus. Hier nicht, denn die Stufe IST das Urteil.)
+* **`U` — Unsicher** (Modifikator, kombinierbar mit allem): wie in §2, und
+  ausgewertet wird wie dort **zweimal**, mit und ohne.
+
+### Die Abbildung auf die drei Stufen
+
+Sie ist **nicht** interpretativ, und das ist Absicht: die Stufe, die der
+Mensch setzt, IST die Stufe, gegen die die Ampel gehalten wird. Die Merkmale
+tragen die zweite Abbildung — je Merkmal genau ein Sensor:
+
+| Urteil | Ampel (`core/eigenhand/tintentreue.py`) |
+|---|---|
+| `F` | `folgt` |
+| `T` | `folgt teils` |
+| `N` | `folgt nicht` |
+| `X` | fällt aus jeder Auswertung |
+| `O` | Sensor **Tinte ohne Bahn** (`ink_unvisited_share`) |
+| `P` | Sensor **Papier-Exkursion** (`paper_excursion_xh`) |
+| `A` | Sensor **Absetzer (Bahn)** (`paper_lifts + 1` gegen `body_runs_expected`) |
+| `H` | Sensor **Sprünge und Haken** (`jumps + hairpins`) — heute ohne Grenze |
+
+Zwei Lücken sind benannt statt gefüllt:
+
+1. **`AIoU` hat kein Merkmal.** Das Flächenmittel sieht `O` und `P` noch
+   einmal und unschärfer (es ist in `SENSOR_ORDER` deshalb hinter beiden);
+   eine eigene Frage danach wäre dieselbe Beobachtung ein zweites Mal
+   gezählt. Seine Grenze wird aus der **Stufe** abgeleitet, nicht aus einem
+   Merkmal — und das ist die schwächste Ableitung der Runde.
+2. **`H` hat ein Merkmal, aber keine Grenze.** Sprünge und Haken werden heute
+   gelesen und angezeigt und bewerten nicht, weil ihnen ein Anker fehlt
+   (§14 „Tintentreue `sep20`"). Das Merkmal ist genau der Versuch, ihnen
+   einen zu geben; ob es reicht, entscheidet der Auswerteplan und nicht der
+   Wunsch.
+
+### Die Konstruktionsregeln des Streifen-Modus
+
+Was aus §3 unverändert gilt, steht dort und wird hier nicht wiederholt:
+kartografisches Casing (3.5), Zeitnahme (3.9), Wiederaufnahme (3.10), nichts
+Identifizierendes im Payload (3.8). Sechs Regeln sind neu oder anders.
+
+**1. Die Seite bleibt lokal.** Sie wird nicht als Artifact veröffentlicht,
+nicht committet und nicht verschickt: ihre Ausschnitte sind die reservierten
+eigenen Pixel (`../proposals/eigenhand-erfassung.md` §8, `quellen-und-rechte.md`
+§5). Das ist der einzige Schritt, in dem sich diese Runde vom Ablauf in §5
+unterscheidet — geöffnet wird die Datei, die der Bau geschrieben hat.
+
+**2. Der Ausschnitt ist der Kasten des Servers, nicht ein eigener.** Das Bild
+kommt als fertiger Wort-Crop aus der API (`?box=<n>&lineatur=ohne`, Flecken
+per Vorgabe entfernt), und die Bahn wird mit dem Rechteck DESSELBEN Kastens
+(`rect_px`) in den Crop gerechnet. Zwei Arithmetiken für dieselbe Kante wären
+die stille Variante des Fehlers aus 3.6a: die Bahn läge um ein paar Pixel
+versetzt über fremder Tinte, und der Beurteiler meldete einen Fehler, den die
+Bahn nicht hat. Der Bau prüft darum die Bildmaße gegen das Rechteck und
+bricht bei Abweichung ab.
+
+**3. Absetzer werden als Absetzer gezeichnet** — wie 3.6, eine Ebene tiefer:
+eine Bahn ist eine LISTE von Zügen, und jeder Zug ist eine eigene Polylinie.
+Überbrückt gezeichnet zeigte die Seite einen Strich, den die Hand nie gemacht
+hat, und das Merkmal `A` bekäme seine Positiven vom Zeichner.
+
+**4. Die Stichprobe wird nach der VORLÄUFIGEN Stufe geschichtet** und reihum
+ausgeteilt, mit gesätem Mischen innerhalb der Schicht (3.1). Grund ist
+derselbe wie dort — jeder Präfix deckt die Bandbreite ab —, plus einer, der
+hier dazukommt: ohne Schichtung besteht eine Runde über eine eingespielte
+Hand fast nur aus grünen Kästen, und die Grenze, die gesucht wird, liegt
+gerade dort, wo keine Fälle sind. **Jede Austeil-Runde wird vor dem Anhängen
+noch einmal gemischt**, und das ist kein Schönheitsschritt: reihum in
+Bandreihenfolge ausgeteilt, hieße Bildschirm 1 grün, 2 gelb, 3 rot und wieder
+von vorn — die Position nennte genau die Stufe, die der Beurteiler nicht
+sehen darf. So bleibt jeder Präfix bis auf einen Kasten stufen-ausgewogen,
+und die Reihenfolge verrät nichts. Was die Schichtung kostet, ist benannt:
+die **Prävalenz der Runde ist keine Aussage über die Hand** — und deshalb
+wird die Falsch-Grün-Rate (Gate (C)) über die **ampelgrünen** Kästen gelesen
+und nicht über alle, denn nur die erste Zahl ist gegen die Ziehung
+unempfindlich. Ungemessene Kästen (jeder graue Zustand, jeder Skip-Eintrag)
+kommen gar nicht erst in die Grundgesamtheit — es gibt an ihnen nichts zu
+kalibrieren. Der Rest ist die **Rückhaltemenge** (3.3) und wird mit `--only`
+bestätigt, nicht neu gewürfelt — sie ist dabei ausdrücklich **nicht**
+stufen-ausgewogen: ausgeteilt wird aus jedem Band, bis eines leer ist, und
+eine Stufe, von der die Hand nur eine Handvoll Kästen hat, kann der Durchgang
+vollständig aufbrauchen. Keine Quote könnte Fälle herbeizaubern, die es nicht
+gibt; darum druckt der Bau die Rückhaltemenge **je Stufe** und warnt, wenn
+eine leer bleibt — dann ist vor dem Beurteilen bekannt, dass jene Grenze
+hinterher nicht bestätigt werden kann.
+
+**5. Die Wiederholungen sind nach STUFE geschichtet, nicht nach Häufigkeit.**
+Die Regeln aus 3.2 gelten sinngemäß (Mindestabstand plus Zufallsversatz,
+damit die Wiederholung neu beurteilt und nicht erinnert wird); die
+Glyph-Häufigkeitsregel und die Ausschlussliste entfallen — jedes Wort kommt
+einmal vor, und einen bekannt kaputten Buchstaben gibt es hier nicht. Die
+Schichtung über die Stufen ist die Lehre aus der ersten Runde in 3.2: eine
+Verlässlichkeit, die nur aus Einigkeit über die grünen Kästen stammt, sagt
+über die Grenze nichts.
+
+Der **Provenienz-Stempel** (§7) trägt zusätzlich die acht Schwellen, unter
+denen geschichtet wurde. Ohne sie ist die Ziehung der Runde nicht
+rekonstruierbar, sobald die Zahlen ersetzt sind — und ersetzt zu werden ist
+ihr Zweck. `analyse` liest sie **aus dem Stempel** und nie aus dem laufenden
+`SCHWELLEN_JE_HAND`: hat der Autor einmal kalibriert, wäre der lebende Satz
+nicht mehr der, unter dem gezogen wurde, und der Bericht nennte die NEUEN
+Zahlen „geborgt".
+
+**6. Die Ergebnisdatei gehört zu EINEM Bau.** Ihre Kopfzeile trägt die Hand
+und einen Inhalts-Digest des Baus, nicht nur die Rundennummer — jede Hand hat
+eine Runde 1, jeder Neubau vergibt dieselben `S###`/`R##`-Kennungen, und eine
+Datei aus der falschen Runde bestünde eine Kennungsprüfung Bildschirm für
+Bildschirm. Zusätzlich wird die Zahl `geprueft=` gegen die gelesenen Zeilen
+gehalten: eine abgeschnittene Einfügung ist eine kurze Runde, keine
+vollständige.
+
+### Der Auswerteplan (vorregistriert, vor den Labels)
+
+Die Reihenfolge ist Code
+(`tools/eigenhand/tintentreue_calibration.py`, Unterbefehl `analyse`), damit
+sie nicht nachträglich umgestellt werden kann:
+
+1. **Verlässlichkeit zuerst.** Über die Wiederholungspaare die
+   Selbst-Übereinstimmung der STUFE, exakt und „höchstens eine Stufe
+   daneben". Unter der vorher genannten Schranke wird **keine Schwelle
+   gesetzt** — dann ist das Urteil unscharf, nicht die Zahl.
+2. **Besetzung.** Wie viele Kästen je Stufe. Eine Stufe unter der
+   Mindestbesetzung bekommt „zu wenig Daten", und jede Grenze, die sie
+   tragen müsste, bleibt geborgt.
+3. **Die Abbildung anwenden**, `X` ausschließen, `U` zweimal rechnen.
+4. **Die Ampel gegen den Menschen** — Übereinstimmung, Monotonie und die
+   **Falsch-Grün-Rate**, gerechnet gegen die vorläufigen Schwellen. Letztere
+   wird zweimal gedruckt: über die **ampelgrünen** Kästen (so liest Gate (C)
+   sie, weil nur diese Zahl gegen die Schichtung unempfindlich ist) und über
+   alle gewerteten. Dazu, als eigener Schritt 4b, **Gate (B)**: wie viele der
+   30 Kästen jeder der vier bewerteten Sensoren BENENNT — ein Sensor ohne eine
+   einzige Nennung ist ein toter Zweig, und zwei davon töten die Runde. Das
+   sind die Gates (A)–(C) des Eintrags „Tintentreue `sep20`"; sie entscheiden,
+   ob überhaupt kalibriert wird oder ob der SENSORSATZ das Problem ist. Sie
+   entscheiden es **im Code**: feuert eines ihrer Kill-Kriterien — oder (F),
+   oder ist die Runde kürzer, als sie gezogen wurde —, bricht `analyse` hier
+   ab, nennt jeden Grund einzeln und druckt **keinen** Block. Ein
+   einfügefertiger Vorschlag unter einem gerissenen Gate wäre die eine Weise,
+   in der dieses Werkzeug Schaden anrichten könnte.
+5. **Die Grenzen je Sensor**, nach einer Regel ohne freien Parameter:
+   die grüne Grenze ist das 90-%-Quantil der Lesungen über die als `F`
+   beurteilten Kästen, die gelbe dasselbe über `F` ∪ `T` (bei AIoU, wo größer
+   besser ist, die 10-%-Quantile von unten). Gerundet wird auf zwei
+   Nachkommastellen in die **strengere** Richtung, weil ein falsches Grün die
+   einzige Sorte Fehler ist, die Arbeit am falschen Ort erzeugt. Eine Grenze,
+   die dabei nicht mehr strenger ist als ihre gelbe, wird **verworfen** statt
+   geglättet — Gleichstand eingeschlossen, denn ein gelbes Band der Breite
+   null wäre eine zweistufige Ampel; der geborgte Wert bleibt dann stehen und
+   wird als solcher berichtet. Der Absetzer ist eine Regel und kein Quantil: seine gelbe
+   Grenze fällt von ±1 auf 0, wenn mindestens fünf Kästen genau eine
+   Abweichung tragen und die Mehrheit davon `N` heißt.
+6. **Sprünge und Haken**, als benanntes offenes Stück: eine Grenze wird nur
+   VORGESCHLAGEN, wenn mindestens fünf Kästen `H` tragen und die Lesungen der
+   `H`-Kästen sich mit den übrigen nicht überlappen. Sonst bleibt der Sensor
+   ungewertet — eine Grenze ohne Anker ist das eine, was eine Vorregistrierung
+   verhindern soll.
+7. **Ein Satz, ein Datum.** Die Zahlen werden als EIN datierter Satz
+   übernommen (`SCHWELLEN_JE_HAND`), nie einzeln nachjustiert, nachdem
+   sichtbar wurde, welchen Kasten eine kippt. Das Etikett „vorläufig" fällt
+   dabei nur mit dem VOLLSTÄNDIGEN Satz — bleibt eine Grenze geborgt, bleibt
+   es stehen, sonst behauptete der Satz eine Kalibrierung, die für einen Teil
+   seiner Zahlen nicht stattgefunden hat. Die Übernahme selbst ist ein Schritt
+   des Autors und trägt ihren eigenen §14-Eintrag.
+
+### Was der Modus NICHT liefert
+
+* **Keine Abdeckungsmatrix.** Vier Merkmale gegen vier Sensoren, 30 Kästen —
+  das trägt eine Grenze, keine AUC-Tabelle.
+* **Keine Aussage über die Hand.** Die Stichprobe ist nach der vorläufigen
+  Stufe geschichtet; die Prävalenz der Runde ist eine Eigenschaft der
+  Ziehung.
+* **Keine Vergleichbarkeit zwischen Händen.** Die Schwellen sind an EINE Hand
+  kalibriert; eine hand-übergreifende Verteilung wäre derselbe Fehler wie ein
+  gemeinsamer `bench_loss`.
+* **Keine Bench-Zahl.** Nichts aus dieser Runde erscheint in einem
+  Bench-Report, und keine Fixture-Wurzel wird dafür angefasst.
+
+### Grenzen dieses Modus
+
+* **Der Beurteiler hat die Schrift selbst geschrieben.** Die Blindheit deckt
+  ab, welchen Sensor die Ampel gesetzt hätte — nicht, dass er seine eigene
+  Hand wiedererkennt. Deshalb ist die Frage ausdrücklich auf die BAHN gestellt
+  und nie auf die Schrift.
+* **Die Stufenwörter sind die der Ampel.** Das ist gewollt (nur so ist das
+  Urteil vergleichbar) und zugleich ein Anker: der Beurteiler übernimmt einen
+  Wortschatz, den er nicht erfunden hat. Was er dabei NICHT sieht, sind die
+  Zahlen und die Stufe der Maschine — die liegen im Schlüssel.
+* **30 Kästen sind wenig.** Sie tragen eine Grenze in der Größenordnung, in
+  der sie heute geraten ist, und keine zweite Stelle hinter dem Komma. Wer
+  schärfer will, braucht mehr Fassungen, nicht mehr Rechnung.
+* **Ein Sensor ohne Merkmal bleibt an der Stufe hängen** (AIoU, oben). Fällt
+  seine Grenze auffällig aus, ist das ein Grund für eine eigene Runde, kein
+  Grund für einen Handgriff an der Zahl.
 
 ---
 
