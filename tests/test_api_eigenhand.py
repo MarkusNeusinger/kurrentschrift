@@ -1318,6 +1318,13 @@ class TestStreifenPfad:
         assert answer["format"] == PFAD_FORMAT + 1
         assert [entry["box_index"] for entry in answer["pfade"]] == [0]
 
+        # The other half of the contract: a write re-stamps the row with what
+        # it actually stored. Without the marker coming back DOWN here, a row
+        # could keep claiming a format its content no longer has — and every
+        # assertion above would still pass with the write-side stamp deleted.
+        assert (await self._put(api, [self._path(stored)])).status == 200
+        assert (await self._get(api)).json()["format"] == PFAD_FORMAT
+
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "broken",
