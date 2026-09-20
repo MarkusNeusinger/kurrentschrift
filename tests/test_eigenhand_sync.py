@@ -901,9 +901,26 @@ class TestHandDrawnBahnChain:
         # The run reached its own closing summary rather than dying inside the
         # walk …
         assert "0 restored, 0 already there, 1 NOT restored" in capsys.readouterr().out
-        # … and the refusal names both what happened and what puts it right.
-        assert "412" in str(refused.value)
+        # … and the refusal carries the server's own line — which list was
+        # named and which is stored is the half this machine cannot know —
+        # beside the sentence only the terminal can write.
+        assert "moved on since this was read" in str(refused.value)
         assert "run the same --from again" in str(refused.value)
+
+    def test_a_refused_fassung_takes_its_own_read_numbers_down_with_it(
+        self, dataroot, tmp_path, monkeypatch, capsys
+    ) -> None:
+        # „already there" is a claim about the stored list, and this Fassung's
+        # was read before the server declared it superseded. Reporting box 0 as
+        # needing nothing off that read would tell the author a box is safe on
+        # the strength of a list that has demonstrably moved (found in review,
+        # this PR).
+        snapshot = self._archived(dataroot, tmp_path, monkeypatch, [_bahn(), _bahn(box=1, word="das")])
+        _wipe(dataroot / HAND / "fassungen")
+        fake = _FakePfadApi({("S0001", "F01"): [_bahn()]}, stale=True)
+        with pytest.raises(SystemExit, match="hand-drawn Bahn\\(en\\) are NOT restored"):
+            _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot))
+        assert "0 restored, 0 already there, 1 NOT restored" in capsys.readouterr().out
 
     def test_a_kartei_from_an_older_shape_stays_readable(self, monkeypatch):
         """An archived Kartei is never rewritten, so old shapes stay readable.

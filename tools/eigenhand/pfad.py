@@ -849,8 +849,15 @@ def main(argv: list[str] | None = None) -> int:
     # chain files, so it is also what `--replace-authored` is held against.
     kartei = load_kartei(hand) if args.replace_authored else {}
 
+    # Held rather than walked straight, because a run without `--fassung`
+    # covers every stored Fassung of the strip: when one of them stops the run,
+    # the ones behind it were never attempted, and an operator who is told
+    # nothing about them would read the abort as „the strip is done except this
+    # one" (found in review, this PR).
+    rows = _strip_rows(base, token, hand, args.strip, args.fassung)
+
     written = 0
-    for row in _strip_rows(base, token, hand, args.strip, args.fassung):
+    for position, row in enumerate(rows):
         print(f"{row['strip']}/{row['fassung']} ({row['sheet']} row {row['row_index']}):", flush=True)
         entries = follow_row(base, token, hand, row, prior, args.box)
         url = f"{base}/eigenhand/strips/{hand}/{row['strip']}/{row['fassung']}/pfade"
@@ -927,6 +934,7 @@ def main(argv: list[str] | None = None) -> int:
             # again, so getting it back has to be a fresh decision on a fresh
             # read.
             narrowed = "".join(f" --box {index}" for index in args.box or [])
+            unreached = [other["fassung"] for other in rows[position + 1 :]]
             raise SystemExit(
                 f"{exc}\n"
                 f"  Nothing of {row['strip']}/{row['fassung']} was stored. The merge above was made on a list "
@@ -934,6 +942,16 @@ def main(argv: list[str] | None = None) -> int:
                 "read carries what landed in between:\n"
                 f"    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pfad --hand {hand} "
                 f"--strip {row['strip']} --fassung {row['fassung']}{narrowed} --apply"
+                + (
+                    # The line above is per Fassung, and this run was stopped
+                    # part way through the strip. Naming the rest is the
+                    # difference between „one Fassung to redo" and a silent
+                    # gap the operator only finds in the workbench later.
+                    f"\n  This run stopped there: {', '.join(unreached)} of {row['strip']} were not attempted. "
+                    "Run them after the line above, or repeat the whole strip without --fassung."
+                    if unreached
+                    else ""
+                )
             ) from exc
         # A skip is an entry, not a path. Counting the two together would put
         # the four states back into one number — which is the whole reason the

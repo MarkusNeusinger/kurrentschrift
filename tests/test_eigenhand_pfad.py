@@ -1097,6 +1097,36 @@ class TestFollowerHandover:
         # Never the destructive flag: whatever landed in between is exactly
         # what a blanket override would give up again.
         assert "--replace-authored" not in message
+        # One Fassung, nothing behind it — so no claim about rows this run
+        # never reached.
+        assert "not attempted" not in message
+
+    def test_the_fassungen_behind_the_refused_one_are_named_as_unattempted(self, monkeypatch):
+        # Without `--fassung` the run covers every stored Fassung of the strip,
+        # and the abort ends it part way through. The suggested command names
+        # one Fassung, so the ones behind it would otherwise be a silent gap
+        # the operator finds in the workbench weeks later (found in review,
+        # this PR).
+        from tools.eigenhand import pfad as tool
+
+        _stub_run(monkeypatch, fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}], stored=[])
+        monkeypatch.setattr(
+            tool,
+            "_strip_rows",
+            lambda *_a: [
+                {"strip": "S0001", "fassung": fassung, "sheet": "B0001", "row_index": 0}
+                for fassung in ("F01", "F02", "F03")
+            ],
+        )
+
+        def _refuse(*_args, **_kwargs):
+            raise StaleRead("PUT … → 412: the stored paths have moved on since this was read")
+
+        monkeypatch.setattr(tool, "request_json", _refuse)
+        with pytest.raises(SystemExit) as refused:
+            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--apply"])
+        message = str(refused.value)
+        assert "F02, F03 of S0001 were not attempted" in message
 
     def test_the_declared_configuration_is_one_the_follower_accepts(self):
         # The arms are named in the tool and stored with every path; a renamed

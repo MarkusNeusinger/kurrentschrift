@@ -369,7 +369,9 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
     Fassung is counted as NOT restored and named with what to do about it, the
     same way a missing strip row is — the walk carries on, because one moved
     list says nothing about the other forty Fassungen, and the closing refusal
-    below ends the run loudly either way.
+    below ends the run loudly either way. Its „already there" and „left alone"
+    numbers go with it: they were read off the very list the server has just
+    declared superseded.
 
     A Fassung whose strip row is not up there cannot take a path at all (the
     route answers 404). Those are COUNTED and named rather than skipped: a
@@ -401,6 +403,14 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
         stored = answer.get("pfade") or []
         by_box = {entry.get("box_index"): entry for entry in stored}
         fresh: list[dict] = []
+        # Held per Fassung and folded into the run's numbers only once this
+        # Fassung's write has been accepted. They are read off the SAME list
+        # the push is held against, so a refused push (412) means they describe
+        # a list that has moved on — and „already there" is exactly the claim
+        # that must not be made about a box nobody has looked at since (found
+        # in review, this PR).
+        seen_already = 0
+        seen_kept: list[str] = []
         for entry in entries:
             live = by_box.get(entry["box_index"])
             if live is None:
@@ -413,11 +423,15 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
                 # first restore as a box the author had changed and report it
                 # as kept. That became reachable the day this image started
                 # writing format 2 over format-1 archives.
-                already += 1
+                seen_already += 1
             else:
-                kept += 1
-                left.append(f"{strip}/{fassung} box {entry['box_index']}")
+                seen_kept.append(f"{strip}/{fassung} box {entry['box_index']}")
         if not fresh:
+            # Nothing to write here, so nothing can refuse the read: what it
+            # said about this Fassung stands.
+            already += seen_already
+            kept += len(seen_kept)
+            left.extend(seen_kept)
             continue
         mine = {entry["box_index"] for entry in fresh}
         body = sorted(
@@ -432,18 +446,28 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
                 )
                 or {}
             )
-        except StaleRead:
+        except StaleRead as exc:
             # COUNTED and named, like the Fassung whose strip row is missing —
             # not raised. One moved list is a reason to restore that Fassung
             # again, never a reason to leave the other forty unattempted, and
             # the closing refusal already ends the run loudly and non-zero.
+            #
+            # The server's own line is carried along rather than replaced: it
+            # says which list was named and which is stored, which is the half
+            # this machine cannot know. `seen_already`/`seen_kept` are dropped
+            # on the floor with it — they were read off the same superseded
+            # list, and the re-run establishes them again.
             stuck += len(fresh)
             why.append(
-                f"{strip}/{fassung}: the stored list moved between this run's read and its write (412) — a box "
-                "was drawn or followed up there in between. Nothing of this Fassung was stored; run the same "
-                "--from again and the merge is made on the list that is there now"
+                f"{strip}/{fassung}: {exc} — the stored list moved between this run's read and its write: a box "
+                "was drawn or followed up there in between. Nothing of this Fassung was stored, and what this "
+                "run read about its other boxes is superseded; run the same --from again and the merge is made "
+                "on the list that is there now"
             )
             continue
+        already += seen_already
+        kept += len(seen_kept)
+        left.extend(seen_kept)
         landed = {entry.get("box_index"): entry for entry in (echo.get("pfade") or [])}
         for entry in fresh:
             if _came_back(landed.get(entry["box_index"]), entry):

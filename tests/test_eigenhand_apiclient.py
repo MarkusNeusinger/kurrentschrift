@@ -29,10 +29,24 @@ URL = "https://example.invalid/eigenhand/strips/mn-suetterlin/S0001/F01/pfade"
 TAG = '"3f1c"'
 
 
+def _as_message(headers: dict[str, str]) -> email.message.Message:
+    """Headers the way `http.client` hands them over — looked up case-blind.
+
+    A plain `dict` would make these tests pin one SPELLING of `ETag` rather
+    than the client finding the header at all: HTTP/2 lowercases every field
+    name, and a regression to `res.headers["ETag"]` would sail through a fake
+    that answers only to that key (found in review, this PR).
+    """
+    message = email.message.Message()
+    for name, value in headers.items():
+        message[name] = value
+    return message
+
+
 class _Response:
     """What `urllib` hands back: the bytes, and the headers they came with."""
 
-    def __init__(self, body: bytes, headers: dict[str, str]) -> None:
+    def __init__(self, body: bytes, headers: email.message.Message) -> None:
         self._body = body
         self.headers = headers
 
@@ -51,7 +65,7 @@ class _FakeOpener:
 
     def __init__(self, body: bytes = b"{}", headers: dict[str, str] | None = None, error: int | None = None) -> None:
         self.body = body
-        self.headers = headers or {}
+        self.headers = _as_message(headers or {})
         self.error = error
         self.requests: list[urllib.request.Request] = []
 
@@ -87,6 +101,14 @@ class TestTheAnswersToken:
         answer = request_answer("GET", URL, "t")
         assert answer is not None
         assert (json.loads(answer.body), answer.etag) == ({"pfade": []}, TAG)
+
+    def test_the_tag_is_found_whatever_case_it_arrives_in(self, opener):
+        # HTTP/2 lowercases every field name, and Cloudflare sits between this
+        # tool and the API. A tag the client cannot find is a write the server
+        # refuses with 428 — the right failure for a missing token, and a
+        # baffling one when the token was there all along.
+        opener(body=b'{"pfade": []}', headers={"etag": TAG})
+        assert request_json_with_etag("GET", URL, "t") == ({"pfade": []}, TAG)
 
     def test_an_answer_without_a_tag_says_so_rather_than_inventing_one(self, opener):
         # A `None` here is what makes the write fail loudly at the server
