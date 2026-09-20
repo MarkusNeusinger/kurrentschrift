@@ -4477,17 +4477,24 @@ ersetzt die ganze Zeile (`PUT …/pfade`), der Editor antwortet EINEN Kasten
 (`PATCH …/pfade/{box}`). Ohne Marke ist die zweite Tür ein verlorenes
 Update — der Editor liest die Liste, ein Folgerlauf ersetzt sie, der Editor
 schreibt seinen Kasten auf die gelesene Liste zurück und nimmt den Lauf mit.
-Der Kasten-Schreibweg VERLANGT sie (428 ohne, 412 bei Konflikt), der volle
-Push HONORIERT sie nur, solange die Werkzeuge sie noch nicht mitschicken —
-derselbe Gleichschritt wie beim Format. `*` wird abgewiesen: „was immer da
-steht" ist genau das „ich habe nicht nachgesehen", gegen das die Marke
-gebaut ist. Sie ist ein ANWENDUNGS-Schloss, kein Cache-Validator — die
-Antworten sind `private, no-store`, weil eine Bahn aus reservierten Pixeln
-abgeleitet ist —, deshalb stehen Marke und `no-store` nebeneinander statt
+BEIDE Türen verlangen sie (428 ohne, 412 bei Konflikt); die ältere der
+beiden Lücken ist die des Terminals: `sync --from <Schnappschuss>` liest
+eine Fassung, mischt die archivierten Kästen in das, was oben liegt, und
+schreibt die ganze Liste zurück — alles, was dazwischen landete, lag in
+diesem Fenster. `*` wird abgewiesen: „was immer da steht" ist genau das
+„ich habe nicht nachgesehen", gegen das die Marke gebaut ist; eine
+GESCHWÄCHTE Marke desselben Digests (`W/"…"`) dagegen wird angenommen,
+weil Cloudflare starke ETags beim Umkodieren schwächt. Sie ist ein
+ANWENDUNGS-Schloss, kein Cache-Validator — die Antworten sind
+`private, no-store`, weil eine Bahn aus reservierten Pixeln abgeleitet
+ist —, deshalb stehen Marke und `no-store` nebeneinander statt
 gegeneinander. Das Format gehört mit in die Marke, weil Liste und Semantik
-EINE Aussage sind. *Technisch:* `core/eigenhand/pfad.py::pfad_etag`,
+EINE Aussage sind. Das kurze Fenster INNERHALB einer Anfrage schließt die
+Marke nicht; dafür nimmt der Schreibweg die Zeile unter eine Sperre.
+*Technisch:* `core/eigenhand/pfad.py::pfad_etag`,
 `api/routers/eigenhand.py` (`_pfad_precondition` · `read_pfade` ·
-`write_pfade` · `write_pfad_box`), `app/src/lib/api/endpoints.ts`
+`write_pfade` · `write_pfad_box`), `tools/eigenhand/apiclient.py`
+(`request_json_with_etag`), `app/src/lib/api/endpoints.ts`
 (`getEigenhandPfadeWithEtag` · `patchEigenhandPfad`).
 → Streifen-Pfad; Bahn; Bahn-Archivkette;
 proposals/admin-redesign.md §6.7

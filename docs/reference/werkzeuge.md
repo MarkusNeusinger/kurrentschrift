@@ -676,6 +676,13 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   von selbst. Trägt das Archiv gar keine Bahn, sagt der Lauf auch das —
   „keine im Archiv" und „diese Hand hatte nie eine" sehen von hier
   identisch aus, und nur eines davon ist in Ordnung.
+  Seit 2026-09-20 nennt jeder Pfad-Push die Liste, auf der seine Mischung
+  gemacht wurde (`If-Match` mit der → Bahn-Marke des eigenen GET); der Server
+  verweigert ihn mit 412, wenn die gespeicherte Liste sich seither bewegt hat.
+  Das ist genau das Fenster zwischen Lesen und Ersetzen: ein Kasten, den der
+  Autor währenddessen in der Werkbank zeichnet, würde sonst still auf den
+  Archivstand zurückgesetzt. Ein 412 heißt: Lauf wiederholen, der frische Lesevorgang
+  trägt die Zeichnung. Dasselbe gilt für `pfad --apply`.
 - **`ingest` → `apply --haken`** (Normalfall) bzw. **`ingest` → `page` →
   `apply <Ergebnis>`** — Scan/Foto entzerren (Passmarken, scikit-image,
   300 DPI Arbeitsauflösung) und die Haken vom Blatt lesen; `apply --haken`

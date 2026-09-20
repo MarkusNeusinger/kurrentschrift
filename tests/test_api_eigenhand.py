@@ -1218,6 +1218,7 @@ class TestStreifenPfad:
         fassung: str = "F01",
         params: dict | None = None,
         headers: dict[str, str] | None = None,
+        blind: bool = False,
         **body,
     ):
         """A push under the format this image writes — `format` is REQUIRED now.
@@ -1226,13 +1227,21 @@ class TestStreifenPfad:
         more than one format, a push that names none would claim whichever this
         image happens to write, and the row would be stamped with it. `**body`
         still wins, so a test can declare any format it likes.
+
+        `If-Match` is required too, so the helper READS first and echoes the
+        token — which is what the tools do (`tools/eigenhand/apiclient.py`) and
+        the only honest way to spell „the list this push was made on". A test
+        that wants to exercise the guard itself passes its own header, or
+        `blind=True` for the write that does not say which list it was made on.
         """
+        url = f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade"
+        sent = {**api.admin_headers(), **(headers or {})}
+        if not blind and "If-Match" not in sent:
+            read = await api.client.request("GET", url, headers=api.admin_headers())
+            if read.status == 200 and read.headers.get("etag"):
+                sent["If-Match"] = read.headers["etag"]
         return await api.client.request(
-            "PUT",
-            f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade",
-            params=params,
-            json_body={"format": PFAD_FORMAT, "pfade": pfade, **body},
-            headers={**api.admin_headers(), **(headers or {})},
+            "PUT", url, params=params, json_body={"format": PFAD_FORMAT, "pfade": pfade, **body}, headers=sent
         )
 
     @staticmethod
@@ -1314,15 +1323,18 @@ class TestStreifenPfad:
         assert (await self._get(api)).headers["etag"] == after
 
     @pytest.mark.asyncio
-    async def test_the_full_push_honours_a_token_without_demanding_one(self, api: Harness):
-        # The terminal door: `tools.eigenhand.pfad` and `tools.eigenhand.sync`
-        # do not send the header yet, so demanding it in the same release that
-        # introduces it would break the push chain rather than guard it — the
-        # same lockstep the format follows. A push that DOES send one is held
-        # to it, which is how the restore's read-then-replace window closes as
-        # soon as the tool echoes the token.
+    async def test_the_full_push_demands_the_token_of_the_list_it_replaces(self, api: Harness):
+        # The terminal door, and the OLDER of the two windows: `sync --from`
+        # reads a Fassung, merges the archived boxes into what is up there and
+        # pushes the whole list back — everything that landed in between is
+        # inside that gap. A token on the answer alone would protect nothing
+        # (V20, §6.4 „Speichern"), so the condition sits on the write.
         stored = await _store_strip(api)
         token = (await self._get(api)).headers["etag"]
+
+        unsaid = await self._put(api, [self._path(stored)], blind=True)
+        assert unsaid.status == 428, unsaid.body
+        assert (await self._get(api)).json()["pfade"] is None
 
         stale = await self._put(api, [self._path(stored)], headers={"If-Match": '"not-the-stored-list"'})
         assert stale.status == 412, stale.body
@@ -1331,8 +1343,16 @@ class TestStreifenPfad:
         matched = await self._put(api, [self._path(stored)], headers={"If-Match": token})
         assert matched.status == 200, matched.body
 
-        # …and the same push without the header still goes through.
-        assert (await self._put(api, [self._path(stored, 1)])).status == 200
+        # A weakened validator of the SAME digest is accepted: Cloudflare turns
+        # a strong entity tag into a weak one whenever it re-encodes a
+        # response, and these answers are gzipped at the origin and leave
+        # through that zone. The value is a content digest and this is an
+        # application lock, so `W/"…"` says exactly as much — this caller read
+        # THIS list. A weak tag of another digest is still a 412.
+        after = matched.headers["etag"]
+        assert (await self._put(api, [self._path(stored, 1)], headers={"If-Match": f"W/{after}"})).status == 200
+        weak_other = await self._put(api, [self._path(stored)], headers={"If-Match": 'W/"not-the-stored-list"'})
+        assert weak_other.status == 412, weak_other.body
 
     @pytest.mark.asyncio
     async def test_a_fassung_whose_pixels_are_not_here_has_no_path_to_hold(self, api: Harness):
@@ -1681,6 +1701,28 @@ class TestStreifenPfadKasten:
         assert answer[0]["erzeugt_am"] == "2026-09-21"
 
     @pytest.mark.asyncio
+    async def test_the_letter_boundaries_belong_to_the_bahn_they_were_drawn_on(self, api: Harness):
+        # A loss, and an intended one. The save replaces the box's entry whole,
+        # so a body without `letter_spans` gives up the ones the author
+        # corrected there — the same rule the full push applies to an answer by
+        # hand, and right for the same reason: a corrected boundary describes
+        # THESE strokes. `displaced_authored` does not stand in the way of it
+        # either (`by_hand` short-circuits both fields), so nothing refuses
+        # this and nothing should. The duty it puts on the editor: resend the
+        # stored spans whenever the strokes are unchanged.
+        stored = await _store_strip(api)
+        corrected = [{"stroke": 0, "slot": 0, "first": 0, "last": 2, "herkunft": "authored"}]
+        first = await self._patch(
+            api, self._drawn(stored, letter_spans=corrected), (await self._read(api)).headers["etag"], format=2
+        )
+        assert first.status == 200, first.body
+        assert (await self._read(api)).json()["pfade"][0]["letter_spans"] == corrected
+
+        again = await self._patch(api, self._drawn(stored), first.headers["etag"], format=2)
+        assert again.status == 200, again.body
+        assert (await self._read(api)).json()["pfade"][0]["letter_spans"] is None
+
+    @pytest.mark.asyncio
     async def test_a_write_that_does_not_say_which_list_it_was_drawn_on_is_refused(self, api: Harness):
         # 428 rather than a write that looks safe: without the token this route
         # is a lost update by construction, and a client that may leave the
@@ -1726,6 +1768,19 @@ class TestStreifenPfadKasten:
         res = await self._patch(api, self._drawn(stored), "*")
         assert res.status == 412, res.body
         assert (await self._read(api)).json()["pfade"] is None
+
+    @pytest.mark.asyncio
+    async def test_a_token_an_intermediary_weakened_still_names_the_same_list(self, api: Harness):
+        # The save the author actually makes goes through Cloudflare, which
+        # turns a strong entity tag into a weak one whenever it re-encodes a
+        # response — and these answers are gzipped at the origin. A browser
+        # echoes what it was handed, so a strict-strong comparison would 412
+        # every save on the one deployment path the workbench has, for a reason
+        # invisible from here.
+        stored = await _store_strip(api)
+        res = await self._patch(api, self._drawn(stored), f"W/{(await self._read(api)).headers['etag']}")
+        assert res.status == 200, res.body
+        assert (await self._read(api)).json()["pfade"][0]["verfahren"] == "authored"
 
     @pytest.mark.asyncio
     async def test_the_address_and_the_body_have_to_name_the_same_box(self, api: Harness):

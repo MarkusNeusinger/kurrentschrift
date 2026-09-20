@@ -1203,12 +1203,21 @@ async def write_flecken(
 # ------------------------------------------------------------ Streifen-Pfade
 
 
-async def _pfad_row(hand: str, strip: str, fassung: str, db: AsyncSession):
-    """The stored strip a path belongs to — paths loaded, pixels left behind."""
+async def _pfad_row(hand: str, strip: str, fassung: str, db: AsyncSession, *, for_update: bool = False):
+    """The stored strip a path belongs to — paths loaded, pixels left behind.
+
+    `for_update` is what the two WRITE doors pass, and it closes the other half
+    of the lost-update problem: `If-Match` covers the long window between a
+    caller's read and its write (minutes, in the editor), the row lock covers
+    the short one inside a single request — two writes that both carry the
+    token the row had a moment ago would otherwise both pass the check and the
+    second would overwrite the first. The lock is a no-op on SQLite, so the
+    HTTP suites read the same as before.
+    """
     _checked_hand(hand)
     _checked_strip(strip)
     _checked_fassung(fassung)
-    row = await EigenhandRepository(db).strip_pfade(hand, strip, fassung)
+    row = await EigenhandRepository(db).strip_pfade(hand, strip, fassung, for_update=for_update)
     if row is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
@@ -1261,26 +1270,37 @@ def _checked_pfad_format(pfad_format: int) -> int:
     return pfad_format
 
 
-def _pfad_precondition(if_match: str | None, current: str, *, required: bool) -> None:
+def _pfad_precondition(if_match: str | None, current: str) -> None:
     """Hold a write against the list it was made on — the lost-update guard.
 
     A Bahn list is written from two doors: the terminal replaces the whole row,
-    the browser answers one box. Between the editor's read and its write a
-    follower run can land, and without a token the editor would then write its
-    box back onto a list that no longer exists and take the run with it. So the
-    per-box write DEMANDS the token (428 without it, rather than a silent write
-    that looks safe), and the full push honours one when it carries it.
+    the browser answers one box. Between either writer's read and its write the
+    other one can land, and without a token the second would write onto a list
+    that no longer exists and take the first with it. BOTH doors therefore
+    demand the token — 428 when a write does not say at all, rather than a
+    silent write that looks safe (`docs/proposals/admin-redesign.md` §6.4, V20:
+    an ETag on the ANSWER alone protects nothing, only the condition on the
+    write path does).
 
-    Honoured rather than demanded on the `PUT`, because the writers on the
-    other side of it are terminal tools that do not send the header yet: the
-    same lockstep the format follows — the API takes the newer shape one
-    release before a writer produces it. Until `tools.eigenhand.pfad` and
-    `tools.eigenhand.sync` echo it, the terminal door stays as wide as it was,
-    and no narrower.
+    The terminal's window is the older of the two and the one the archive
+    hand-off named: `tools.eigenhand.sync --from <snapshot>` reads a Fassung,
+    merges the archived boxes into what is up there and pushes the whole list
+    back. Anything that landed in between was inside that window. Both tools
+    now echo the token of their own read (`tools/eigenhand/apiclient.py`), so
+    demanding it here closes the window instead of documenting it.
 
     `*` is refused on purpose. HTTP reads it as „any current representation“,
     which is precisely the „I did not look“ this guard exists to catch, and a
     client that may send it has no guard at all.
+
+    A WEAK validator of the same digest is accepted (`W/"…"`). Cloudflare
+    weakens a strong entity tag whenever it re-encodes a response, and these
+    answers are gzipped at the origin and leave through that zone — a token a
+    caller echoes exactly as it was handed to it would then never match, and
+    every save would 412 for a reason nobody could see from here. The value is
+    a content digest and this is an application lock rather than an HTTP cache
+    validator, so the weakened form of the same digest says exactly as much as
+    the strong one: this caller read THIS list.
 
     Neither refusal says what the stored token IS. It would be the obvious
     courtesy and it would hand the guard away: a client could write blind,
@@ -1289,22 +1309,21 @@ def _pfad_precondition(if_match: str | None, current: str, *, required: bool) ->
     which is the whole point of demanding it.
     """
     if if_match is None:
-        if not required:
-            return
         raise HTTPException(
             status.HTTP_428_PRECONDITION_REQUIRED,
             detail=(
-                "this write merges into a stored list, so it needs the `If-Match` token of the list it was drawn "
-                "on — read the Fassung's paths and echo the `ETag` that read answered with"
+                "this write lands on a stored list, so it needs the `If-Match` token of the list it was made "
+                "on — read the Fassung's paths and echo the `ETag` that read answered with. If the read carried "
+                "no `ETag` at all, something between here and there is stripping it"
             ),
         )
-    if current in {token.strip() for token in if_match.split(",")}:
+    if current in {token.strip().removeprefix("W/") for token in if_match.split(",")}:
         return
     raise HTTPException(
         status.HTTP_412_PRECONDITION_FAILED,
         detail=(
             f"the stored paths have moved on since this was read (`If-Match: {if_match}`) — read the Fassung "
-            "again and redraw the box on the list that is there now. `*` is not accepted here: it would say "
+            "again and make the write on the list that is there now. `*` is not accepted here: it would say "
             "„whatever is stored“, which is the lost update this check exists to refuse"
         ),
     )
@@ -1413,18 +1432,20 @@ async def write_pfade(
     deployed constant, is what a later read answers with, so a Fassung followed
     under 1 and one pushed under 2 live side by side without either lying.
 
-    Since the per-box write exists, a full replacement can also land on a list
-    the author has drawn into in the meantime. `If-Match` is therefore honoured
-    here — and only honoured, not demanded: the writers on this side are
-    terminal tools that do not send it yet, and requiring it in the same breath
-    as introducing it would break the push chain rather than guard it. That is
-    the lockstep again, and the reason the response carries the new `ETag`
-    whether the request asked for one or not: the tool can start echoing it
-    without the API moving again.
+    `If-Match` is DEMANDED here, not merely honoured (V20, §6.4 „Speichern"):
+    a token on the answer alone protects nothing, only the condition on the
+    write path does. This door carries the older of the two windows — the
+    restore reads a Fassung, merges its archived boxes into what is up there
+    and pushes the whole list back, and everything that landed in between was
+    inside that read-then-replace gap. Both tools echo the token of their own
+    read for it (`tools/eigenhand/apiclient.py`), so the requirement closes the
+    window rather than breaking the chain. The response carries the new token
+    either way, which is what lets a tool push a whole strip without re-reading
+    between Fassungen.
     """
     _checked_pfad_format(body.format)
-    row = await _pfad_row(hand, strip, fassung, db)
-    _pfad_precondition(if_match, pfad_etag(row.pfade, row.pfade_format), required=False)
+    row = await _pfad_row(hand, strip, fassung, db, for_update=True)
+    _pfad_precondition(if_match, pfad_etag(row.pfade, row.pfade_format))
     pushed = [item.model_dump(mode="json") for item in body.pfade]
     displaced = [] if replace_authored else displaced_authored(row.pfade, pushed)
     if displaced:
@@ -1504,6 +1525,14 @@ async def write_pfad_box(
     empty entry cannot take a drawing's place. The follower's door, where the
     rule does bite, is unchanged.
 
+    One consequence of that, stated because it is a loss and not an oversight:
+    THE BOUNDARIES BELONG TO THE BAHN. A save replaces the box's entry whole,
+    so a body without `letter_spans` gives up the ones the author corrected
+    there — the same rule the full push applies to an answer by hand, and the
+    reason it is right is that a corrected boundary describes the strokes it
+    was drawn on. The duty this puts on the editor: when the strokes are
+    unchanged, resend the stored spans with them.
+
     The declared format has to be the one the row is stamped with as long as
     the row holds entries: a per-box write must not re-label its NEIGHBOURS,
     and the stamp is a statement about every entry in the cell. On a row that
@@ -1514,8 +1543,8 @@ async def write_pfad_box(
     live in one place and this route cannot refuse by a second, drifting copy.
     """
     _checked_pfad_format(body.format)
-    row = await _pfad_row(hand, strip, fassung, db)
-    _pfad_precondition(if_match, pfad_etag(row.pfade, row.pfade_format), required=True)
+    row = await _pfad_row(hand, strip, fassung, db, for_update=True)
+    _pfad_precondition(if_match, pfad_etag(row.pfade, row.pfade_format))
     if body.pfad.box_index != box:
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT,
