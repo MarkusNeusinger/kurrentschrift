@@ -19,6 +19,13 @@ in the SAME reserved place. Safety properties, in the order they matter:
   hand; every later one holds its increment beside a complete Kartei. Anything
   restoring from the archive has to read the snapshots as one layered tree —
   ``tools/eigenhand/sync.py --from`` does.
+  That full Kartei copy is load-bearing and not a convenience: it is what
+  carries the Fleckenmasken and the HAND-DRAWN Bahnen
+  (``tools.eigenhand.pull --pfade``) of Fassungen that were filed long ago.
+  Both arrive after the Fassung directory is already archived, and this run
+  skips such a directory by relative path — so a file written into one would
+  never reach the archive while the run reported success. Do not make the
+  Kartei incremental (author decision A, 2026-09-20).
 * **A shrinking snapshot is an error.** If the Kartei holds fewer Fassungen
   than the archive already knows, the run fails — a wrong ``EIGENHAND_DATA``
   or a half-restored working copy must not look like a successful backup.

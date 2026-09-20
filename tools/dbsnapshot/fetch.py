@@ -410,6 +410,11 @@ def main(argv: list[str] | None = None) -> int:
             "eigenhand_strips.png is NOT archived here — the images live in the own-hand archive"
             " tree; strip_hashes is what a restore matches them against"
             " (`tools.eigenhand.sync --from <snapshot> --mit-streifen`)",
+            "eigenhand_strips.pfade is NOT archived here either — /eigenhand/archive/{hand} serves no"
+            " Streifen-Pfade. A FOLLOWED path is a derivation and is re-made by re-running"
+            " `tools.eigenhand.pfad`; a path the author drew BY HAND (verfahren: authored) cannot be"
+            " followed again, and its master is the own-hand archive tree's kartei.json, pulled there by"
+            " `tools.eigenhand.pull --pfade` and restored by `tools.eigenhand.sync --from`",
             "eigenhand_hands rides along inside each hand's archive.json as `setup`, not as a table of its own",
         ],
     }

@@ -84,11 +84,37 @@ def _dry_run(tmp_path, monkeypatch, *, fresh: list[dict], stored: list[dict], ar
     return json.loads(out.read_text())["pfade"]
 
 
-def _apply_run(monkeypatch, *, fresh: list[dict], stored: list[dict], argv: list[str]) -> tuple[str, list[dict]]:
-    """Run the tool's `--apply` path over a stubbed API; the URL and body it PUT."""
+def _kartei_with(entries: list[dict]) -> dict:
+    """A Kartei that has already pulled these Bahnen for S0001/F01.
+
+    The shape `tools.eigenhand.pull --pfade` writes — built through the real
+    `pfad_record`, so a change to the envelope shows up here rather than
+    silently making the refusal below untestable.
+    """
+    from tools.eigenhand.kartei import pfad_record
+
+    return {
+        "format": 1,
+        "hand": "mn-suetterlin",
+        "style": "suetterlin",
+        "sheets": {},
+        "strips": {"S0001": {"fassungen": [{"id": "F01", "pfade": pfad_record(entries, 1, "2026-09-20")}]}},
+        "redo": [],
+    }
+
+
+def _apply_run(
+    monkeypatch, *, fresh: list[dict], stored: list[dict], argv: list[str], archived: list[dict] | None = None
+) -> tuple[str, list[dict]]:
+    """Run the tool's `--apply` path over a stubbed API; the URL and body it PUT.
+
+    `archived` is what this machine's Kartei holds — the condition
+    `--replace-authored` is held against since author decision B.
+    """
     from tools.eigenhand import pfad as tool
 
     _stub_run(monkeypatch, fresh=fresh, stored=stored)
+    monkeypatch.setattr(tool, "load_kartei", lambda _hand: _kartei_with(archived or []))
     sent: dict = {}
 
     def _put(method: str, url: str, token: str, payload: dict | None = None):
@@ -369,9 +395,12 @@ class TestFollowerHandover:
 
         stored = [{"box_index": 0, "word": "lesen"}, {"box_index": 1, "word": "das"}]
         fresh = [{"box_index": 1, "word": "das", "verfahren": "tintenpfad"}]
-        merged = tool._merged("https://example.invalid", "token", "u", fresh, _get=lambda *_: {"pfade": stored})
+        merged, handed_over = tool._merged(
+            "https://example.invalid", "token", "u", fresh, _get=lambda *_: {"pfade": stored}
+        )
         assert [entry["box_index"] for entry in merged] == [0, 1]
         assert merged[1] is fresh[0]  # the followed box is the NEW one, not the stored copy
+        assert handed_over is False
 
     def test_the_dry_run_files_the_body_the_apply_path_would_send(self, tmp_path, monkeypatch):
         # The dry run is the review surface `--apply` is decided on, so it has
@@ -422,21 +451,52 @@ class TestFollowerHandover:
         )
         assert [entry["verfahren"] for entry in body] == [AUTHORED, "tintenpfad"]
 
-    def test_the_terminal_flag_is_what_gives_a_hand_drawn_path_up(self, monkeypatch, capsys):
+    def test_the_terminal_flag_is_what_gives_an_archived_hand_drawn_path_up(self, monkeypatch, capsys):
         # The only way past — and it has to reach the SERVER, since the tool's
         # own merge is not what the stored row is protected by.
+        drawing = {"box_index": 0, "word": "lesen", "verfahren": AUTHORED}
         url, body = _apply_run(
             monkeypatch,
             fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}],
-            stored=[{"box_index": 0, "word": "lesen", "verfahren": AUTHORED}],
+            stored=[drawing],
+            archived=[drawing],
             argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--replace-authored"],
         )
         assert url.endswith("?replace_authored=true")
         assert [entry["verfahren"] for entry in body] == ["tintenpfad"]
         # The destructive path has to be the loud one: nothing else in the run
-        # names the hand work it just handed over, and the archive cannot say
-        # what was there (Q4's archive half is still open).
-        assert "box 0" in capsys.readouterr().out
+        # names the hand work it just handed over — and what the check proved
+        # is only that the copy is in this machine's Kartei, on one disk, so
+        # the line has to name the archive step too.
+        out = capsys.readouterr().out
+        assert "box 0" in out
+        assert "snapshot --hand mn-suetterlin" in out
+
+    def test_the_flag_refuses_while_the_drawing_is_not_archived(self, monkeypatch):
+        # Author decision B, 2026-09-20: nothing can follow a drawing again, so
+        # the terminal may not turn the last copy into none. One command fixes
+        # it, and the refusal has to name that command.
+        with pytest.raises(SystemExit, match=r"pull --hand mn-suetterlin --pfade"):
+            _apply_run(
+                monkeypatch,
+                fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}],
+                stored=[{"box_index": 0, "word": "lesen", "verfahren": AUTHORED}],
+                archived=[],
+                argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--replace-authored"],
+            )
+
+    def test_an_archived_copy_of_an_older_drawing_does_not_count(self, monkeypatch):
+        # „Is there a record" is not the question: the author may have corrected
+        # his own trace since the last pull, and then the Kartei holds a
+        # DIFFERENT Bahn than the one this run would hand over.
+        with pytest.raises(SystemExit, match="not archived"):
+            _apply_run(
+                monkeypatch,
+                fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}],
+                stored=[{"box_index": 0, "word": "lesen", "verfahren": AUTHORED, "erzeugt_am": "2026-09-20"}],
+                archived=[{"box_index": 0, "word": "lesen", "verfahren": AUTHORED, "erzeugt_am": "2026-09-14"}],
+                argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--replace-authored"],
+            )
 
     def test_an_ordinary_apply_asks_for_no_override(self, monkeypatch):
         url, body = _apply_run(
@@ -447,6 +507,36 @@ class TestFollowerHandover:
         )
         assert "replace_authored" not in url
         assert [entry["verfahren"] for entry in body] == [AUTHORED]
+
+    def test_a_dry_run_says_it_WOULD_hand_the_drawing_over(self, tmp_path, monkeypatch, capsys):
+        # Nothing is given up until the PUT, and the merge runs before the two
+        # paths part ways — so a dry run must not claim the Kartei is the last
+        # copy while the database still holds the drawing (review, PR #635).
+        from tools.eigenhand import pfad as tool
+
+        drawing = {"box_index": 0, "word": "lesen", "verfahren": AUTHORED}
+        _stub_run(monkeypatch, fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}], stored=[drawing])
+        monkeypatch.setattr(tool, "load_kartei", lambda _hand: _kartei_with([drawing]))
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("a dry run must not write"))
+        out = tmp_path / "pfade.json"
+        assert tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--replace-authored", "--out", str(out)]) == 0
+        printed = capsys.readouterr().out
+        assert "WOULD hand" in printed
+        assert "snapshot --hand" not in printed
+
+    def test_the_override_rides_only_on_a_row_that_gives_a_drawing_up(self, monkeypatch):
+        # The flag is set once for a whole strip. A row that carries no
+        # hand-drawn path at all must still go up WITHOUT it — otherwise the
+        # server's 409, the one check that does not run on this machine, is
+        # switched off for boxes the local guard never looked at.
+        url, _body = _apply_run(
+            monkeypatch,
+            fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}],
+            stored=[{"box_index": 1, "word": "das", "verfahren": "tintenpfad"}],
+            archived=[],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--replace-authored"],
+        )
+        assert "replace_authored" not in url
 
     def test_the_declared_configuration_is_one_the_follower_accepts(self):
         # The arms are named in the tool and stored with every path; a renamed
