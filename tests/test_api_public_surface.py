@@ -139,9 +139,10 @@ _PARAMS = {
     "sheet": "B0001",
     "strip": "S0001",
     "fassung": "1",
-    # Only write paths reach these (the Lesart vocabulary load) — the gate
-    # fires long before the value means anything.
+    # Only write paths reach these (the Lesart vocabulary load, the per-box
+    # Bahn write) — the gate fires long before the value means anything.
     "gen": "1",
+    "box": "0",
 }
 # The renders 422 without their query — a 422 is not a gate, but a real
 # request is the more honest probe.

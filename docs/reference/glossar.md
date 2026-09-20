@@ -58,7 +58,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
 - **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Span-Herkunft) §5
-- **B** — Bahn §5 · Bahn-Archivkette §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn §5
+- **B** — Bahn §5 · Bahn-Archivkette §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Bahn-Marke §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Ebenen-Token §5 · Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
@@ -4467,6 +4467,30 @@ sie auflöst. *Technisch:* `tools/eigenhand/pull.py::pull_pfade`,
 (unverändert — die volle Kartei-Kopie ist der Träger),
 `tools/dbsnapshot/fetch.py` (`known_gaps`).
 → Streifen-Pfad; Bahn; proposals/eigenhand-erfassung.md §7.5, §8.1
+
+**Bahn-Marke** *(Content-ETag der Pfad-Liste)* — die Marke, die eine
+gespeicherte Pfad-Liste als GENAU DIESEN Stand ausweist: ein sha256 über die
+Zelle (die Einträge plus das → Streifen-Pfad-Format der Zeile), als
+HTTP-`ETag` mitgeschickt und beim Schreiben als `If-Match` zurückgegeben.
+Sie ist nötig, seit die Liste aus ZWEI Türen beschrieben wird: das Terminal
+ersetzt die ganze Zeile (`PUT …/pfade`), der Editor antwortet EINEN Kasten
+(`PATCH …/pfade/{box}`). Ohne Marke ist die zweite Tür ein verlorenes
+Update — der Editor liest die Liste, ein Folgerlauf ersetzt sie, der Editor
+schreibt seinen Kasten auf die gelesene Liste zurück und nimmt den Lauf mit.
+Der Kasten-Schreibweg VERLANGT sie (428 ohne, 412 bei Konflikt), der volle
+Push HONORIERT sie nur, solange die Werkzeuge sie noch nicht mitschicken —
+derselbe Gleichschritt wie beim Format. `*` wird abgewiesen: „was immer da
+steht" ist genau das „ich habe nicht nachgesehen", gegen das die Marke
+gebaut ist. Sie ist ein ANWENDUNGS-Schloss, kein Cache-Validator — die
+Antworten sind `private, no-store`, weil eine Bahn aus reservierten Pixeln
+abgeleitet ist —, deshalb stehen Marke und `no-store` nebeneinander statt
+gegeneinander. Das Format gehört mit in die Marke, weil Liste und Semantik
+EINE Aussage sind. *Technisch:* `core/eigenhand/pfad.py::pfad_etag`,
+`api/routers/eigenhand.py` (`_pfad_precondition` · `read_pfade` ·
+`write_pfade` · `write_pfad_box`), `app/src/lib/api/endpoints.ts`
+(`getEigenhandPfadeWithEtag` · `patchEigenhandPfad`).
+→ Streifen-Pfad; Bahn; Bahn-Archivkette;
+proposals/admin-redesign.md §6.7
 
 **Vorschlag (Streifen-Befund)** — die dreistufige Empfehlung eines
 Streifen-Befunds: `sauber` (nichts fällt auf) · `brauchbar` (etwas fällt

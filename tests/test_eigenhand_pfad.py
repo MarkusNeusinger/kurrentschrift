@@ -7,7 +7,9 @@ stored against the wrong ink (`check_paths`). The third is which words a strip
 follow can even take on — the ductus seed it composes with, and the two ways
 that seam used to refuse the author's own hand (`TestDuctusSeed`). The fourth
 is the rule that a hand-drawn path outranks a followed one
-(`displaced_authored`, `TestAuthoredRule`).
+(`displaced_authored`, `TestAuthoredRule`). Since the per-box write there is a
+fifth: the content token the two write doors are held against (`pfad_etag`,
+`TestPfadEtag`).
 """
 
 from __future__ import annotations
@@ -36,6 +38,7 @@ from core.eigenhand.pfad import (
     frame_for_box,
     frames_of_row,
     nominal_xh_px,
+    pfad_etag,
     push_body,
 )
 
@@ -661,6 +664,45 @@ class TestAuthoredRule:
         assert displaced_authored([_path(letter_spans=[_span(herkunft=AUTHORED)])], [_skip(verfahren=AUTHORED)]) == [
             (0, FIELD_SPANS)
         ]
+
+
+class TestPfadEtag:
+    """The token that keeps two write doors from overwriting each other."""
+
+    def test_the_same_stored_list_gives_the_same_token(self):
+        # Two readings of one cell have to agree, or the lock refuses every
+        # write instead of the racing ones.
+        assert pfad_etag([_path()], PFAD_FORMAT) == pfad_etag([_path()], PFAD_FORMAT)
+
+    def test_a_token_is_an_http_entity_tag(self):
+        # Quoted, so a caller echoes the header value it was handed rather than
+        # reassembling one (RFC 9110).
+        token = pfad_etag(None, 1)
+        assert token.startswith('"') and token.endswith('"')
+        assert len(token) == 66
+
+    def test_anything_the_cell_says_moves_the_token(self):
+        base = pfad_etag([_path()], PFAD_FORMAT)
+        assert pfad_etag([_path(erzeugt_am="2026-09-20")], PFAD_FORMAT) != base
+        assert pfad_etag([_path(), _path(box_index=1, word="das")], PFAD_FORMAT) != base
+        assert pfad_etag([], PFAD_FORMAT) != base
+        # The format marker is half the statement — a list and the semantics
+        # its entries obey are one thing, so a token over only the entries
+        # would start lying the first time the two can move apart.
+        assert pfad_etag([_path()], PFAD_FORMAT + 1) != base
+
+    def test_a_fassung_nobody_has_followed_still_has_a_token(self):
+        # The per-box write starts on an empty row — that is the normal case
+        # for a box the author draws first — so NULL needs a token too, and one
+        # that is not the empty list's („nobody looked" is not „nothing found").
+        assert pfad_etag(None, 1) != pfad_etag([], 1)
+
+    def test_the_key_order_of_a_stored_entry_does_not_matter(self):
+        # JSONB hands the keys back in its own order; a token that followed it
+        # would refuse a write nobody raced.
+        entry = _path()
+        shuffled = dict(reversed(list(entry.items())))
+        assert pfad_etag([shuffled], PFAD_FORMAT) == pfad_etag([entry], PFAD_FORMAT)
 
 
 class TestFollowerHandover:

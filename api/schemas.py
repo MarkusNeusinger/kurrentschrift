@@ -1620,6 +1620,31 @@ class EigenhandPfadeIn(BaseModel):
     format: int
 
 
+class EigenhandPfadIn(BaseModel):
+    """ONE box's Bahn, drawn by hand — the per-box write beside the full push.
+
+    The editor answers a single word box, so a full replacement is the wrong
+    shape for it: it would have to send back every other box of the row it
+    happens to have read, and any follower run that landed in between would be
+    overwritten by a list the browser assembled minutes ago. The route merges
+    this one entry into the stored list and takes an `If-Match` token for the
+    window that opens instead (`core.eigenhand.pfad.pfad_etag`).
+
+    `verfahren` is NOT read from here — the route stamps `authored`, because
+    this door exists for the author's own hand and nothing derived may come
+    through it. A body that claims another provenance is refused rather than
+    quietly re-labelled: silently turning a followed path into ground truth is
+    the one mistake the whole authored rule exists to prevent.
+
+    `format` travels for the same reason it does on the full push: the SERVER
+    holds the contract, and an entry stored under semantics its row does not
+    declare is the mislabelling `eigenhand_strips.pfade_format` exists to stop.
+    """
+
+    pfad: EigenhandPfad
+    format: int
+
+
 class EigenhandPfadeOut(BaseModel):
     """What a Fassung holds — `pfade: null` means nobody has followed it yet.
 
