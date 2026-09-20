@@ -1641,6 +1641,155 @@ class EigenhandPfadeOut(BaseModel):
     boxes: list[EigenhandStripBoxOut] = []
 
 
+class EigenhandTintentreueSensorOut(BaseModel):
+    """One sensor of the Tintentreue with its reading and the bounds it is held to.
+
+    The wire twin of `core.eigenhand.tintentreue.Sensorwert`, field for field.
+    `stufe` is null where the sensor carries no reading OR no bound — the two
+    are told apart by `wert`, and neither may quietly count as green.
+    """
+
+    name: str
+    wert: float | None = None
+    soll: float | None = None
+    gruen: float | None = None
+    gelb: float | None = None
+    stufe: int | None = None
+
+
+# The steps of the Tintentreue, spelled here for the same reason the path
+# vocabularies are: a CLOSED set decided in `core.eigenhand.tintentreue`
+# (`STUFEN` plus the grey `STUFE_UNGEMESSEN`), and a wire type saying `str`
+# would let a surface branch on a step this API never sends. Three measured
+# steps and ONE grey: grey is the absence of a measurement rather than a fourth
+# step, which is why it carries its reason in `grund` instead of a colour.
+# Pinned against the core tuple in `tests/test_api_eigenhand.py`.
+TintentreueStufe = Literal["folgt", "folgt teils", "folgt nicht", "nicht beurteilt"]
+
+
+class EigenhandTintentreueOut(BaseModel):
+    """„Folgt der Bahn die Tinte?" for one word box — DERIVED, never stored.
+
+    The sensors are measured offline by the follower and stored in the free
+    `pfade[].meta.tintenpfad`; the verdict is a reading of them under this
+    hand's dated thresholds (`core.eigenhand.tintentreue`). So a calibration
+    changes every answer at once and no stored row is rewritten — the same
+    split the Streifen-Befund follows („Gemessen wird gespeichert, beurteilt
+    wird abgeleitet").
+
+    No scalar on purpose: a step out of `STUFEN` (or the grey „nicht
+    beurteilt"), the sensor that NAMES it, and the raw readings. `grund` is
+    that sensor's name where there is one and the reason for the grey state
+    otherwise — always a sentence a surface can print without a lookup table.
+    `vorlaeufig` says the thresholds are still the borrowed ones, so no surface
+    can imply a calibration that has not happened.
+    """
+
+    stufe: TintentreueStufe
+    grund: str
+    gemessen: bool
+    sensor: str | None = None
+    sensoren: list[EigenhandTintentreueSensorOut] = []
+    format: int
+    schwellen_stand: str
+    vorlaeufig: bool
+
+
+class EigenhandKastenzaehlerOut(BaseModel):
+    """How a Fassung reports its boxes: counted, never coloured.
+
+    Author decision E of 2026-09-20 — „3 von 4 Kästen folgen" and no traffic
+    light of its own, which would be a second verdict with its own vocabulary
+    beside `befund.vorschlag` over the same Fassung.
+
+    Counted over ALL boxes of the Fassung, never over the boxes a filter left
+    standing: a counter that shrank with the filter would answer a different
+    question every time the list is narrowed.
+    """
+
+    kaesten: int
+    gemessen: int
+    folgt: int
+    von_hand: int
+
+
+class EigenhandPfadBoxOut(BaseModel):
+    """One word box's STATE — everything but the path itself.
+
+    What the Nachfahr-Liste needs per box, with the few thousand points of the
+    Bahn left behind: where it sits, what was written there, who made the entry
+    and when, and what the sensors say about it. The points come from
+    `GET /eigenhand/strips/{hand}/{strip}/{fassung}/pfade`, one Fassung at a
+    time, when a surface actually draws one.
+
+    `verfahren`, `erzeugt_am` and `flecken_n` are null where the box carries no
+    entry at all; `status`/`grund`/`detail` additionally where the row was
+    written under Streifen-Pfad format 1, which had no Skip-Eintrag.
+
+    `absetzer_soll` is the number of joined runs the script writes this word in
+    (`core.eigenhand.befund.body_runs_expected`) — BODY runs only, no
+    Markenzüge, which is what a surface labels „Absetzer (Körper)". Answered
+    here rather than derived in the client so the editor's target and the
+    Tintentreue's Absetzer sensor cannot disagree; for a box that has an entry
+    it is the same number as that sensor's `soll`, and for one that has none it
+    is the only place it exists.
+    """
+
+    box_index: int
+    word: str
+    absetzer_soll: int
+    status: PfadStatus | None = None
+    grund: PfadGrund | None = None
+    detail: str | None = None
+    verfahren: str | None = None
+    erzeugt_am: str | None = None
+    flecken_n: int | None = None
+    # The entry was followed under a Fleckenmaske of a different size than the
+    # Fassung carries today, so its numbers describe other ink than the picture
+    # now shows. Stated beside the verdict and not only inside it: the verdict
+    # shows one grey state at a time (a hand-drawn box greys as „von Hand
+    # gezeichnet" first), while the list wants to say „erst `pfad --apply`"
+    # wherever it is true.
+    stale: bool = False
+    # Whether this box is still Nachfahr-work. Answered server-side so the rule
+    # has one home: see `api.routers.eigenhand` for what counts as done.
+    offen: bool = False
+    tintentreue: EigenhandTintentreueOut
+
+
+class EigenhandPfadFassungOut(BaseModel):
+    """One Fassung's word boxes and its counter — no colour above the box."""
+
+    strip: str
+    fassung: str
+    sheet: str
+    row_index: int
+    # The ROW's own marker (`eigenhand_strips.pfade_format`), never this
+    # image's constant — the same rule the single-Fassung read follows.
+    format: int
+    # Whether the column holds a list at all: false says nobody has followed
+    # this Fassung, which is not the same as „followed and this box got
+    # nothing" (the NULL/empty distinction `EigenhandPfadeOut` draws).
+    gefolgt: bool
+    zaehler: EigenhandKastenzaehlerOut
+    kaesten: list[EigenhandPfadBoxOut] = []
+
+
+class EigenhandPfadBoxesOut(BaseModel):
+    """Which word boxes of one hand are in which state — the meta-only read.
+
+    One answer instead of one request per (strip, Fassung), and without the
+    Bahnen: a path is a few thousand points per word, and „which boxes still
+    want work" never needs one of them.
+
+    A projection of the reserved own-hand pixels, so it lives behind the same
+    gate and the same `private, no-store` as the pixels themselves.
+    """
+
+    hand: str
+    fassungen: list[EigenhandPfadFassungOut] = []
+
+
 class EigenhandArchiveOut(BaseModel):
     """One hand's complete bookkeeping as ROWS — what an archive run files.
 

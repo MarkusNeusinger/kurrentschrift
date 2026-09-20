@@ -28,7 +28,7 @@ from sqlalchemy import inspect, update
 
 from core.database import EigenhandRepository, EigenhandStrip
 from core.eigenhand import bogen
-from core.eigenhand.befund import BEFUND_FORMAT
+from core.eigenhand.befund import BEFUND_FORMAT, body_runs_expected
 from core.eigenhand.flecken import FLECKEN_FORMAT
 from core.eigenhand.pfad import PFAD_FORMAT, SUPPORTED_FORMATS, frame_for_box
 from core.eigenhand.plan import load_plan
@@ -1545,6 +1545,208 @@ class TestStreifenPfad:
         assert (await self._get(api)).json()["pfade"][0]["erzeugt_am"] == "2026-09-18"
 
 
+class TestPfadBoxes:
+    """The meta-only read: which word boxes of a hand are in which state.
+
+    The question „welche Kästen tragen welchen Zustand" costs one request per
+    (strip, Fassung) through the path read and drags a few thousand points per
+    word along for numbers nobody asked for. Here it is one answer, and what
+    makes it worth having is what is NOT in it.
+    """
+
+    # A follower's full diagnosis block, all four graded sensors inside their
+    # green bound. `paper_lifts: 0` is one run, which is what the script writes
+    # both plan words of S0001 in (`body_runs_expected`).
+    GREEN = {
+        "ink_unvisited_share": 0.0,
+        "paper_lifts": 0,
+        "paper_excursion_xh": 0.1,
+        "aiou": 0.9,
+        "jumps": 1,
+        "hairpins": 0,
+    }
+
+    @staticmethod
+    async def _stand(api: Harness, hand: str = HAND, params: dict | None = None):
+        return await api.client.request("GET", f"/eigenhand/pfade/{hand}", params=params, headers=api.admin_headers())
+
+    @pytest.mark.asyncio
+    async def test_every_box_of_the_hand_is_stated_and_not_one_point_travels(self, api: Harness):
+        stored = await _store_strip(api)
+        assert (await TestStreifenPfad._put(api, [TestStreifenPfad._path(stored)])).status == 200
+
+        answer = await self._stand(api)
+        assert answer.status == 200, answer.body
+        # A projection of the reserved own-hand pixels — same gate, same header
+        # as the pixels themselves (`private, no-store`).
+        assert answer.headers.get("cache-control") == "private, no-store"
+        body = answer.json()
+        assert body["hand"] == HAND
+        assert len(body["fassungen"]) == 1
+        fassung = body["fassungen"][0]
+        assert (fassung["strip"], fassung["fassung"], fassung["sheet"], fassung["row_index"]) == (
+            "S0001",
+            "F01",
+            "B0001",
+            0,
+        )
+        assert fassung["format"] == PFAD_FORMAT and fassung["gefolgt"] is True
+
+        # Both boxes of the frozen plan appear, the one with an entry and the
+        # one without: a box with no path is the state this list exists to show.
+        assert [box["word"] for box in fassung["kaesten"]] == load_plan()["strips"]["S0001"]["words"]
+        followed, empty = fassung["kaesten"]
+        assert (followed["box_index"], followed["verfahren"], followed["erzeugt_am"]) == (0, "tintenpfad", "2026-09-12")
+        assert followed["absetzer_soll"] == body_runs_expected(followed["word"])
+        assert (empty["verfahren"], empty["erzeugt_am"], empty["flecken_n"]) == (None, None, None)
+        assert empty["tintentreue"]["grund"] == "kein Eintrag"
+
+        # The whole point: the Bahn stays behind the per-Fassung read.
+        assert "strokes" not in json.dumps(body)
+
+    @pytest.mark.asyncio
+    async def test_a_measured_box_carries_its_light_and_the_fassung_its_counter(self, api: Harness):
+        # Author decision E of 2026-09-20: a Fassung gets a COUNTER („3 von 4
+        # Kästen folgen"), never a colour — a second verdict beside the
+        # Streifen-Befund with its own vocabulary is exactly what was refused.
+        stored = await _store_strip(api)
+        followed = TestStreifenPfad._path(stored, meta={"tintenpfad": self.GREEN})
+        skip = {
+            "box_index": 1,
+            "word": TestStreifenPfad._path(stored, 1)["word"],
+            "status": "skipped",
+            "grund": "unauthored",
+            "detail": "unauthored: y",
+            "strokes": [],
+            "verfahren": "tintenpfad",
+        }
+        assert (await TestStreifenPfad._put(api, [followed, skip], format=2)).status == 200
+
+        fassung = (await self._stand(api)).json()["fassungen"][0]
+        assert fassung["format"] == 2
+        light = fassung["kaesten"][0]["tintentreue"]
+        assert (light["stufe"], light["gemessen"], light["sensor"]) == ("folgt", True, None)
+        assert light["format"] == 2 and light["vorlaeufig"] is True
+        # The raw readings ride along — a step and the sensor that names it,
+        # never a scalar.
+        assert {sensor["name"] for sensor in light["sensoren"]} == {
+            "Absetzer (Bahn)",
+            "Tinte ohne Bahn",
+            "Papier-Exkursion",
+            "AIoU",
+            "Sprünge und Haken",
+        }
+        assert fassung["kaesten"][0]["offen"] is False
+
+        # The Skip-Eintrag keeps its reason, which is what tells „unauthored,
+        # go to the plate" from „the follower gave up, trace it" — and the
+        # light says the same thing rather than talking about a measurement
+        # that was never owed on a box with no path.
+        skipped = fassung["kaesten"][1]
+        assert (skipped["status"], skipped["grund"], skipped["detail"]) == ("skipped", "unauthored", "unauthored: y")
+        assert skipped["tintentreue"]["grund"] == "übersprungen: unautoriert"
+        assert skipped["tintentreue"]["stufe"] == "nicht beurteilt"
+        assert skipped["offen"] is True
+        assert fassung["zaehler"] == {"kaesten": 2, "gemessen": 1, "folgt": 1, "von_hand": 0}
+
+    @pytest.mark.asyncio
+    async def test_a_skip_is_never_graded_however_much_meta_it_carries(self, api: Harness):
+        # `meta` is a free blob and a skip carries it through untouched, so a
+        # follower that one day records WHY it gave up would hand this read a
+        # full diagnosis block on a box with no Bahn at all. Grading it would
+        # make that box green, take it off the work list and count it in
+        # „3 von 4 folgen" — a path that does not exist, reported as the best
+        # kind there is.
+        stored = await _store_strip(api)
+        skip = {
+            "box_index": 0,
+            "word": TestStreifenPfad._path(stored)["word"],
+            "status": "skipped",
+            "grund": "gave_up",
+            "strokes": [],
+            "verfahren": "tintenpfad",
+            "meta": {"tintenpfad": self.GREEN},
+        }
+        assert (await TestStreifenPfad._put(api, [skip], format=2)).status == 200
+
+        fassung = (await self._stand(api)).json()["fassungen"][0]
+        box = fassung["kaesten"][0]
+        assert box["tintentreue"]["grund"] == "übersprungen: aufgegeben"
+        assert box["tintentreue"]["gemessen"] is False and box["offen"] is True
+        assert fassung["zaehler"] == {"kaesten": 2, "gemessen": 0, "folgt": 0, "von_hand": 0}
+
+    @pytest.mark.asyncio
+    async def test_an_unmeasured_hand_drawn_box_is_counted_and_is_not_open_work(self, api: Harness):
+        # „von Hand gezeichnet" is ground truth: grey because nothing has
+        # MEASURED it, not because it is a defect — and therefore done, not
+        # open (V21's „j von Hand (ungemessen)" counter).
+        stored = await _store_strip(api)
+        assert (await TestStreifenPfad._put(api, [TestStreifenPfad._path(stored, verfahren="authored")])).status == 200
+
+        fassung = (await self._stand(api)).json()["fassungen"][0]
+        drawn = fassung["kaesten"][0]
+        assert drawn["tintentreue"]["grund"] == "von Hand gezeichnet" and drawn["offen"] is False
+        assert fassung["zaehler"] == {"kaesten": 2, "gemessen": 0, "folgt": 0, "von_hand": 1}
+
+    @pytest.mark.asyncio
+    async def test_the_filter_keeps_the_open_boxes_and_leaves_the_counter_alone(self, api: Harness):
+        stored = await _store_strip(api)
+        followed = TestStreifenPfad._path(stored, meta={"tintenpfad": self.GREEN})
+        assert (await TestStreifenPfad._put(api, [followed], format=2)).status == 200
+
+        narrowed = (await self._stand(api, params={"nur": "offen"})).json()["fassungen"][0]
+        # Box 0 follows, box 1 has no entry at all — only the second is work.
+        assert [box["box_index"] for box in narrowed["kaesten"]] == [1]
+        # …and the counter still answers the FASSUNG, not the query: a number
+        # that moved with the filter would mean something else on every click.
+        assert narrowed["zaehler"] == {"kaesten": 2, "gemessen": 1, "folgt": 1, "von_hand": 0}
+
+    @pytest.mark.asyncio
+    async def test_a_fassung_with_nothing_open_drops_out_of_the_filtered_answer(self, api: Harness):
+        stored = await _store_strip(api)
+        both = [TestStreifenPfad._path(stored, index, meta={"tintenpfad": self.GREEN}) for index in (0, 1)]
+        assert (await TestStreifenPfad._put(api, both, format=2)).status == 200
+
+        assert len((await self._stand(api)).json()["fassungen"]) == 1
+        # Nothing left to work on, so the row is not a line in the list at all
+        # — an empty Fassung would be a row that says „look here" about nothing.
+        assert (await self._stand(api, params={"nur": "offen"})).json()["fassungen"] == []
+
+    @pytest.mark.asyncio
+    async def test_a_mask_edited_after_the_follow_says_so_beside_the_light(self, api: Harness):
+        # The state the SPA computes today as a free-standing warning chip
+        # (`PfadCaption`): the entry was followed under a mask of a different
+        # size, so its numbers describe other ink than the picture now shows.
+        stored = await _store_strip(api)
+        followed = TestStreifenPfad._path(stored, meta={"tintenpfad": self.GREEN})
+        assert (await TestStreifenPfad._put(api, [followed], format=2)).status == 200
+        assert (await TestFleckenmaske._patch(api, [{"x_mm": 30.0, "y_mm": 8.0, "r_mm": 0.6, "quelle": "hand"}])).status
+
+        box = (await self._stand(api)).json()["fassungen"][0]["kaesten"][0]
+        assert box["stale"] is True and box["flecken_n"] == 0
+        assert box["tintentreue"]["grund"] == "Maske geändert"
+        assert box["offen"] is True
+
+    def test_the_step_vocabulary_is_the_one_core_derives(self):
+        # Pydantic can only type a literal; the steps are decided in core. Two
+        # lists that drifted would let a surface branch on a step this API
+        # never sends — the same trap the path vocabularies are pinned against.
+        from typing import get_args
+
+        from api.schemas import TintentreueStufe
+        from core.eigenhand.tintentreue import STUFE_UNGEMESSEN, STUFEN
+
+        assert get_args(TintentreueStufe) == (*STUFEN, STUFE_UNGEMESSEN)
+
+    @pytest.mark.asyncio
+    async def test_a_hand_with_nothing_written_answers_a_list_and_a_bad_filter_is_refused(self, api: Harness):
+        empty = await self._stand(api)
+        assert empty.status == 200 and empty.json() == {"hand": HAND, "fassungen": []}
+
+        assert (await self._stand(api, hand="nicht-eine-hand")).status == 400
+        assert (await self._stand(api, params={"nur": "irgendwas"})).status == 422
+
+
 class TestAdminGate:
     """The Bestand is the reserved dataset's inventory — reads are gated too."""
 
@@ -1567,6 +1769,7 @@ class TestAdminGate:
             ("PATCH", f"/eigenhand/strips/{HAND}/S0001/F01/flecken"),
             ("GET", f"/eigenhand/strips/{HAND}/S0001/F01/pfade"),
             ("PUT", f"/eigenhand/strips/{HAND}/S0001/F01/pfade"),
+            ("GET", f"/eigenhand/pfade/{HAND}"),
             ("GET", "/eigenhand/uebergangsraum"),
             ("PUT", "/eigenhand/uebergangsraum"),
         ],

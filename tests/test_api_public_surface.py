@@ -102,8 +102,12 @@ RESERVED = {
     "/eigenhand/strips/{hand}",
     "/eigenhand/strips/{hand}/{strip}/{fassung}",
     # The Streifen-Pfad is DERIVED from the reserved own-hand pixels — the same
-    # dataset, one abstraction layer up, so it sits behind the same gate.
+    # dataset, one abstraction layer up, so it sits behind the same gate. The
+    # hand-wide read answers the same material as STATE (which box carries
+    # which Bahn, what the Tintentreue says), which is a projection of it and
+    # not a different dataset.
     "/eigenhand/strips/{hand}/{strip}/{fassung}/pfade",
+    "/eigenhand/pfade/{hand}",
 }
 
 # Non-GET operations that are deliberately open to the public. It exists so
