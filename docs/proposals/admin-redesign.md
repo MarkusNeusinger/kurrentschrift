@@ -13,10 +13,10 @@
 > Erkundung hat 22 Stellen DIESES Docs als falsch belegt, alle berichtigt (21 hier in
 > place mit `datei:zeile`-Beleg, die 22. schon mit #632); alle neun Fragen A–I sind am
 > 2026-09-20 entschieden (§4.7; H gegen die Empfehlung und zugleich die Antwort auf FM3
-> der Freigabe-Maschine); und **elf der dreizehn PRs aus §15.6 sind gemergt** (#635–#644,
-> #647; daneben #645, #646). Offen bleiben **PR 12** (`pfad --spans`, die eine benannte
-> Ausnahme der Wellen-Ordnung) und **PR 13** (die Kalibrierung, Abschlussbedingung —
-> nicht baubar, solange keine von Hand gezeichnete Bahn existiert): **die Ampel steht,
+> der Freigabe-Maschine); und **alle dreizehn PRs aus §15.6 sind gemergt** (#635–#644,
+> #647, #649, #650; daneben #645, #646). Offen bleibt aus PR 13 die RUNDE — das
+> Instrument steht, die Kalibrierung selbst braucht 30 geschriebene Kästen und es gibt
+> noch keine von Hand gezeichnete Bahn: **die Ampel steht,
 > geeicht ist sie nicht**, ihre acht Schwellen bleiben „vorläufig". **Phase 5 wartet auf den
 > Autor:** FM1, FM2, FM4, FM5, FM6 aus [`freigabe-maschine.md`](freigabe-maschine.md) §10 (FM3 ist
 > entschieden), der Lese-Sweep über die Admin-API vor M1 (dort §12, mit Rückfrage) und V1 (§15.3).
@@ -3200,13 +3200,13 @@ Erkundung hat 22 Stellen dieses Docs als falsch belegt — 21 davon in §6.2,
 §6.3, §6.4, §6.7, §7.2 und §12.4 in place berichtigt, jede mit ihrem
 `datei:zeile`-Beleg, die 22. schon mit #632 —, alle neun Fragen A–I sind am
 2026-09-20 entschieden (§4.7, H gegen die Empfehlung), und von den dreizehn
-PRs des Schnitts sind **elf gemergt** (§15.6, mit Nummern und einer Zeile je
-Zeile). Offen bleiben **PR 12** (`pfad --spans` — die eine benannte
-Ausnahme, darf hinter Phase 3 rutschen) und **PR 13** (Kalibrier-Instrument
-und die EINE Kalibrierung je Hand — Abschlussbedingung, aber nicht baubar,
-solange es keine einzige von Hand gezeichnete Bahn gibt). **Die Phase ist
-darum noch nicht abgeschlossen: die Ampel steht, geeicht ist sie nicht**,
-und ihre acht Schwellen bleiben ausdrücklich „vorläufig". Phase 5 hat ihr
+PRs des Schnitts sind **alle dreizehn gemergt** (§15.6, mit Nummern und
+einer Zeile je Zeile) — zuletzt **PR 12** (`pfad --spans`, #650) und das
+**Instrument** von PR 13 (#649). Was von PR 13 offen bleibt, ist die RUNDE
+selbst: sie beurteilt 30 geschriebene Streifenkästen blind, und es gibt
+noch keine einzige von Hand gezeichnete Bahn. **Die Phase ist darum
+gebaut, aber nicht abgeschlossen: die Ampel steht, geeicht ist sie
+nicht**, und ihre acht Schwellen bleiben ausdrücklich „vorläufig". Phase 5 hat ihr
 erstes Doc (§15.3, Schritt 1) und ihren Pin-PR (Schritt 2); gebaut ist von
 ihr nichts, und fünf Rückfragen (FM1, FM2, FM4, FM5, FM6 — FM3 ist seit dem
 2026-09-20 entschieden) plus der Lese-Sweep halten den Bau an. Die
@@ -3221,7 +3221,7 @@ sind angehängt, weil § Nummern nie umgeschrieben werden.
 |---|---|---|---|
 | **0** Reparaturen + Regeln | die eine Liste aus §5.2: Overflow · Tab-Titel · erwartete 404 stumm · Wort-Detail ohne `word_instance` · Korb-Drawer mit Filtern · Rohzahlen-Chip · Apply-Guard · authored-Regel · Ebenen-, Rollen- und `mono`-Token — dazu der Wegwerf-Verify-Stack als ausführbares Rezept | V1, V8, V17, V22, V23, V26; Kleinkram | §5.2, §6.7; Schnitt in §15.2 |
 | **1** Scope + Arbeitslisten | Scope-Leiste mit zwei Feldern, die nicht schaltet; `h=` optional in den `focus.ts`-Buildern, Korb- und Todoist-Links tragen es immer; kompakte Liste als Vorgabe mit URL-Zustand in den drei Übersichten; `?reiter=`-Split der Eigenhand-Seite; Übergabekarten-Bauteil + `report --faellig`; Tastatur-Regel; Rollen-Etiketten und „Bahn" statt „Pfad" in der Oberfläche. Der Picker bleibt Einstieg; ein „Heute" vor Phase 4 läge unter `/admin/heute` | Q2 a, Q7 b, Q8 a + b (nicht c), Q25 a, **P1-Q1 c, P1-Q3 a, P1-Q11 b** (§4.6); V2, V14, V15, V19, V24 | §5.1 Ideen 1, 4, 11, 18; §7.1–§7.2; PR-Schnitt §15.4 |
-| **2** Tintentreue + Nachfahren | **Zeile neu geschrieben 2026-09-20 nach der Erkundung** — sie führte sonst den alten und den berichtigten Plan nebeneinander. Was gebaut wird: die Archiv-Kette für authored-Bahnen und authored-Spans VOR dem ersten nachgefahrenen Kasten; der gespeicherte Format-Marker; dann PFAD_FORMAT 2 im Lockstep mit seinen DREI echten Schema-Änderungen — Skip-Einträge, Span-Herkunft je Kasten, Feld-Schutz (die Sensoren 4/5 sind additiv und gehören nicht zum Format, §6.3); das Werkzeug schreibt im zweiten Release die fünf Sensoren; `tintentreue.py` mit „vorläufigen" Schwellen und §14-Vorregistrierung, zuletzt die EINE Kalibrierung je Hand samt dem Instrument, das es dafür noch nicht gibt; meta-only Read; der Vorab-Split von `StripsPanel`; eine ganze Nachfahr-Listenfläche mit einer Zeile je KASTEN (kein „Filter", §7.2) in der Ordnung Schwere → Streifen; `PATCH …/pfade/{box}` + ETag; der Streifen-Editor mit „Speichern & weiter", Absetzer-Soll und den Buchstabengrenzen (Vollbild und Werkzeuge oben sind schon gebaut, §6.4); `pfad --spans`; der lokale Trainings-Export. **Stand 2026-09-20: elf der dreizehn PRs sind gemergt**, offen sind `pfad --spans` (die benannte Ausnahme) und die Kalibrierung (nicht baubar ohne gezeichnete Bahnen) — §15.6 | Q4 a + (i), Q6 b, Q9 b, Q10 b, Q12 b, Q13 (Phase 2: b), Q14 a, Q15 b mit Korrektur, Q18; V5, V7, V20, V21; **Entscheide A–I** (§4.7) | §6.3, §6.4, §6.7; PR-Schnitt **§15.6**, Offenes **§15.7** |
+| **2** Tintentreue + Nachfahren | **Zeile neu geschrieben 2026-09-20 nach der Erkundung** — sie führte sonst den alten und den berichtigten Plan nebeneinander. Was gebaut wird: die Archiv-Kette für authored-Bahnen und authored-Spans VOR dem ersten nachgefahrenen Kasten; der gespeicherte Format-Marker; dann PFAD_FORMAT 2 im Lockstep mit seinen DREI echten Schema-Änderungen — Skip-Einträge, Span-Herkunft je Kasten, Feld-Schutz (die Sensoren 4/5 sind additiv und gehören nicht zum Format, §6.3); das Werkzeug schreibt im zweiten Release die fünf Sensoren; `tintentreue.py` mit „vorläufigen" Schwellen und §14-Vorregistrierung, zuletzt die EINE Kalibrierung je Hand samt dem Instrument, das es dafür noch nicht gibt; meta-only Read; der Vorab-Split von `StripsPanel`; eine ganze Nachfahr-Listenfläche mit einer Zeile je KASTEN (kein „Filter", §7.2) in der Ordnung Schwere → Streifen; `PATCH …/pfade/{box}` + ETag; der Streifen-Editor mit „Speichern & weiter", Absetzer-Soll und den Buchstabengrenzen (Vollbild und Werkzeuge oben sind schon gebaut, §6.4); `pfad --spans`; der lokale Trainings-Export. **Stand 2026-09-21: alle dreizehn PRs sind gemergt**, zuletzt `pfad --spans` (#650) und das Kalibrier-INSTRUMENT (#649); offen ist nur noch die Kalibrier-RUNDE selbst, die ohne gezeichnete Bahnen nicht laufen kann — §15.6 | Q4 a + (i), Q6 b, Q9 b, Q10 b, Q12 b, Q13 (Phase 2: b), Q14 a, Q15 b mit Korrektur, Q18; V5, V7, V20, V21; **Entscheide A–I** (§4.7) | §6.3, §6.4, §6.7; PR-Schnitt **§15.6**, Offenes **§15.7** |
 | **3** Rollen-Spalten + Stufe 1 | Router-Zeilen; Rollen-Spalten in Buchstabe · Übergang · Wort mit der zweiten Hand eingeklappt, beschriftet, nie verrechnet; Belegleiste; beschriftete Leerflächen für Phase 5; `hands.kind` + `work_items.hand_id` als EIN Schema-PR; Stufe 1 = Belegzahlen, Tintentreue-Verteilung, Ausschnitt-Stapel, Feder-Halbbreite — keine Pipeline aus Bahnen; Kohorten-Filter + Warn-Chip „gemischte Federn" | Q3 a, Q11 b, Q16 a; V1, V4, V7, V16 | §5.1 Ideen 2, 3, 9; §6.1, §6.2, §6.5 |
 | **4** C-Bausteine auf A | „Heute" wird `/admin`, mit Bestandskopf (nur Zahlen, keine Marke) und nach der Wachstumsschleife der Eigenhand geordnet; der Picker wandert in den Vorlagen-Chip; `?liste=` + ‹ ›; Arbeitsvorrat; Nachfahr-Liste nach Schwere → Bahn-Deckung → Gewicht → Streifen, die Streifenfolge als Umschalter; „Speichern & weiter" entlang der Liste; Korb-Seite `/admin/korb` | Q5 a, Q7 a, Q13 (ab Phase 4: a + c), Q24 a; Leitsatz 2 | §9.1–§9.2 mit dem Vokabular aus §5.0 |
 | **5** Produktionshand | läuft PARALLEL ab Phase 1 — eigenes Gleis, §15.3 | Q1 a, Q17, Q19–Q24 | §6.6, §6.7 |
@@ -3682,8 +3682,9 @@ Zeile 2; hier der Schnitt aus der nur lesenden Erkundung vom 2026-09-19
 (§14, Schritt 5), deren 22 Befunde oben in §6.2, §6.3, §6.4, §6.7, §7.2 und
 §12.4 in place berichtigt sind — bis auf den einen, der schon mit #632
 nachgezogen war. Es sind **dreizehn PRs**, die der Reihe nach gemergt
-werden. **Stand 2026-09-20: elf sind gemergt, PR 12 und PR 13 sind offen**
-— die Nummern und die Abweichungen stehen in der zweiten Tabelle unten.
+werden. **Stand 2026-09-21: alle dreizehn sind gemergt; von PR 13 ist das
+Instrument gebaut, die Runde steht aus** — die Nummern und die
+Abweichungen stehen in der zweiten Tabelle unten.
 
 **Die erste Tabelle ist der PLAN, wie er am 2026-09-19 geschrieben wurde,
 und bleibt es.** Wo ihre Zellen noch „Frage D/E/G/H" als offen führen, sind
@@ -3723,8 +3724,8 @@ Gebaute von der Zeile oben abweicht, worin. Elf sind gemergt, zwei offen.
 | 9 | **#642** | wie geplant, und genauer als die Zeile: der Token deckt `{format, pfade}`, die Leiter ist 428 · 412 · 409, `If-Match: *` wird abgewiesen, ein schwacher Validator angenommen, und eine Zeilensperre deckt das kurze Fenster (§6.4, V20). Die Bedien-Hälfte einer abgewiesenen Bedingung kam mit **#646** nach |
 | 10 | **#644** | **die Zeile erwartete EINEN umgebauten Dialog, gebaut ist ein ZWEITER, schlanker** (Entscheid G) — mit der Zeichenfläche als gemeinsamem Bauteil, nicht als Kopie. Neu gegenüber der Zeile: die nominale Lineatur des Kastens aus der API, ohne die ein aufgegebener Kasten gar keinen Rahmen hätte (§6.4) |
 | 11 | **#647** | **die Zeile sagte „Er zieht KEINE Rückhaltemenge" — Entscheid H hat das umgedreht:** zwei getrennte Mengen, gezogen als eigener, einmaliger Akt über die Streifen des eingefrorenen Plans. Derselbe Entscheid beantwortet FM3 der Freigabe-Maschine (§15.3) |
-| 12 | **offen** | `pfad --spans`. Die eine benannte Ausnahme der Wellen-Ordnung: er darf hinter Phase 3 rutschen und ist dann ein Nachzügler mit eigenem Datum |
-| 13 | **offen** | Kalibrier-Instrument und die EINE Kalibrierung je Hand. **Abschlussbedingung der Phase und heute nicht baubar:** die Runde beurteilt 30 geschriebene Streifenkästen blind, und es existiert noch keine einzige von Hand gezeichnete Bahn. Bis dahin bleiben die acht Schwellen „vorläufig", und die Ampel sagt das in ihrer Antwort mit |
+| 12 | **#650** | `pfad --spans` — er musste die Ausnahme der Wellen-Ordnung nicht in Anspruch nehmen. **A48 bestätigt am Code:** die Zuordnung des Folgers entsteht aus Slot-Etiketten, die der DEKODIERER ausgibt, also war sie für eine gezeichnete Bahn wirklich neue Arbeit. Gemessen gegen die Zuordnung des Folgers, `dtw` adoptiert; die ausdrücklich benannte Grenze ist die Zirkularität der Referenz, und die Messung, die sie bricht, läuft erst auf den Bahnen des Autors |
+| 13 | **#649 — nur das INSTRUMENT** | Kalibrier-Instrument gebaut, `menschliche-bewertung.md` §8b vorher nachgezogen, die Runde vorregistriert. **Die RUNDE selbst ist die Abschlussbedingung und steht aus:** sie beurteilt 30 geschriebene Streifenkästen blind, und es existiert noch keine einzige von Hand gezeichnete Bahn. Bis dahin bleiben die acht Schwellen „vorläufig", `VORLAEUFIG` ist unberührt, und die Ampel sagt das in ihrer Antwort mit |
 
 Zwei PRs fuhren neben dem Schnitt: **#645** (die Sprachregel als
 [`sprachregelung.md`](../reference/sprachregelung.md) §5) und **#646** (was
@@ -3732,11 +3733,11 @@ dem Bedienenden gesagt wird, wenn eine Bedingung abgewiesen wird —
 wiederholt wird nichts von selbst).
 
 **Die Reihenfolge gilt für alle dreizehn — mit genau einer benannten
-Ausnahme.** PR 12 (`pfad --spans`) darf nach Phase 3 rutschen; §6.7 gibt ihm
-selbst „M · 2–3". Rutschen heißt dabei **aus der Welle ausscheiden**, nicht
-umsortieren: er wandert als Ganzes hinter Phase 2 und die zwölf übrigen
-merzen unverändert der Reihe nach. Phase 2 gilt als abgeschlossen, wenn
-PR 1–11 und PR 13 stehen; PR 12 ist dann ein Nachzügler mit eigenem Datum.
+Ausnahme.** PR 12 (`pfad --spans`) hätte nach Phase 3 rutschen dürfen;
+§6.7 gibt ihm selbst „M · 2–3". Rutschen hieße dabei **aus der Welle
+ausscheiden**, nicht umsortieren. Nötig wurde es nicht: er ist am
+2026-09-21 als #650 in der Welle gelandet, und die Ausnahme bleibt
+ungenutzt stehen.
 Er ist der einzige PR, für den das gilt — jeder andere ist
 Abschlussbedingung der Phase.
 
@@ -3864,7 +3865,7 @@ prüfbar:
     Browserlauf der Welle hatte eine Maus und einen flachen grauen Streifen
     als Unterlage.
 
-Und der eine Posten, der daran hängt: **PR 13**, die Kalibrierung. Sie
-braucht 30 geschriebene Kästen für die blinde Runde; bis dahin bleiben die
-acht Schwellen „vorläufig", und die Ampel sagt das in ihrer eigenen Antwort
-mit.
+Und der eine Posten, der daran hängt: die **Kalibrier-Runde** aus PR 13.
+Das Instrument steht seit #649, die Runde braucht 30 geschriebene Kästen;
+bis dahin bleiben die acht Schwellen „vorläufig", und die Ampel sagt das in
+ihrer eigenen Antwort mit.
