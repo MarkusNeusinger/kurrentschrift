@@ -1366,6 +1366,28 @@ Ausnahme: die dev-19-Kopfzahl liest diese Menge NIE, und gemessen wird auf
 ihr nur mit einer separat eingefrorenen, vorregistrierten Rückhaltemenge —
 Eintrag im Messjournal §14 vor der ersten Zahl.
 
+**Es sind ZWEI Rückhaltemengen, nicht eine** (Autor-Entscheid 2026-09-20,
+gegen die Empfehlung des Phase-2-Plans und zugleich die Antwort auf FM3 der
+[Freigabe-Maschine](freigabe-maschine.md)): eine für die Verbesserung des
+Folgers, eine für die Freigabe-Prüfung einer Hand. Der Satz oben bleibt
+sonst Wort für Wort gültig, nur „einer Rückhaltemenge" heißt jetzt
+`rueckhalt-folger` **und** `rueckhalt-freigabe`, disjunkt, der Rest ist
+`uebung`. **Gebaut ist der Export seit dem 2026-09-20**
+(`tools/eigenhand/trainingssatz.py`, Wurzel
+`tools/eigenhand/trainingssaetze/`, gitignored): er schneidet jeden Kasten
+mit Handarbeit so heraus, wie der Folger ihn liest, filtert über den
+Archiv-Read auf `angenommen` und ist ausdrücklich keine Bench-Wurzel — das
+Manifest trägt darum nicht den Namen, nach dem die Lab-Lader suchen, und ein
+Test pinnt die Trennung. Die ZIEHUNG ist ein eigener, einmaliger Akt mit
+Schlüssel: gezogen wird über die STREIFEN des eingefrorenen Plans, also ohne
+Netz und ohne eine einzige Bahn — am besten vor der ersten —, die
+Zugehörigkeit ist eine reine Funktion aus Schlüssel, Hand und Streifen-ID,
+ein später angehängter Streifen fällt darum dorthin, wo derselbe Schlüssel
+ihn immer hingelegt hätte, und ein zweites Ziehen wird verweigert. Der Satz
+wohnt in der `kartei.json` (Entscheid A — sie ist das Einzige, was jeder
+Schnappschuss voll kopiert); die Vorregistrierung steht im Messjournal §14
+„Trainingssatz `sep20`".
+
 **Gebaut ist davon die Schutzregel** (Phase 0 des Admin-Redesigns,
 2026-09-18; Q4 mit Unterpunkt (i)). Trägt ein gespeicherter Kasten
 `verfahren: "authored"`, hat der Autor ihn selbst gezeichnet — eine

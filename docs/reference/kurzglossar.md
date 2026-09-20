@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-20): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **112
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **113
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -729,6 +729,16 @@ zurückgegebenen ETag-Marke zum nächsten Kasten. Daneben stehen Absetzer-Soll
 und die verschiebbaren Buchstabengrenzen.
 `app/src/sections/admin/eigenhand/StripTraceEditor.tsx`.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.4
+
+**Trainingssatz · Rückhaltemenge (Eigenhand)** — der lokale, gitignorte Baum
+mit den von Hand nachgefahrenen Bahnen als Lehrmaterial, geschnitten wie der
+Folger sie liest; Statusfilter aus dem Archiv-Read, ausdrücklich KEINE
+Bench-Wurzel (ein Streifen hat keine Referenzspur). Geteilt wird in `uebung`
+und ZWEI Rückhaltemengen — `rueckhalt-folger`, `rueckhalt-freigabe`. Die
+Ziehung ist ein einmaliger Akt mit Schlüssel, Einheit ist der STREIFEN,
+gezogen über den eingefrorenen Plan (ohne Netz, ohne eine einzige Bahn); ein
+zweites Ziehen wird verweigert. `tools/eigenhand/trainingssatz.py`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §7.5
 
 **Fokusring** *(`focusRing`)* — der eine sichtbare Tastaturfokus: 2 px
 Viridian, 2 px Abstand, exportiert aus `app/src/styles/focusRing.ts` und vom

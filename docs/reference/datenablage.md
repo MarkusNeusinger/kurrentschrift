@@ -89,6 +89,19 @@ Drei Committ-Klassen, scharf getrennt:
   Frontend-Bundle kommt sie nicht. Die Rechtslage steht in der
   `SOURCE.md`, die Doktrin in
   [quellen-und-rechte.md §5](quellen-und-rechte.md).
+- **Abgeleitete Arbeitsbäume unter `/tools`** → **gitignored**, ohne
+  Ausnahme und ohne `SOURCE.md`: sie tragen keine neue Quelle, sondern
+  einen Schnitt aus schon geregelten. Es sind die Bench-Fixture-Wurzeln
+  (`/tools/{glyph,word}bench/fixtures`, aus der DB exportiert) und seit
+  2026-09-20 der **Trainingssatz** der von Hand nachgefahrenen Bahnen
+  (`/tools/eigenhand/trainingssaetze`, `tools/eigenhand/trainingssatz.py`).
+  Beide sind doppelt reserviert — Eigenhand-Pixel plus gelernter Datensatz —
+  und beide sind aus Archiv und Datenbank neu herstellbar; committet wird
+  deshalb nie ein Byte, gesichert wird nicht der Baum, sondern das, woraus
+  er entsteht. Der Trainingssatz liegt bewusst unter `/tools` und nicht
+  unter `/data` ([eigenhand-erfassung.md
+  §7.5](../proposals/eigenhand-erfassung.md)) und ebenso bewusst **nicht**
+  unter einem `fixtures/`-Namen: er ist Trainingsmaterial, kein Mess-Satz.
 
 Süß erscheint **nirgends** als Datei — nur als Literaturzeile in
 README/Quellen (Quellen-Rechte §1).

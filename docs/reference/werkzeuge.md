@@ -783,6 +783,31 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   BLAS-Fäden
   pinnt das Modul selbst (Vorgabewerte), weil die Kettenlösung sonst je nach
   Umgebung anders läuft.
+- **`trainingssatz`** — der lokale, gitignorte **Trainingssatz** der von Hand
+  nachgefahrenen Bahnen (Autor-Zusatz zu Q4: „die hand nachgefahrenen linien
+  dienen auch als trainingsmenge um den folger nachhaltig immer besser zu
+  machen"). Zwei Befehle. **`--ziehen <Schlüssel>`** zieht EINMAL je Hand die
+  zwei getrennten **Rückhaltemengen** (Autor-Entscheid 2026-09-20, zugleich die
+  Antwort auf FM3): `rueckhalt-folger` für die Folger-Arbeit,
+  `rueckhalt-freigabe` für die Freigabe-Prüfung, der Rest ist `uebung`. Gezogen
+  wird über die STREIFEN des eingefrorenen Plans — ohne Netz, ohne eine einzige
+  Bahn, also am besten VOR der ersten; die Zugehörigkeit ist eine reine
+  Funktion aus Schlüssel, Hand und Streifen-ID, ein später angehängter Streifen
+  fällt deshalb dorthin, wo derselbe Schlüssel ihn immer hingelegt hätte, und
+  wird beim nächsten Lauf mit Datum nachgetragen und genannt. Ein zweites
+  Ziehen wird verweigert, ohne Override. Der Satz liegt in der `kartei.json`
+  (Entscheid A — volle Kopie in jedem Schnappschuss) und ist das Einzige hier,
+  was nicht neu herstellbar ist. **Der Export** schneidet jeden Kasten mit
+  Handarbeit — gezeichnete Bahn ODER von Hand korrigierte Grenzen — genau so
+  heraus, wie der Folger ihn liest (`bahn.json` + `kasten.png` + `tinte.png`);
+  der Statusfilter kommt aus dem Archiv-Read (nur `angenommen`, die
+  Streifenliste trägt gar keinen Status), und eine zurückgezogene Fassung
+  verlässt den Baum beim nächsten Lauf wieder. Wurzel
+  `tools/eigenhand/trainingssaetze/`, gitignored, **kein Mess-Satz**: ein
+  Streifen hat keine Referenzspur (Prüfstein 2), darum heißt das Manifest
+  bewusst nicht `manifest.json` und ein Test pinnt die Trennung von den
+  Bench-Wurzeln. Vorregistrierung der Ziehung:
+  [`messjournal.md`](messjournal.md) §14 „Trainingssatz `sep20`".
 - **`report`** — Bestandsbericht (Erstbeleg-/Ausbau-Quote, Fehlstellen,
   Druckvorschlag) und, seit dem **Streifen-Befund** (2026-09-07), die
   Gegenrichtung: je angenommener Fassung Vorschlag (`sauber` · `brauchbar` ·

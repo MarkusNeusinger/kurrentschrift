@@ -74,15 +74,15 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **O** — Offen (Streifen-Kasten) §5 · Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Rollen-Token §5 · Route G §4 · Roving-Liste §5 · Rückgabe an Autor §5 · Rückhaltemenge §4
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Rollen-Token §5 · Route G §4 · Roving-Liste §5 · Rückgabe an Autor §5 · Rückhaltemenge §4 · Rückhaltemenge (Eigenhand) §5
 - **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Skip-Eintrag §5 · Slant-Spalte §4 · Slot §2 · Span-Herkunft §5 · Span-Zuordner (geplant, → Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifen-Editor §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Subjekt-Stepper §5 · Sütterlin §1
-- **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) (geplant) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
+- **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) §5 · Trainingssatz (Eigenhand) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unteransicht (Eigenhand) §5 · Unvollständige Wortprobe §5
 - **Ü** — Übergabekarte §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Varianten-Band (geplant) §5 · Verbinder-Mitschnitt §4 · Vergleichsstreifen (geplant) §5 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschlag (Streifen-Befund) §5 · Vorschub-Kalibrierung §2 · Vorschrift §1
 - **W** — W1–W6 §5 · Wachstumsschleife (Eigenhand) (geplant) §5 · Wackler §4 · Warp §3 · Wellen-Basis §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wortkasten (Admin-Redesign, geplant) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
-- **Z** — Zeichenbreiten-Mittel (`AVG_ADVANCE_UNITS`) §7 · Zeilen-Gate (Laufform) §2 · Zeilenmarke §7 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · zonale Rückweisung (`zonal`) §3 · „Zug um Zug“ §7 · Zwei Stillen (Leerzustands-Regel) §5 · Zwei-Drittel-Gesetz §6 · Zwei-Züge-Modell §4 · Zögling (geplant) §4
+- **Z** — Zeichenbreiten-Mittel (`AVG_ADVANCE_UNITS`) §7 · Zeilen-Gate (Laufform) §2 · Zeilenmarke §7 · Zelle einsetzen §5 · Ziehung (→ Rückhaltemenge (Eigenhand)) §5 · zirkuläres Kriterium §4 · zonale Rückweisung (`zonal`) §3 · „Zug um Zug“ §7 · Zwei Stillen (Leerzustands-Regel) §5 · Zwei-Drittel-Gesetz §6 · Zwei-Züge-Modell §4 · Zögling (geplant) §4
 
 ---
 
@@ -4970,7 +4970,7 @@ Kasten-Schreibweg zusammen mit `authored` ab) und ein Neu-Folgen.
 → Nachfahr-Liste; Buchstabengrenzen einer Bahn; Streifen-Pfad;
 proposals/admin-redesign.md §6.4
 
-**Trainingsmenge (nachgefahrene Bahnen) (geplant)** — die von Hand
+**Trainingsmenge (nachgefahrene Bahnen)** — die von Hand
 nachgefahrenen Streifen-Bahnen der Eigenhand (`verfahren: authored`) und
 die von Hand korrigierten Buchstabengrenzen darauf, in ihrer ZWEITEN Rolle:
 sie sind nicht nur Wahrheit, sondern das Material, an dem der Folger
@@ -4978,10 +4978,59 @@ sie sind nicht nur Wahrheit, sondern das Material, an dem der Folger
 2026-09-18: „die hand nachgefahrenen linien dienen auch als trainingsmenge
 um den folger nachhaltig immer besser zu machen". Trainingsdaten, kein
 Mess-Satz: die dev-19-Kopfzahl liest sie nie, und gemessen wird auf ihr nur
-mit einer vorregistrierten, eingefrorenen → Rückhaltemenge. *Technisch:*
-nichts gebaut; vorgesehen ein lokaler, gitignorter Export unter `tools/`,
-nie Repo-Inhalt. → Buchstabengrenzen einer Bahn; proposals/tintenfolger.md
+mit einer vorregistrierten, eingefrorenen → Rückhaltemenge (Eigenhand).
+*Technisch:* ausgeliefert als → Trainingssatz (Eigenhand). →
+Buchstabengrenzen einer Bahn; proposals/tintenfolger.md
 §2.5; proposals/eigenhand-erfassung.md §7.5, §12 (Prüfstein 2)
+
+**Trainingssatz (Eigenhand)** — der lokale, gitignorte Baum, in dem die →
+Trainingsmenge einer Hand als benutzbares Material liegt: je Kasten mit
+Handarbeit ein Verzeichnis mit `bahn.json` (Einträge wortgleich wie auf der
+API, dazu Adresse, Satz, geformte Slots), dem Wortausschnitt und seiner
+Tintenmaske. Geschnitten wird mit denselben Einstiegen wie beim Folgen
+(`core.extract`, `despeckle`) — Material, das anders aussieht als das, was
+der Folger liest, wäre Material für etwas anderes. Der Statusfilter kommt
+aus dem Archiv-Read (`GET /eigenhand/archive/{hand}`), weil die
+Streifenliste gar keinen Status trägt: nur `angenommen` reist, eine
+zurückgezogene Fassung verlässt den Baum beim nächsten Lauf wieder.
+**Ausdrücklich keine Bench-Wurzel** (Prüfstein 2: ein Streifen hat keine
+Referenzspur, eine Zahl gegen eine gezeichnete Bahn ist keine Bench-Zahl) —
+daher die Wurzel außerhalb jedes `fixtures/`-Namens, ein Manifest, das
+bewusst NICHT `manifest.json` heißt (danach suchen die Lab-Lader), und ein
+Test, der beides pinnt. Kein Byte davon ist je committet; gesichert wird
+nicht der Baum, sondern das, woraus er entsteht (Archiv + DB) — bis auf die
+→ Ziehung, die in der → Streifenkartei wohnt. *Technisch:*
+`tools/eigenhand/trainingssatz.py`, Wurzel
+`tools/eigenhand/trainingssaetze/` (Umgebungsvariable
+`EIGENHAND_TRAININGSSATZ`), Test `tests/test_eigenhand_trainingssatz.py`.
+→ Trainingsmenge; Rückhaltemenge (Eigenhand); reference/werkzeuge.md;
+reference/datenablage.md §1
+
+**Rückhaltemenge (Eigenhand)** *(mit ihrer Ziehung)* — die beiden Teile des
+→ Trainingssatzes, die zurückgehalten werden, damit eine Zahl über die
+Eigenhand etwas bedeutet: `rueckhalt-folger` für die Messung einer
+Folger-Verbesserung, `rueckhalt-freigabe` für die Freigabe-Prüfung einer
+Hand; der Rest heißt `uebung`. ZWEI und nicht eine ist ein Autor-Entscheid
+vom 2026-09-20, der zugleich FM3 der Freigabe-Maschine beantwortet. Die
+**Ziehung** ist ein eigener, einmaliger Akt mit einem Schlüssel: Einheit ist
+der STREIFEN (jede Fassung ist eine Wiederholung derselben Wörter, die
+Kästen einer Zeile sind ein Zug — innerhalb zu teilen legte nahezu gleiche
+Schrift auf beide Seiten der Linie), die Zugehörigkeit ist eine reine
+Funktion aus Schlüssel, Hand-ID und Streifen-ID, und gezogen wird über den
+EINGEFROREN Plan: ohne Netz, ohne eine einzige Bahn, am besten vor der
+ersten — eine Linie, die feststeht, ehe jemand weiß, welcher Streifen eine
+schöne Bahn tragen wird. Ein zweites Ziehen wird verweigert (ohne Override),
+ein später angehängter Streifen fällt dorthin, wo derselbe Schlüssel ihn
+immer hingelegt hätte, und wird mit Beitrittsdatum nachgetragen; eine
+gespeicherte Zugehörigkeit, die der Lauf nicht mehr reproduziert, bricht ab
+— der Satz ist die Instanz, nicht die Regel. Der Satz wohnt in der
+`kartei.json` (Entscheid A: sie ist das Einzige, was jeder Schnappschuss
+voll kopiert) und ist das einzige Stück dieses Werkzeugs, das nicht neu
+herstellbar ist. *Technisch:*
+`tools/eigenhand/trainingssatz.py` (`draw` · `satz_of_strip` · `extend` ·
+`rueckhalt_of`, Kartei-Schlüssel `rueckhalt`). → Rückhaltemenge;
+Trainingssatz (Eigenhand); reference/messjournal.md §14 „Trainingssatz
+`sep20`"; proposals/freigabe-maschine.md (FM3)
 
 **Übergabekarte** — die zustandsgetriebene Karte im Admin für einen Schritt,
 der lokal bleiben muss (`pull`, `ingest`, `apply`, `sync`, `pfad`,
