@@ -67,7 +67,15 @@ from math import isfinite
 from typing import Any
 
 from core.eigenhand.befund import body_runs_expected
-from core.eigenhand.pfad import is_authored
+from core.eigenhand.pfad import (
+    SKIP_GAVE_UP,
+    SKIP_NO_GEOMETRY,
+    SKIP_NOT_SELECTED,
+    SKIP_OTHER,
+    SKIP_UNAUTHORED,
+    STATUS_SKIPPED,
+    is_authored,
+)
 
 
 TINTENTREUE_FORMAT = 1
@@ -127,10 +135,27 @@ SENSOREN_MIT_SCHWELLE = (SENSOR_ABSETZER, SENSOR_UNBESUCHT, SENSOR_EXKURSION, SE
 
 GRUND_NICHTS = "nichts fällt auf"
 GRUND_KEIN_EINTRAG = "kein Eintrag"
+GRUND_UEBERSPRUNGEN = "übersprungen: {grund}"
 GRUND_VON_HAND = "von Hand gezeichnet"
 GRUND_MASKE = "Maske geändert"
 GRUND_UNVOLLSTAENDIG = "unvollständig gemessen"
 GRUND_FORMAT = "Format {format} — unvollständig gemessen"
+
+# The closed skip vocabulary in the words the admin prints — the half of grey
+# state 1 that PFAD_FORMAT 2 split off. Until a Skip-Eintrag could be written
+# the four causes were one indistinguishable „kein Eintrag"; now the entry says
+# which one it is, and a light that answered „unvollständig gemessen" to a box
+# whose entry states there is no path would re-merge exactly what author
+# decision C separated („übersprungen: unautoriert" is a jump to the plate,
+# „übersprungen: aufgegeben" is follower work). The wording follows
+# `admin-redesign.md` §6.3 and the Skip-Eintrag glossary entry.
+UEBERSPRUNGEN_WORTE = {
+    SKIP_NOT_SELECTED: "nicht gewählt",
+    SKIP_NO_GEOMETRY: "keine Bogen-Geometrie",
+    SKIP_UNAUTHORED: "unautoriert",
+    SKIP_GAVE_UP: "aufgegeben",
+    SKIP_OTHER: "ohne Angabe",
+}
 
 
 # ------------------------------------------------- the provisional thresholds
@@ -471,12 +496,18 @@ def tintentreue(pfad: Mapping[str, Any] | None, *, hand: str, pfade_format: int,
     The grey states are ordered by what the reader should DO about them, not
     by how they were found:
 
-    1. `kein Eintrag` — nothing to judge. Four causes produce it today (`--box`
-       not chosen · no Bogen geometry · unauthored glyphs · the follower gave
-       up), and they are indistinguishable until the Skip entries of
-       PFAD_FORMAT 2 are written, so exactly ONE grey state may claim them
+    1. `kein Eintrag` — nothing to judge, and nothing said about why. Four
+       causes produce it (`--box` not chosen · no Bogen geometry · unauthored
+       glyphs · the follower gave up), and a row written under PFAD_FORMAT 1
+       cannot tell them apart, so exactly ONE grey state may claim them all
        (`admin-redesign.md` §6.3, correction of 2026-09-20).
-    2. `von Hand gezeichnet` — an UNMEASURED authored Bahn: „von Hand" is a
+    2. `übersprungen: …` — the same four causes where the entry SAYS which one
+       it is (author decision C, from PFAD_FORMAT 2). It is the first thing
+       read and not the last: a skip declares that there is no path, so every
+       question a sensor could ask about one is already answered, and grading
+       it against `meta` readings a writer happened to leave behind would give
+       a box with no Bahn at all a green light.
+    3. `von Hand gezeichnet` — an UNMEASURED authored Bahn: „von Hand" is a
        Herkunft and never a colour, and there is nothing to grade until the
        tool has run over it. What greys the box is therefore the missing
        measurement, NOT the origin: `verfahren` stays `authored` for good —
@@ -484,14 +515,14 @@ def tintentreue(pfad: Mapping[str, Any] | None, *, hand: str, pfade_format: int,
        on the Herkunft would grey a re-traced box forever, and the author
        would get no feedback on the trace he just made by hand (V21: „sie
        tragen dann dieselbe Ampel; bis dahin zwei Zähler").
-    3. `Maske geändert` — the entry was followed under a Fleckenmaske of a
+    4. `Maske geändert` — the entry was followed under a Fleckenmaske of a
        different size, so its numbers describe other ink than the picture now
        shows. Taken over from the free-standing warning chip the SPA computes
        today (`app/src/sections/admin/eigenhand/PfadCaption.tsx`), which the
        list PR removes so there is one statement rather than two.
-    4. `Format 1 — unvollständig gemessen` — followed before two of the four
+    5. `Format 1 — unvollständig gemessen` — followed before two of the four
        graded sensors existed.
-    5. `unvollständig gemessen` — the row claims a complete format and a
+    6. `unvollständig gemessen` — the row claims a complete format and a
        graded sensor is missing anyway. Under-claiming on purpose: the missing
        one could have been the worst.
     """
@@ -499,6 +530,10 @@ def tintentreue(pfad: Mapping[str, Any] | None, *, hand: str, pfade_format: int,
     if pfad is None:
         return _grau(GRUND_KEIN_EINTRAG, sensoren=[], pfade_format=pfade_format, schwellen=schwellen)
     sensoren = sensoren_of(pfad, schwellen)
+    if pfad.get("status") == STATUS_SKIPPED:
+        wort = UEBERSPRUNGEN_WORTE.get(pfad.get("grund"), UEBERSPRUNGEN_WORTE[SKIP_OTHER])
+        grund = GRUND_UEBERSPRUNGEN.format(grund=wort)
+        return _grau(grund, sensoren=sensoren, pfade_format=pfade_format, schwellen=schwellen)
     if is_authored(pfad) and not rohzahlen(pfad).gemessen:
         return _grau(GRUND_VON_HAND, sensoren=sensoren, pfade_format=pfade_format, schwellen=schwellen)
     flecken_n = pfad.get("flecken_n")

@@ -1410,9 +1410,10 @@ def _offen(urteil: Tintentreue) -> bool:
     measurement rather than a defect. Open therefore covers a box with no entry
     at all, every Skip-Eintrag whatever its `grund` (the `grund` says where the
     work goes — „unauthored" to the plate, „gave_up" to the tracing surface —
-    not whether there is any), both worse steps, and the grey states that ask
-    for a re-follow („Maske geändert", „Format 1 — unvollständig gemessen",
-    „unvollständig gemessen").
+    not whether there is any; `tintentreue` greys a skip as „übersprungen: …"
+    before it reads a sensor, so this holds by the rule and not by luck), both
+    worse steps, and the grey states that ask for a re-follow („Maske
+    geändert", „Format 1 — unvollständig gemessen", „unvollständig gemessen").
 
     A hand-drawn Bahn the tool HAS measured and found wanting stays open, and
     deliberately so: that is a finding about the author's own trace, and the
@@ -1504,9 +1505,16 @@ async def read_pfad_boxes(
     points stay where they are, one Fassung at a time, behind
     `GET /eigenhand/strips/{hand}/{strip}/{fassung}/pfade`.
 
-    The projection runs in PYTHON over the loaded rows, never as a JSONB
-    operator: the HTTP suites run on SQLite, and a rule that only the shared
-    Postgres can evaluate is a rule no test here can hold.
+    The projection runs in PYTHON over the rows, never as a JSONB operator: the
+    HTTP suites run on SQLite, and a rule that only the shared Postgres can
+    evaluate is a rule no test here can hold. The rows are STREAMED for it
+    (`EigenhandRepository.strips_with_pfade`), because „meta-only" has to hold
+    in the process as well as on the wire — a hand's worth of Bahnen
+    materialised at once to produce a few numbers per box would make the cheap
+    read the expensive one. Each row is folded and dropped, so what stays
+    resident is one batch. The Fleckenmasken are fetched BEFORE the stream
+    opens: a second query on the same connection while a server-side cursor is
+    open is not a thing to rely on.
 
     `?nur=offen` narrows it to the boxes that still want work (`_offen`), and
     drops a Fassung that has none left. The Fassung's counter is taken BEFORE
@@ -1521,12 +1529,11 @@ async def read_pfad_boxes(
     """
     _checked_hand(hand)
     repo = EigenhandRepository(db)
-    rows = await repo.strips_with_pfade(hand)
     plan = load_plan()
     style = style_of_hand(hand) or ""
-    masken = flecken.flecken_index(await repo.kartei(hand, style)) if rows else {}
+    masken = flecken.flecken_index(await repo.kartei(hand, style))
     fassungen = []
-    for row in rows:
+    async for row in repo.strips_with_pfade(hand):
         stated = _pfad_fassung(row, plan, hand=hand, maske_n=_maske_n(masken, row), offen_only=nur == "offen")
         if stated is not None:
             fassungen.append(stated)

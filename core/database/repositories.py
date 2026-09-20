@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable
 from datetime import UTC, datetime
 from typing import Any
 
@@ -1014,24 +1014,43 @@ class EigenhandRepository:
         result = await self.session.execute(self._one_strip(hand, strip, fassung).options(*self._STRIP_META_ONLY))
         return result.scalar_one_or_none()
 
-    async def strips_with_pfade(self, hand: str) -> "list[EigenhandStrip]":
+    # How many strip rows one batch of `strips_with_pfade` holds. Small on
+    # purpose: the point of streaming there is that the resident set is a
+    # handful of Fassungen rather than a hand, and a hand-wide read is one
+    # admin request at a time, so round trips are the cheap side of the trade.
+    _PFADE_BATCH = 25
+
+    async def strips_with_pfade(self, hand: str) -> "AsyncIterator[EigenhandStrip]":
         """Every strip row of ONE HAND with its Streifen-Pfade, without its bytes.
 
-        The hand-wide twin of `strip_pfade`, and the one listing that wants the
+        The hand-wide twin of `strip_pfade`, and the one read that wants the
         deferred column: „which word boxes of this hand are in which state" is
         a question about the paths themselves, so there is nothing to defer it
-        for. What the deferral protects is still protected — the points are
-        folded into a handful of numbers per box before anything is sent, so
-        the column is read once per row here and never put on the wire (the
-        projection is `api.routers.eigenhand.read_pfad_boxes`).
+        for. What the deferral protects is still protected on the WIRE — the
+        points are folded into a handful of numbers per box before anything is
+        sent (the projection is `api.routers.eigenhand.read_pfad_boxes`).
+
+        STREAMED rather than listed, because the wire is only half of it. A
+        followed word carries on the order of a thousand points, a hand carries
+        hundreds of (strip, Fassung) rows, and materialising all of them at
+        once would make the read that exists to be cheap the most expensive one
+        in the router — the deferral would be lifted in the process as well as
+        on the wire. A caller that iterates and keeps only what it built holds
+        one batch at a time instead.
 
         Separate from `strips_of` rather than a flag on it: every other listing
         asks the cheap question, and a parameter would make it one careless
         argument away from dragging every path of every Fassung along.
         """
-        stmt = select(EigenhandStrip).options(*self._STRIP_WITHOUT_PNG).where(EigenhandStrip.hand == hand)
-        result = await self.session.execute(stmt.order_by(EigenhandStrip.strip, EigenhandStrip.fassung))
-        return list(result.scalars().all())
+        stmt = (
+            select(EigenhandStrip)
+            .options(*self._STRIP_WITHOUT_PNG)
+            .where(EigenhandStrip.hand == hand)
+            .order_by(EigenhandStrip.strip, EigenhandStrip.fassung)
+            .execution_options(yield_per=self._PFADE_BATCH)
+        )
+        async for row in await self.session.stream_scalars(stmt):
+            yield row
 
     async def strips_of(self, hand: str, strip: str | None = None) -> "list[EigenhandStrip]":
         """Strip rows WITHOUT the bytes — listings, the admin grid, the manifest."""

@@ -1639,11 +1639,41 @@ class TestPfadBoxes:
         assert fassung["kaesten"][0]["offen"] is False
 
         # The Skip-Eintrag keeps its reason, which is what tells „unauthored,
-        # go to the plate" from „the follower gave up, trace it".
+        # go to the plate" from „the follower gave up, trace it" — and the
+        # light says the same thing rather than talking about a measurement
+        # that was never owed on a box with no path.
         skipped = fassung["kaesten"][1]
         assert (skipped["status"], skipped["grund"], skipped["detail"]) == ("skipped", "unauthored", "unauthored: y")
+        assert skipped["tintentreue"]["grund"] == "übersprungen: unautoriert"
+        assert skipped["tintentreue"]["stufe"] == "nicht beurteilt"
         assert skipped["offen"] is True
         assert fassung["zaehler"] == {"kaesten": 2, "gemessen": 1, "folgt": 1, "von_hand": 0}
+
+    @pytest.mark.asyncio
+    async def test_a_skip_is_never_graded_however_much_meta_it_carries(self, api: Harness):
+        # `meta` is a free blob and a skip carries it through untouched, so a
+        # follower that one day records WHY it gave up would hand this read a
+        # full diagnosis block on a box with no Bahn at all. Grading it would
+        # make that box green, take it off the work list and count it in
+        # „3 von 4 folgen" — a path that does not exist, reported as the best
+        # kind there is.
+        stored = await _store_strip(api)
+        skip = {
+            "box_index": 0,
+            "word": TestStreifenPfad._path(stored)["word"],
+            "status": "skipped",
+            "grund": "gave_up",
+            "strokes": [],
+            "verfahren": "tintenpfad",
+            "meta": {"tintenpfad": self.GREEN},
+        }
+        assert (await TestStreifenPfad._put(api, [skip], format=2)).status == 200
+
+        fassung = (await self._stand(api)).json()["fassungen"][0]
+        box = fassung["kaesten"][0]
+        assert box["tintentreue"]["grund"] == "übersprungen: aufgegeben"
+        assert box["tintentreue"]["gemessen"] is False and box["offen"] is True
+        assert fassung["zaehler"] == {"kaesten": 2, "gemessen": 0, "folgt": 0, "von_hand": 0}
 
     @pytest.mark.asyncio
     async def test_an_unmeasured_hand_drawn_box_is_counted_and_is_not_open_work(self, api: Harness):

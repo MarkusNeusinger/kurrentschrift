@@ -1190,9 +1190,9 @@ export interface EigenhandPfadList {
 // from the sensors the follower stored (`core/eigenhand/tintentreue.py`).
 // Three measured steps and ONE grey state: grey is the absence of a
 // measurement, not a fourth step, so it carries its reason in `grund` („kein
-// Eintrag" · „von Hand gezeichnet" · „Maske geändert" · „Format 1 —
-// unvollständig gemessen" · „unvollständig gemessen"). Where a step WAS
-// measured, `grund` is the name of the sensor that decided it.
+// Eintrag" · „übersprungen: …" · „von Hand gezeichnet" · „Maske geändert" ·
+// „Format 1 — unvollständig gemessen" · „unvollständig gemessen"). Where a
+// step WAS measured, `grund` is the name of the sensor that decided it.
 //
 // No scalar travels, on purpose — a step, the naming sensor and the raw
 // readings. `vorlaeufig` says the thresholds are still the borrowed ones (no

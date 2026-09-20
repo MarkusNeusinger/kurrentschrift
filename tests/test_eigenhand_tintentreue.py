@@ -243,6 +243,50 @@ def test_a_box_without_an_entry_has_one_grey_state_for_four_causes():
     assert (urteil.stufe, urteil.grund, urteil.sensoren) == (STUFE_UNGEMESSEN, GRUND_KEIN_EINTRAG, [])
 
 
+@pytest.mark.parametrize(
+    ("grund", "gesagt"),
+    [
+        ("unauthored", "übersprungen: unautoriert"),
+        ("gave_up", "übersprungen: aufgegeben"),
+        ("no_geometry", "übersprungen: keine Bogen-Geometrie"),
+        ("not_selected", "übersprungen: nicht gewählt"),
+        ("other", "übersprungen: ohne Angabe"),
+    ],
+)
+def test_a_skipped_box_says_why_rather_than_claiming_a_missed_measurement(grund: str, gesagt: str):
+    # Author decision C split the one „kein Eintrag" into four situations that
+    # are not the same work at all. A light that answered „unvollständig
+    # gemessen" here would talk about a measurement nobody owed on a box whose
+    # entry states there is no path — and would merge the four back together.
+    pfad = _pfad()
+    pfad.update(status="skipped", grund=grund, strokes=[])
+    urteil = _urteil(pfad)
+    assert (urteil.stufe, urteil.grund, urteil.gemessen) == (STUFE_UNGEMESSEN, gesagt, False)
+
+
+def test_a_skip_is_never_graded_however_much_meta_it_carries():
+    # `meta` is free and `check_paths` carries a skip's through untouched, so a
+    # follower recording WHY it gave up would put a full diagnosis block on a
+    # box with no Bahn. Grading it would call a path that does not exist the
+    # best kind there is — and count it in „3 von 4 Kästen folgen".
+    pfad = _gruen()
+    pfad.update(status="skipped", grund="gave_up", strokes=[])
+    urteil = _urteil(pfad)
+    assert (urteil.stufe, urteil.grund) == (STUFE_UNGEMESSEN, "übersprungen: aufgegeben")
+    assert zaehler([urteil]) == modul.Kastenzaehler(kaesten=1, gemessen=0, folgt=0, von_hand=0)
+    # The readings still travel — they are measurements, and only the VERDICT
+    # is refused (a grey box carries its sensors like every other).
+    assert [wert.name for wert in urteil.sensoren] == list(SENSOR_ORDER)
+
+
+def test_a_skip_vocabulary_this_module_has_no_word_for_still_names_the_skip():
+    # `check_paths` refuses an unknown `grund`, so this can only be a row that
+    # predates a word being added. It must not fall through to a sensor verdict.
+    pfad = _gruen()
+    pfad.update(status="skipped", grund="etwas-neues", strokes=[])
+    assert _urteil(pfad).grund == "übersprungen: ohne Angabe"
+
+
 def test_the_mask_argument_has_to_be_named_rather_than_forgotten():
     # A default would hand out a green box for an entry followed over other
     # ink; not knowing today's mask is a decision and is written as None.
