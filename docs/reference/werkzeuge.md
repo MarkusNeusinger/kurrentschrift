@@ -736,7 +736,11 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   und beurteilt nicht die übrigen Kästen. Und ein Skip verdrängt nie eine
   gespeicherte Bahn — „unautoriert" hängt an der Tafel von heute,
   „aufgegeben" an den Armen dieses Laufs, also lässt das Werkzeug seinen
-  eigenen Skip fallen und sagt es in der Zeile.
+  eigenen Skip fallen und sagt es in der Zeile. Ein Kasten, den die GEDRUCKTE
+  Zeile gar nicht kennt (Streifenliste und Bogen-Layout widersprechen sich),
+  bleibt dagegen eine Lücke statt ein Skip: ein Eintrag mit diesem Index
+  brächte den Push der ganzen Fassung zu Fall, und in Frage steht nur der
+  eine Kasten.
   Die vom Folger selbst zugeordneten Buchstabengrenzen wandern damit nicht
   mehr ins freie `meta`: unter Format 2 sind sie ein geprüftes Feld des
   Eintrags, und dieses Abbild schreibt es noch nicht — es kommt mit

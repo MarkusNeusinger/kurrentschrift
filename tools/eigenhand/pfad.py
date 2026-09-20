@@ -551,7 +551,21 @@ def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: 
             # A Bogen printed before the cut or ruling geometry existed has no
             # frame to seed with. One such row must not take the whole run down.
             print(f"  {case_id:<18} skipped   {exc}", flush=True)
-            entries.append(_skip(index, box["word"], SKIP_NO_GEOMETRY, str(exc), flecken_n, today, ran=False))
+            printed = layout_row.get("boxes") or []
+            if not 0 <= index < len(printed):
+                # The OTHER way that call refuses: the strip listing (built from
+                # the frozen plan) names a box the layout row does not have. An
+                # entry for it would be refused by `check_paths` — and take the
+                # whole Fassung's push down with it, where the box alone is what
+                # is in doubt. So that disagreement stays a gap in the list
+                # (found in review, this PR).
+                continue
+            # The word comes from the LAYOUT, like `_entry`'s: `check_paths`
+            # holds the entry against the printed box, so an entry built from
+            # the other source could be refused for disagreeing with it.
+            entries.append(
+                _skip(index, printed[index].get("word", ""), SKIP_NO_GEOMETRY, str(exc), flecken_n, today, ran=False)
+            )
             continue
         case, missing = _case_for_box(prior, plane, frame, box["word"], shaping_form_of(plan, box["word"]), case_id)
         if missing:
@@ -847,22 +861,32 @@ def main(argv: list[str] | None = None) -> int:
         # by the content rule (`core.eigenhand.pfad.push_body`).
         body, wire_format, without_spans = push_body(body)
         if without_spans:
-            # Named, never silent: this run DID assign those boundaries, and the
-            # push simply has no place for them until this image writes the
-            # checked field itself. They come back with the next run.
+            # Named, never silent. Since `_entry` stopped writing the free-meta
+            # copy, every boundary left to strip here is one an OLDER run stored
+            # and the merge carried along — so nothing re-assigns it on this
+            # run, and the box keeps its Bahn but loses those boundaries until
+            # the Span-Zuordner writes the checked field.
             print(
-                f"  Streifen-Pfad format {wire_format}: dropping this run's own letter boundaries at box "
-                f"{', '.join(str(index) for index in without_spans)} — under this format they belong in the "
-                "entry's own `letter_spans`, which this version does not write yet (they are re-assigned "
-                "on every run; hand-corrected ones are never touched)",
+                f"  Streifen-Pfad format {wire_format}: dropping the free-meta letter boundaries a stored entry "
+                f"carries at box {', '.join(str(index) for index in without_spans)} — under this format they "
+                "belong in the entry's own checked `letter_spans`, which this version does not write yet "
+                "(hand-corrected boundaries are never touched)",
                 flush=True,
             )
         if not args.apply:
             out = args.out or _local_path(hand, row["strip"], row["fassung"])
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(json.dumps({"format": wire_format, "pfade": body}, ensure_ascii=False, indent=1) + "\n")
+            # The same split the `--apply` branch makes below: a Skip-Eintrag is
+            # an entry, not a path, and one number over both would put the four
+            # states back together on the very surface an operator reads before
+            # deciding to store (found in review, this PR).
+            paths = [entry for entry in body if entry.get("status") != STATUS_SKIPPED]
+            followed = sum(1 for entry in entries if entry.get("status") != STATUS_SKIPPED)
+            skipped = len(body) - len(paths)
             print(
-                f"  dry run — {len(body)} path(s) ({len(entries)} followed) written to {out}, nothing stored",
+                f"  dry run — {len(paths)} path(s){f' and {skipped} skipped box(es)' if skipped else ''} "
+                f"({followed} followed here) written to {out}, nothing stored",
                 flush=True,
             )
             continue
