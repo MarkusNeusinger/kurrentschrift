@@ -43,7 +43,15 @@
 > trägt jede Streifen-Zeile ihre **Format-Marke** selbst
 > (`eigenhand_strips.pfade_format`, Migration `0032`, §7.5): erst damit
 > können `PFAD_FORMAT` 1 und 2 nebeneinander liegen; geschrieben wird
-> weiterhin nur Format 1.
+> weiterhin nur Format 1. Am Ende derselben Phase steht der **Trainingssatz**
+> (§7.5): die von Hand nachgefahrenen Bahnen als lokaler, gitignorter Export
+> (`tools/eigenhand/training_set.py`), geteilt in `practice` und ZWEI getrennte
+> Rückhaltemengen — Autor-Entscheid vom 2026-09-20, der zugleich FM3 der
+> [Freigabe-Maschine](freigabe-maschine.md) beantwortet. Die Ziehung ist ein
+> eigener, einmaliger Akt über den eingefrorenen Streifenplan; vorregistriert
+> in [`../reference/messjournal.md`](../reference/messjournal.md) §14
+> „Trainingssatz `sep20`". **Gezogen ist noch nichts** — es gibt bis heute
+> keine einzige von Hand nachgefahrene Bahn.
 
 ## 1 Anlass
 
@@ -1365,6 +1373,28 @@ der Span-Zuordner besser werden: als lokaler, gitignorter Export unter
 Ausnahme: die dev-19-Kopfzahl liest diese Menge NIE, und gemessen wird auf
 ihr nur mit einer separat eingefrorenen, vorregistrierten Rückhaltemenge —
 Eintrag im Messjournal §14 vor der ersten Zahl.
+
+**Es sind ZWEI Rückhaltemengen, nicht eine** (Autor-Entscheid 2026-09-20,
+gegen die Empfehlung des Phase-2-Plans und zugleich die Antwort auf FM3 der
+[Freigabe-Maschine](freigabe-maschine.md)): eine für die Verbesserung des
+Folgers, eine für die Freigabe-Prüfung einer Hand. Der Satz oben bleibt
+sonst Wort für Wort gültig, nur „einer Rückhaltemenge" heißt jetzt
+`holdout-follower` **und** `holdout-release`, disjunkt, der Rest ist
+`practice`. **Gebaut ist der Export seit dem 2026-09-20**
+(`tools/eigenhand/training_set.py`, Wurzel
+`tools/eigenhand/training-sets/`, gitignored): er schneidet jeden Kasten
+mit Handarbeit so heraus, wie der Folger ihn liest, filtert über den
+Archiv-Read auf `angenommen` und ist ausdrücklich keine Bench-Wurzel — das
+Manifest trägt darum nicht den Namen, nach dem die Lab-Lader suchen, und ein
+Test pinnt die Trennung. Die ZIEHUNG ist ein eigener, einmaliger Akt mit
+Schlüssel: gezogen wird über die STREIFEN des eingefrorenen Plans, also ohne
+Netz und ohne eine einzige Bahn — am besten vor der ersten —, die
+Zugehörigkeit ist eine reine Funktion aus Schlüssel, Hand und Streifen-ID,
+ein später angehängter Streifen fällt darum dorthin, wo derselbe Schlüssel
+ihn immer hingelegt hätte, und ein zweites Ziehen wird verweigert. Der Satz
+wohnt in der `kartei.json` (Entscheid A — sie ist das Einzige, was jeder
+Schnappschuss voll kopiert); die Vorregistrierung steht im Messjournal §14
+„Trainingssatz `sep20`".
 
 **Gebaut ist davon die Schutzregel** (Phase 0 des Admin-Redesigns,
 2026-09-18; Q4 mit Unterpunkt (i)). Trägt ein gespeicherter Kasten

@@ -799,6 +799,48 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   BLAS-Fäden
   pinnt das Modul selbst (Vorgabewerte), weil die Kettenlösung sonst je nach
   Umgebung anders läuft.
+- **`training_set`** — der lokale, gitignorte **Trainingssatz** der von Hand
+  nachgefahrenen Bahnen (Autor-Zusatz zu Q4: „die hand nachgefahrenen linien
+  dienen auch als trainingsmenge um den folger nachhaltig immer besser zu
+  machen"). Der Begriff bleibt deutsch, die Bezeichner sind englisch —
+  „training set" und „hold-out set" sind etabliert
+  ([sprachregelung.md](sprachregelung.md) §5).
+  Zwei Befehle. **`--draw <Schlüssel>`** zieht EINMAL je Hand die
+  zwei getrennten **Rückhaltemengen** (Autor-Entscheid 2026-09-20, zugleich die
+  Antwort auf FM3): `holdout-follower` für die Folger-Arbeit,
+  `holdout-release` für die Freigabe-Prüfung, der Rest ist `practice`. Gezogen
+  wird über die STREIFEN des eingefrorenen Plans — ohne Netz, ohne eine einzige
+  Bahn, also am besten VOR der ersten; die Zugehörigkeit ist eine reine
+  Funktion aus Schlüssel, Hand und Streifen-ID, ein später angehängter Streifen
+  fällt deshalb dorthin, wo derselbe Schlüssel ihn immer hingelegt hätte, und
+  wird beim nächsten Lauf mit Datum nachgetragen und genannt. Ein zweites
+  Ziehen wird verweigert, ohne Override. Die Ziehung liegt in der
+  `kartei.json`
+  (Entscheid A — volle Kopie in jedem Schnappschuss) und ist das Einzige hier,
+  was nicht neu herstellbar ist; der Lauf sagt darum hinterher, dass jetzt ein
+  Schnappschuss fällig ist. Weil `sync --from` eine archivierte Kartei nach
+  OBEN schiebt und die lokale nie zurückschreibt, sähe ein verlorener
+  Datenbestand aus wie „nie gezogen" — vor einer Ziehung und vor einem Export
+  wird darum auch das Archiv gelesen (`$KURRENTSCHRIFT_ARCHIVE` bzw.
+  `--archive`, nur lesend): liegt dort eine Ziehung, bricht der Lauf ab und
+  nennt den Schnappschuss, aus dem die Kartei zurückzuholen ist. **Der Export** schneidet jeden Kasten mit
+  Handarbeit — gezeichnete Bahn ODER von Hand korrigierte Grenzen — genau so
+  heraus, wie der Folger ihn liest (`bahn.json` + `kasten.png` + `tinte.png`);
+  der Statusfilter kommt aus dem Archiv-Read (nur `angenommen`, die
+  Streifenliste trägt gar keinen Status), und eine zurückgezogene Fassung
+  verlässt den Baum beim nächsten Lauf wieder. In jedem `bahn.json` steht
+  neben dem eigenen Hüllen-Format auch das `pfad_format` der ZEILE — sonst
+  sähe „keine Grenzen von Hand" genauso aus wie „vor `letter_spans`
+  geschrieben". Wurzel
+  `tools/eigenhand/training-sets/`, gitignored, **kein Mess-Satz**: ein
+  Streifen hat keine Referenzspur (Prüfstein 2), darum heißt das Manifest
+  bewusst nicht `manifest.json` und ein Test pinnt die Trennung von den
+  Bench-Wurzeln. Zwei Verweigerungen schützen die Zusage „kein Byte im
+  Repo": ein Ziel INNERHALB des Checkouts, das die eine gitignore-Regel
+  nicht deckt (`--out .`, `EIGENHAND_TRAINING_SET`), und eine zweite Hand
+  in demselben `--out` — dort würden sich die Läufe gegenseitig die Fälle
+  wegräumen, weil eine Fall-ID keine Hand trägt. Vorregistrierung der Ziehung:
+  [`messjournal.md`](messjournal.md) §14 „Trainingssatz `sep20`".
 - **`report`** — Bestandsbericht (Erstbeleg-/Ausbau-Quote, Fehlstellen,
   Druckvorschlag) und, seit dem **Streifen-Befund** (2026-09-07), die
   Gegenrichtung: je angenommener Fassung Vorschlag (`sauber` · `brauchbar` ·

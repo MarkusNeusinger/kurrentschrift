@@ -245,6 +245,16 @@ cython_debug/
 !/data/samples/own-hand/SOURCE.md
 !/data/samples/own-hand/README.md
 
+# …and the training set cut out of them: the Bahnen the author drew by hand,
+# exported per hand by tools/eigenhand/training_set.py. Reserved twice over —
+# own-hand pixels plus the authored Bahnen of the shared database — and
+# regenerable from the archive, so no byte of it is ever committed
+# (quellen-und-rechte.md §5). It lives under tools/ because the proposal
+# settles it there (eigenhand-erfassung.md §7.5) and deliberately NOT under a
+# `fixtures/` name: a strip has no reference trace, so this tree must never be
+# reachable as a bench root (tests/test_eigenhand_training_set.py pins both).
+/tools/eigenhand/training-sets/
+
 # Glyph bench: DB fixture snapshots + per-run artifacts (regenerate via
 # tools/glyphbench/export_fixtures.py; see tools/glyphbench/README.md).
 /tools/glyphbench/fixtures/

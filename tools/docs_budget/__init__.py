@@ -595,8 +595,23 @@ WIDEST = {
 # owns one tab stop needs a composite role, and which of the two surfaces gets
 # one — because that is exactly the kind of omission a later reader would
 # otherwise repeat. Re-measured at 20 723, plus the documented 10 %.
+#
+# `mandatory` (67 091 → 74 325) raised 2026-09-20. The path was ALREADY over on
+# `origin/main` before this PR touched it — 67 553 against 67 091, +462 — which
+# is how #645 („a German Fachbegriff … may be an identifier") landed: it grew
+# `sprachregelung.md` by a whole section, §5, and that file is on the mandatory
+# list. The growth is not waste. §5 is the answer to a standing contradiction
+# between the written rule and merged code, and it is exactly the kind of thing
+# a session has to know BEFORE it names anything — which is the definition of
+# this path. This PR adds 15 tokens on top (one `kurzglossar.md` entry for the
+# Trainingssatz, one `docs/index.md` clause), and cutting 462 tokens of someone
+# else's freshly-decided doctrine to get a gate green would be the wrong repair.
+# Re-measured at 67 568, plus the documented 10 %. The next PR on this path
+# inherits real room and the duty to spend it carefully: `kurzglossar.md` is now
+# 12 678 tokens and its own Stand block already warns that the next entry should
+# be paid for by one falling below the threshold.
 BUDGETS: dict[str, int] = {
-    "mandatory": 67_091,
+    "mandatory": 74_325,
     "mess-runde": 43_761,
     "mess-runde-route": 10_487,
     "mess-runde-eintrag": 5_584,
