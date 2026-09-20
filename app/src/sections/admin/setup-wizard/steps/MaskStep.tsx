@@ -107,7 +107,7 @@ export function MaskStep({
         <ToggleButton value="patch">{de.wizard.mask.toolPatch}</ToggleButton>
       </ToggleButtonGroup>
 
-      <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" color="textSecondary">
         {lead}
       </Typography>
 
@@ -117,11 +117,11 @@ export function MaskStep({
             {de.wizard.mask.patchPick}
           </Button>
           <Box>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {de.wizard.mask.patchListTitle}
             </Typography>
             {bbox.patches.length === 0 ? (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
                 {de.wizard.mask.patchEmpty}
               </Typography>
             ) : (
@@ -140,7 +140,7 @@ export function MaskStep({
             )}
           </Box>
           {bbox.patches.length > 0 && (
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {de.wizard.mask.patchDragHint}
             </Typography>
           )}
@@ -218,7 +218,7 @@ function LegendDot({ color, label, border }: { color: string; label: string; bor
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
       <Box sx={{ width: 12, height: 12, bgcolor: color, borderRadius: 0.5, border: border ? '1px solid #999' : 'none' }} />
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="caption" color="textSecondary">
         {label}
       </Typography>
     </Box>

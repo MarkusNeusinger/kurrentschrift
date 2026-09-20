@@ -54,6 +54,7 @@ import {
   type KorbFilter,
 } from '@/sections/admin/shell/korbFilter';
 import { TOUCH_TARGET } from '@/styles/hitArea';
+import { paper } from '@/styles/paper';
 
 // The heading above each status group — `open` is the unmarked queue and
 // carries none. These are sentences („Zurückgegeben — braucht deine Hand"),
@@ -189,7 +190,7 @@ function ItemRow({
             >
               {workItemLabel(item)}
               {item.specimen_id && (
-                <Typography component="span" variant="caption" color="text.secondary">
+                <Typography component="span" variant="caption" color="textSecondary">
                   {` · ${item.specimen_id}`}
                 </Typography>
               )}
@@ -199,14 +200,14 @@ function ItemRow({
           <Typography variant="body2" sx={{ fontWeight: 600 }}>
             {workItemLabel(item)}
             {item.specimen_id && (
-              <Typography component="span" variant="caption" color="text.secondary">
+              <Typography component="span" variant="caption" color="textSecondary">
                 {` · ${item.specimen_id}`}
               </Typography>
             )}
           </Typography>
         )}
         {workItemBody(item) && (
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', whiteSpace: 'pre-line' }}>
+          <Typography variant="caption" color="textSecondary" sx={{ display: 'block', whiteSpace: 'pre-line' }}>
             {workItemBody(item)}
           </Typography>
         )}
@@ -235,8 +236,18 @@ function ItemRow({
         {item.resolution && (
           <Typography
             variant="caption"
-            color={item.status === 'returned' ? 'warning.main' : 'success.main'}
-            sx={{ display: 'block', mt: 0.25 }}
+            // Both tones used to ride on the `color` prop as dotted palette
+            // paths, which Typography resolves through nothing — and neither
+            // raw pigment is a colour for TEXT on the card ground (Ocker
+            // 3,37:1, Viridian 3,72:1). The returned line is carried by full
+            // ink plus its own group heading („Zurückgegeben"); the resolved
+            // one takes the viridian TEXT shade, which clears AA
+            // (design-system.md §2).
+            sx={{
+              display: 'block',
+              mt: 0.25,
+              color: item.status === 'returned' ? 'text.primary' : paper.viridianText,
+            }}
           >
             {item.resolution}
           </Typography>
@@ -269,7 +280,7 @@ function ItemRow({
           ))}
 
         {item.created_at && (
-          <Typography variant="caption" color="text.disabled" sx={{ display: 'block' }}>
+          <Typography variant="caption" color="textDisabled" sx={{ display: 'block' }}>
             {new Date(item.created_at).toLocaleString('de-DE')}
           </Typography>
         )}
@@ -598,7 +609,7 @@ export function KorbPanel({
             {t.korbLoadError}
           </Alert>
         ) : visibleCount === 0 ? (
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+          <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
             {emptyText}
           </Typography>
         ) : (
@@ -606,7 +617,7 @@ export function KorbPanel({
             {groups.map((g) => (
               <Box key={g.key}>
                 {GROUP_HEADINGS[g.key] && (
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                  <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 0.5 }}>
                     {GROUP_HEADINGS[g.key]}
                   </Typography>
                 )}
@@ -661,12 +672,12 @@ export function KorbPanel({
               <Typography variant="body2" sx={{ fontWeight: 600 }}>
                 {workItemLabel(confirming)}
                 {confirming.specimen_id && (
-                  <Typography component="span" variant="caption" color="text.secondary">
+                  <Typography component="span" variant="caption" color="textSecondary">
                     {` · ${confirming.specimen_id}`}
                   </Typography>
                 )}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                 {t.korbDeleteConfirmBody}
               </Typography>
               {confirming.status === 'done' && (

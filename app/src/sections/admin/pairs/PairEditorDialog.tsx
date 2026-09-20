@@ -332,7 +332,7 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>{fmt(de.admin.pairs.editorTitle, { pair: pairText })}</DialogTitle>
       <DialogContent>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+        <Typography variant="body2" color="textSecondary" sx={{ mb: 1.5 }}>
           {de.admin.pairs.editorIntro}
         </Typography>
         {error && (
@@ -436,7 +436,7 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
                   label={<Typography variant="caption">{de.admin.pairs.showSpecimen}</Typography>}
                 />
               )}
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="textSecondary">
                 {row
                   ? fmt(de.admin.pairs.rowState, {
                       provenance: row.provenance,
@@ -448,14 +448,14 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
           </Box>
 
           <Box sx={{ flex: '1 1 260px', minWidth: 240 }}>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {de.admin.pairs.previewHeading}
             </Typography>
             <Box sx={{ bgcolor: '#fff', borderRadius: 1, p: 1, mt: 0.5 }}>
               {preview ? (
                 <ComposedPreview composed={preview} />
               ) : (
-                <Typography variant="caption" color="text.disabled">
+                <Typography variant="caption" color="textDisabled">
                   …
                 </Typography>
               )}
@@ -465,7 +465,7 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
               control={<Checkbox size="small" checked={approved} onChange={(e) => setApproved(e.target.checked)} />}
               label={<Typography variant="body2">{de.admin.pairs.approveLabel}</Typography>}
             />
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+            <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
               {de.admin.pairs.approveHint}
             </Typography>
           </Box>

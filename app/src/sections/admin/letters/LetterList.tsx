@@ -85,7 +85,7 @@ export function LetterList({
                 <Typography component="span" sx={{ fontFamily: garamond, fontSize: 24, lineHeight: 1.2 }}>
                   {row.letterGlyph}
                 </Typography>
-                <Typography component="span" variant="caption" color="text.secondary">
+                <Typography component="span" variant="caption" color="textSecondary">
                   {row.glyphKey}
                 </Typography>
               </Box>
@@ -122,7 +122,7 @@ export function LetterList({
                 {/* „0 Vorkommen" is a claim about the plates — it waits for the
                     read that can support it. */}
                 {row.occurrences === null ? (
-                  <Typography variant="caption" color="text.disabled">
+                  <Typography variant="caption" color="textDisabled">
                     {de.admin.compare.occurrencesUnknown}
                   </Typography>
                 ) : (

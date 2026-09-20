@@ -52,7 +52,7 @@ export function LetterGrid({ activeKey, onPick, isDisabled }: LetterGridProps) {
         if (letters.length === 0) return null;
         return (
           <Box key={group} sx={{ mb: 1.5 }}>
-            <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+            <Typography variant="overline" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
               {GROUP_LABELS[group]}
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>

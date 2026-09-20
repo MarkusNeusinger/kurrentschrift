@@ -75,7 +75,7 @@ export function MarkDialog({ mark, sourceId, onClose, onFiled, onOpenWizard }: P
           <Typography variant="body2">
             <strong>{`${t.dialogTarget}: `}</strong>
             {targetLabel(mark.target)}
-            <Typography component="span" variant="caption" color="text.secondary">
+            <Typography component="span" variant="caption" color="textSecondary">
               {/* A landmark is read on a STORED ROW, so „frei eingetippt" would
                   be a lie about where it came from — it names the row instead. */}
               {mark.target.kind === 'landmark'
@@ -92,7 +92,7 @@ export function MarkDialog({ mark, sourceId, onClose, onFiled, onOpenWizard }: P
           {mark.target.kind === 'landmark' && (
             <Typography
               variant="caption"
-              color="text.secondary"
+              color="textSecondary"
               sx={{ display: 'block', whiteSpace: 'pre-line', fontVariantNumeric: 'tabular-nums' }}
             >
               {landmarkNoteHead(mark.target)}
@@ -102,7 +102,7 @@ export function MarkDialog({ mark, sourceId, onClose, onFiled, onOpenWizard }: P
           {!presorted && mark.target.kind === 'letter' ? (
             <>
               <Typography variant="body2">{t.presortQuestion}</Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="textSecondary">
                 {t.presortHint}
               </Typography>
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>

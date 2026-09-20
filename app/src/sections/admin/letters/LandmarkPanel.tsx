@@ -217,7 +217,7 @@ export function LandmarkPanel({ sourceId, glyphKey, cacheBust, onMark }: Props) 
           <Button size="small" sx={{ alignSelf: 'flex-start', minHeight: 44 }} onClick={() => markSpot()}>
             {`⚑ ${t.landmarkSpotButton}`}
           </Button>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="textSecondary">
             {t.landmarkSpotHint}
           </Typography>
         </Box>
@@ -229,7 +229,7 @@ export function LandmarkPanel({ sourceId, glyphKey, cacheBust, onMark }: Props) 
               how many of that kind were found, and switches the layer off. */}
           <Box>
             <Stack direction="row" spacing={0.5} sx={{ mb: 0.5, alignItems: 'center', flexWrap: 'wrap' }}>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="textSecondary">
                 {`${t.landmarksLegend} · ${fmt(t.landmarksCount, { count: row.landmarks.length })}`}
               </Typography>
               {/* What the seven kinds MEAN hung as a native `title=` on each
@@ -284,7 +284,7 @@ export function LandmarkPanel({ sourceId, glyphKey, cacheBust, onMark }: Props) 
           {selected ? (
             <LandmarkDetail landmark={selected} onMark={() => mark(refOf(selected))} />
           ) : (
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {t.landmarkSelectHint}
             </Typography>
           )}
@@ -293,7 +293,7 @@ export function LandmarkPanel({ sourceId, glyphKey, cacheBust, onMark }: Props) 
 
       {/* The catalogue's own voice: which hand it was read on, or that it has
           nothing to say about this Vorlage. */}
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="caption" color="textSecondary">
         {data.catalogue.available
           ? fmt(t.landmarksCatalogueOn, { style: data.catalogue.style ?? '?', root: data.catalogue.root ?? '?' })
           : t.landmarksCatalogueOff}
@@ -317,7 +317,7 @@ export function LandmarkPanel({ sourceId, glyphKey, cacheBust, onMark }: Props) 
                     state: entry.state,
                   })}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="textSecondary">
                   {t.landmarkNoRange}
                 </Typography>
                 <Button
@@ -361,11 +361,11 @@ function LandmarkDetail({ landmark, onMark }: { landmark: LandmarkOut; onMark: (
         <Typography variant="body2" sx={{ fontWeight: 600 }}>
           {`${t.landmarkKind[landmark.kind]} #${landmark.index}`}
         </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ fontVariantNumeric: 'tabular-nums' }}>
+        <Typography variant="caption" color="textSecondary" sx={{ fontVariantNumeric: 'tabular-nums' }}>
           {`x ${landmark.x.toFixed(3)} · y ${landmark.y.toFixed(3)}`}
         </Typography>
       </Box>
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="caption" color="textSecondary">
         {t.landmarkKindHint[landmark.kind]}
       </Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, rowGap: 0.75 }}>

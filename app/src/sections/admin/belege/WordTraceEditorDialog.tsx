@@ -355,13 +355,13 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
         <Typography component="span" sx={{ fontFamily: garamond, fontSize: 24, lineHeight: 1 }}>
           {row.word}
         </Typography>
-        <Typography component="span" variant="body2" color="text.secondary">
+        <Typography component="span" variant="body2" color="textSecondary">
           {fmt(t.editorTitle, { specimen: row.specimen_id })}
         </Typography>
         <InfoHint title={t.editOpen}>
           {t.editorIntro} {t.editorAuthoredHint}
         </InfoHint>
-        <Typography variant="caption" color="text.secondary" sx={{ ml: 'auto' }}>
+        <Typography variant="caption" color="textSecondary" sx={{ ml: 'auto' }}>
           {fmt(t.editorStrokeCount, { strokes: savable.length })} · {fmt(t.editorSlots, { slots: row.slots.join(' ') })}
         </Typography>
         <Button size="small" onClick={onClose} disabled={saving}>
@@ -398,7 +398,7 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
           </ToggleButtonGroup>
           {mode === 'adjust' && (
             <>
-              <Typography variant="caption" color="text.secondary" sx={{ minWidth: 88 }}>
+              <Typography variant="caption" color="textSecondary" sx={{ minWidth: 88 }}>
                 {t.editorNudgeRadius} {nudgeRadius.toLocaleString('de-DE', { maximumFractionDigits: 2 })}
               </Typography>
               <Slider
@@ -419,7 +419,7 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
               under the dialog title, so MUI's pop-up value tooltip is clipped
               by the header and never readable. minWidth keeps the row from
               jittering as the number's width changes while dragging. */}
-          <Typography variant="caption" color="text.secondary" sx={{ minWidth: 74 }}>
+          <Typography variant="caption" color="textSecondary" sx={{ minWidth: 74 }}>
             {t.editorZoom} {zoom.toLocaleString('de-DE', { maximumFractionDigits: 2 })}×
           </Typography>
           <Slider
@@ -476,7 +476,7 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
             control={<Checkbox size="small" checked={showStored} onChange={(e) => setShowStored(e.target.checked)} />}
             label={<Typography variant="caption">{t.editorShowStored}</Typography>}
           />
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="textSecondary">
             {mode === 'adjust' ? t.editorAdjustHint : t.editorZoomHint}
           </Typography>
         </Box>

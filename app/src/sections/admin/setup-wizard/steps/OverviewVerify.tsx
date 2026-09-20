@@ -17,6 +17,7 @@ import { cropUrl } from '@/lib/api';
 import type { TracePreviewOut } from '@/lib/api';
 import { de } from '@/locales/admin';
 import { HintHeading } from './HintHeading';
+import { scoreDeltaColor } from '@/sections/admin/quality/scoreColors';
 import { ScoreBreakdown, ScoreChip } from '@/sections/admin/quality/scoreParts';
 import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { layerAlpha, mono } from '@/styles/paper';
@@ -94,7 +95,7 @@ export function OverviewVerify({
       {previewBusy && !refined && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1 }}>
           <CircularProgress size={16} />
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="textSecondary">
             {de.wizard.optimize.computing}
           </Typography>
         </Box>
@@ -173,7 +174,7 @@ export function OverviewVerify({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             {refined.quality && <ScoreChip score={refined.quality.score} />}
             {delta != null && (
-              <Typography variant="caption" sx={{ fontFamily: mono }} color={delta >= 0 ? 'success.main' : 'error.main'}>
+              <Typography variant="caption" sx={{ fontFamily: mono, color: scoreDeltaColor(delta) }}>
                 {de.wizard.optimize.delta} {delta >= 0 ? '+' : ''}
                 {delta.toFixed(1)}
               </Typography>
@@ -189,7 +190,7 @@ export function OverviewVerify({
 function Cell({ label, children }: { label: string; children: ReactNode }) {
   return (
     <Stack spacing={0.5} sx={{ alignItems: 'flex-start' }}>
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="caption" color="textSecondary">
         {label}
       </Typography>
       {children}
