@@ -129,7 +129,11 @@ afterEach(() => {
 });
 
 /** Mount the editor and let its first read land. */
-async function open(targets = TARGETS, startKey = TARGETS[0].key): Promise<void> {
+async function open(
+  targets = TARGETS,
+  startKey = TARGETS[0].key,
+  onClose: () => void = () => {},
+): Promise<void> {
   await act(async () => {
     root.render(
       <StripTraceEditor
@@ -137,7 +141,7 @@ async function open(targets = TARGETS, startKey = TARGETS[0].key): Promise<void>
         hand="wegwerf-suetterlin"
         targets={targets}
         startKey={startKey}
-        onClose={() => {}}
+        onClose={onClose}
         onSaved={onSaved}
       />,
     );
@@ -302,4 +306,64 @@ it('surfaces a 412 as something to act on, with the drawing still standing', asy
 
   await act(async () => button('Speichern').click());
   expect(patchPfad.mock.calls[1][5]).toBe('"third"');
+});
+
+it('keeps the drawing in the frame it was DRAWN in when the conflict re-read brings another', async () => {
+  await open();
+  drawStroke();
+  const drawn = () => sentPfad(patchPfad.mock.calls.length - 1);
+  patchPfad.mockRejectedValueOnce(new ApiError(412, '412: the stored paths have moved on since this was read'));
+  await act(async () => button('Speichern').click());
+
+  // What the conflict announces („danach ersetzt Speichern, was inzwischen in
+  // diesem Kasten steht"): a re-follow replaced this box's entry, and its Bahn
+  // carries its OWN registration. The author's coordinates were made in the
+  // frame he sees — re-reading must not silently re-interpret them in a
+  // stranger's, or the save writes a line lying beside the ink.
+  readPfade.mockResolvedValue({
+    list: list({ pfade: [pfad({ registration_px: { tx: 200, ty: 0, baseline_row: 90 }, xh_px: 25 })] }),
+    etag: '"third"',
+  });
+  await act(async () => button('Stand neu einlesen').click());
+
+  await act(async () => button('Speichern').click());
+  expect(drawn().registration_px).toEqual({ tx: 140, ty: 0, baseline_row: 154 });
+  expect(drawn().xh_px).toBe(40);
+  // …and the seeded stroke it was drawn beside is still the one it was drawn
+  // beside, not the other writer's.
+  expect(drawn().strokes[0]).toEqual(LINE);
+});
+
+it('keeps corrected boundaries when a run is drawn beside the ones they sit on', async () => {
+  readPfade.mockResolvedValue({
+    list: list({ pfade: [pfad({ letter_spans: [...SPANS.slice(0, 2), { ...SPANS[2], herkunft: 'authored' }] })] }),
+    etag: '"first"',
+  });
+  await open();
+
+  // The Absetzer-Soll asks for exactly this when a mark stroke is missing. It
+  // appends, so every span index stays valid — and an `authored` seam given up
+  // here is deleted by the write, which replaces the entry whole.
+  drawStroke();
+
+  await act(async () => button('Speichern').click());
+  const spans = sentPfad().letter_spans;
+  expect(spans).toHaveLength(3);
+  expect(spans?.[2].herkunft).toBe('authored');
+  // The two runs go out together; only the boundaries' own stroke matters.
+  expect(sentPfad().strokes).toHaveLength(2);
+});
+
+it('asks before an unsaved drawing is thrown away, and closes when told to', async () => {
+  const onClose = vi.fn();
+  await open(TARGETS, TARGETS[0].key, onClose);
+  drawStroke();
+
+  act(() => button('Schließen').click());
+  // A hand-drawn Bahn exists nowhere else — no follower run recreates it.
+  expect(onClose).not.toHaveBeenCalled();
+  expect(text()).toContain('Gezeichnete Bahn verwerfen?');
+
+  act(() => button('Verwerfen und schließen').click());
+  expect(onClose).toHaveBeenCalledTimes(1);
 });

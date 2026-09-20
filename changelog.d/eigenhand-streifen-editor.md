@@ -29,9 +29,12 @@
   a corrected boundary is training material for the Span-Zuordner and survives
   every later re-follow. A boundary nobody touched keeps the follower's own
   provenance, deliberately: stamping it as the author's would freeze a guess as
-  ground truth. Boundaries belong to the Bahn, so a REDRAWN one gives them up
-  (and says so) while Anpassen, which moves points and never their count, keeps
-  them.
+  ground truth. Boundaries belong to the RUN they sit on: redrawing that run
+  gives them up and says so, while Anpassen (which moves points and never their
+  count) and a run drawn beside them — what the Absetzer-Soll asks for when a
+  mark stroke is missing — leave them standing. The narrow rule is the point:
+  the per-box write replaces the entry whole, so a boundary dropped in passing
+  is a corrected one deleted for good.
 - **The first component test for a re-tracing surface.** No `*.test.tsx`
   referenced the plate editor either, so the suite Q6 (b) promises had to be
   written rather than moved: the seeded Bahn's round trip through the strip
@@ -39,6 +42,10 @@
   boundary going out as the author's while an untouched one does not, the
   Absetzer warning firing on a mismatch, and a 412 reaching the author as
   something to act on with his drawing still standing.
+- **An unsaved drawing is not thrown away without being asked.** „Schließen"
+  and the Escape key both stop at a short confirmation while something is
+  drawn. A hand-drawn Bahn exists nowhere else until it is stored — no follower
+  run recreates it — which is the whole reason this surface exists.
 
 ### Changed
 

@@ -39,6 +39,7 @@ import {
   Chip,
   CircularProgress,
   Dialog,
+  DialogActions,
   DialogContent,
   DialogTitle,
   FormControlLabel,
@@ -60,13 +61,13 @@ import { LetterSpanLayer } from '@/sections/admin/eigenhand/LetterSpanLayer';
 import {
   moveBoundary,
   nearestSample,
-  sameStrokeShape,
+  spansStillFit,
   seamAt,
   seamsOf,
   authoredSpanCount,
   type SpanSeam,
 } from '@/sections/admin/eigenhand/letterSpans';
-import { stripRegistration, stripTraceSeed } from '@/sections/admin/eigenhand/stripTraceFrame';
+import { stripRegistration, stripTraceSeed, type StripTraceSeed } from '@/sections/admin/eigenhand/stripTraceFrame';
 import type { StripTraceTarget } from '@/sections/admin/eigenhand/stripBoxRows';
 import { useStripImage } from '@/sections/admin/eigenhand/useStripImage';
 import { apiErrorText, type ApiErrorText } from '@/sections/admin/shell/apiErrorText';
@@ -162,6 +163,7 @@ export function StripTraceEditor({
   // about the list it was made on, and the answer to it is a re-read, not a
   // retry.
   const [conflict, setConflict] = useState<'stale' | 'token' | null>(null);
+  const [askDiscard, setAskDiscard] = useState(false);
 
   // The Fassung this render wants in hand. The reset lives in RENDER (React's
   // "adjusting state when a prop changes"), so the spinner is up from the first
@@ -198,16 +200,24 @@ export function StripTraceEditor({
   }, [wantKey, hand, target?.strip, target?.fassung]);
 
   const listFor = held !== null && held.fassungKey === fassungKey ? held : null;
-  const seed = useMemo(
+  const fresh = useMemo(
     () => (listFor && target ? stripTraceSeed(listFor.list, target.boxIndex) : null),
     [listFor, target],
   );
-  const seedKey = seed && target && listFor ? `${target.key}|${listFor.stamp}` : null;
+  const seedKey = fresh && target && listFor ? `${target.key}|${listFor.stamp}` : null;
   const [seededFor, setSeededFor] = useState<string | null>(null);
-  if (seed && seedKey !== null && seedKey !== seededFor) {
+  // The seed is FROZEN into state, not read live off the list: the drawing and
+  // the frame it was drawn in have to stay one thing. A conflict re-read keeps
+  // the stamp (so the line survives it) but delivers whatever the other writer
+  // stored — a re-follow's own registration — and a live frame would then put
+  // the author's coordinates into a stranger's frame, which the next save
+  // writes out as a Bahn lying beside the ink.
+  const [seed, setSeed] = useState<StripTraceSeed | null>(null);
+  if (seedKey !== seededFor) {
     setSeededFor(seedKey);
-    setStrokes(seed.strokes);
-    setSpans(seed.spans);
+    setSeed(fresh);
+    setStrokes(fresh ? fresh.strokes : []);
+    setSpans(fresh ? fresh.spans : null);
     setDirty(false);
     setSaveError(null);
     setConflict(null);
@@ -228,11 +238,12 @@ export function StripTraceEditor({
     const slots = target ? shapeText(target.word) : [];
     return (slot: number): string => slots[slot]?.text ?? '';
   }, [target]);
-  // The boundaries describe the samples they were drawn on, so a REDRAWN Bahn
-  // has none until the Zuordner runs again: they are neither shown nor sent.
-  // Anpassen moves points and never their count, which is why the question is
-  // the SHAPE and not equality — an ironed-out wobble keeps its letters.
-  const spansHold = spans !== null && seed !== null && sameStrokeShape(seed.strokes, savable);
+  // The boundaries describe the samples they were drawn on, so a REDRAWN run
+  // gives up the boundaries that sat on it — but only those: a run drawn BESIDE
+  // them (what the Absetzer warning asks for when a mark stroke is missing)
+  // shifts no index, and giving the author's own corrected seams up over it
+  // would delete ground truth. `spansStillFit` carries that rule.
+  const spansHold = spans !== null && seed !== null && spansStillFit(seed.strokes, savable, spans);
   const seams = useMemo(() => (spansHold ? seamsOf(spans) : []), [spans, spansHold]);
   const effectiveMode: TraceMode = mode === 'point' && seams.length === 0 ? 'draw' : mode;
   const absetzerOk = target !== null && savable.length === target.absetzerSoll;
@@ -348,14 +359,23 @@ export function StripTraceEditor({
   const canSave = Boolean(target && seed && listFor && savable.length > 0 && dirty && !saving);
   const hasNext = cursor + 1 < targets.length;
 
+  // A hand-drawn Bahn exists nowhere else until it is stored — no follower run
+  // recreates it — so the surface that creates it does not let a stray Escape
+  // or a mis-hit „Schließen" take it silently. The plate editor has the same
+  // gap; carrying the guard over there is its own change.
+  const leave = () => (dirty ? setAskDiscard(true) : onClose());
+
   // Full screen with every control ABOVE the drawing surface, and the paper
   // suppressing selection and the context menu — the plate editor's two tablet
   // findings, which hold for the same hand on the same device.
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={leave}
       fullScreen
+      // Not `disableEscapeKeyDown`: Escape should still be the way out, it just
+      // has to ask first, and MUI routes the key through `onClose` — so the
+      // guard sits in `leave` and covers the button and the key alike.
       slotProps={{
         paper: {
           sx: { userSelect: 'none' },
@@ -390,7 +410,7 @@ export function StripTraceEditor({
             })}`}
             sx={{ flexShrink: 0 }}
           />
-          <Button size="small" onClick={onClose} disabled={saving} sx={{ minHeight: TOUCH_TARGET }}>
+          <Button size="small" onClick={leave} disabled={saving} sx={{ minHeight: TOUCH_TARGET }}>
             {t.close}
           </Button>
           <Button
@@ -480,8 +500,12 @@ export function StripTraceEditor({
             aria-label={t.zoom}
             sx={{ width: 200, flexShrink: 0, mx: 1 }}
           />
+          {/* The 44 px floor holds for these three too (§9.3): they sit on the
+              same pen surface as the mode group, and „Alle Züge löschen" next
+              to „Letzten Zug zurück" is the pair a mis-hit costs most. */}
           <Button
             size="small"
+            sx={{ minHeight: TOUCH_TARGET }}
             onClick={() => {
               setStrokes((prev) => prev.slice(0, -1));
               setDirty(true);
@@ -492,6 +516,7 @@ export function StripTraceEditor({
           </Button>
           <Button
             size="small"
+            sx={{ minHeight: TOUCH_TARGET }}
             onClick={() => {
               setStrokes([]);
               setDirty(true);
@@ -502,6 +527,7 @@ export function StripTraceEditor({
           </Button>
           <Button
             size="small"
+            sx={{ minHeight: TOUCH_TARGET }}
             onClick={() => {
               if (!seed) return;
               setStrokes(seed.strokes);
@@ -517,7 +543,9 @@ export function StripTraceEditor({
             control={<Checkbox size="small" checked={showStored} onChange={(e) => setShowStored(e.target.checked)} />}
             label={<Typography variant="caption">{t.showStored}</Typography>}
           />
-          {spans !== null && (
+          {/* Only while they would actually be SENT: a count standing over the
+              „…werden nicht mitgeschickt" notice contradicts it. */}
+          {spansHold && spans !== null && (
             <Typography variant="caption" color="textSecondary">
               {`${fmt(t.spansCount, { zahl: spans.length })} · ${fmt(t.spansAuthored, {
                 zahl: authoredSpanCount(spans),
@@ -583,7 +611,7 @@ export function StripTraceEditor({
           </Typography>
         )}
 
-        {loading && <CircularProgress size={20} />}
+        {loading && <CircularProgress size={20} aria-label={t.loading} />}
         {!loading && listFor && seed === null && (
           <Alert severity="warning" sx={{ mb: 1 }}>
             {t.noGeometry}
@@ -622,6 +650,28 @@ export function StripTraceEditor({
           />
         )}
       </DialogContent>
+      <Dialog open={askDiscard} onClose={() => setAskDiscard(false)}>
+        <DialogTitle>{t.discardTitle}</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">{t.discardBody}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAskDiscard(false)} sx={{ minHeight: TOUCH_TARGET }}>
+            {t.discardStay}
+          </Button>
+          <Button
+            color="warning"
+            variant="contained"
+            onClick={() => {
+              setAskDiscard(false);
+              onClose();
+            }}
+            sx={{ minHeight: TOUCH_TARGET }}
+          >
+            {t.discardLeave}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   );
 }

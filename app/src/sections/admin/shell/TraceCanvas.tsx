@@ -20,7 +20,7 @@
 // second pointer implementation growing beside this one.
 
 import { Box } from '@mui/material';
-import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
+import { useLayoutEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 
 import { overlay } from '@/sections/admin/overlayColors';
 import {
@@ -119,11 +119,28 @@ export function TraceCanvas({
   // pointer must not be reinterpreted in the new mode. It lived in the plate
   // editor's own toggle handler before the extraction; here it belongs to the
   // refs it clears, so every caller gets the rule rather than remembering it.
-  useEffect(() => {
+  //
+  // LAYOUT effect, and that is the whole guarantee: a toggle click is a
+  // discrete update, so React flushes layout effects before the browser can
+  // dispatch the next pointer event — a passive `useEffect` runs after paint,
+  // which leaves a window in which moves of a still-held pen still see
+  // `drawingRef` set and weld themselves onto a stroke the new mode did not
+  // open. That is exactly the graze the plate editor cleared inline.
+  useLayoutEffect(() => {
     nudgeRef.current = null;
     drawingRef.current = false;
     pointingRef.current = false;
   }, [mode]);
+
+  // The falloff ring belongs to adjust mode alone, and a stale one would
+  // reappear on the next return to it before the pointer has moved. Cleared in
+  // RENDER (React's "adjusting state when a prop changes") rather than in the
+  // effect above, because a setState in an effect body is a cascading render.
+  const [ringMode, setRingMode] = useState(mode);
+  if (ringMode !== mode) {
+    setRingMode(mode);
+    setHoverPt(null);
+  }
 
   const toCropPx = (clientX: number, clientY: number): TracePoint | null => {
     const svg = svgRef.current;

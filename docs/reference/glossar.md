@@ -4653,9 +4653,14 @@ zu einem Buchstaben, also wandert der Nachbar mit — sonst überlappen die
 beiden, was `check_paths` abweist. Wer sie nicht anfasst, lässt sie beim
 Folger: eine unberührte Grenze als `authored` zu speichern fröre die
 Vermutung des Folgers zur Wahrheit ein und speiste sie dem Zuordner als
-Trainingsstoff ein. Und sie gehören der BAHN: eine neu gezeichnete Bahn gibt
-sie auf (die Indizes zeigen auf Punkte, die es nicht mehr gibt), ein
-Anpassen behält sie, weil es Punkte verschiebt und nie ihre Zahl ändert.
+Trainingsstoff ein. Und sie gehören dem ZUG, auf dem sie sitzen: wird der neu
+gezeichnet, gibt er seine Grenzen auf (die Indizes zeigen auf Punkte, die es
+nicht mehr gibt). Ein Anpassen behält sie, weil es Punkte verschiebt und nie
+ihre Zahl ändert — und ein Zug, der NEBEN ihnen dazukommt (genau das, worum
+das → Absetzer-Soll bittet, wenn ein Markenzug fehlt), verschiebt keinen
+Index und lässt sie stehen. Die weite Antwort „die Zeichnung hat sich
+geändert" wäre hier teuer: der Kasten-Schreibweg ersetzt den Eintrag ganz,
+eine mitverworfene `authored`-Grenze ist also endgültig weg.
 *Technisch:* das
 geprüfte Feld `pfade[].letter_spans` samt → Span-Herkunft und dem
 Feld-Vergleich des authored-Schutzes steht seit dem 2026-09-20 (PFAD_FORMAT

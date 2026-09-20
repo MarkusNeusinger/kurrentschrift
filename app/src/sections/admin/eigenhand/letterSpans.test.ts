@@ -16,9 +16,9 @@ import {
   authoredSpanCount,
   moveBoundary,
   nearestSample,
-  sameStrokeShape,
   seamAt,
   seamsOf,
+  spansStillFit,
 } from './letterSpans';
 
 const span = (over: Partial<EigenhandPfadSpan> = {}): EigenhandPfadSpan => ({
@@ -115,13 +115,42 @@ describe('nearestSample and seamAt', () => {
   });
 });
 
-describe('sameStrokeShape', () => {
+describe('spansStillFit', () => {
+  const ONE: EigenhandPfadSpan[] = [
+    { stroke: 0, slot: 0, first: 0, last: 0, herkunft: 'auto' },
+    { stroke: 0, slot: 1, first: 1, last: 1, herkunft: 'authored' },
+  ];
+
   it('asks about the SHAPE, not the coordinates', () => {
     // Anpassen moves points and never their count, so the spans still index
     // the samples they were drawn on.
-    expect(sameStrokeShape([[[0, 0], [1, 1]]], [[[0.5, 0.4], [1, 1]]])).toBe(true);
-    // A redrawn Bahn is a different list of samples entirely.
-    expect(sameStrokeShape([[[0, 0], [1, 1]]], [[[0, 0], [0.5, 0.5], [1, 1]]])).toBe(false);
-    expect(sameStrokeShape([[[0, 0], [1, 1]]], [])).toBe(false);
+    expect(spansStillFit([[[0, 0], [1, 1]]], [[[0.5, 0.4], [1, 1]]], ONE)).toBe(true);
+    // A redrawn stroke is a different list of samples entirely.
+    expect(spansStillFit([[[0, 0], [1, 1]]], [[[0, 0], [0.5, 0.5], [1, 1]]], ONE)).toBe(false);
+    expect(spansStillFit([[[0, 0], [1, 1]]], [], ONE)).toBe(false);
+  });
+
+  it('keeps the boundaries when a run is drawn BESIDE the ones they sit on', () => {
+    // The Absetzer warning asks for exactly this — a missing mark stroke. It
+    // shifts no index, so giving up an `authored` seam over it would destroy
+    // ground truth the per-box write then deletes for good.
+    const seeded = [[[0, 0], [1, 1]]];
+    const grown = [[[0, 0], [1, 1]], [[2, 2], [3, 3]]];
+    expect(spansStillFit(seeded, grown, ONE)).toBe(true);
+    // …but a change to the stroke a span DOES sit on still gives them up.
+    expect(spansStillFit(seeded, [[[0, 0], [0.5, 0.5], [1, 1]], [[2, 2], [3, 3]]], ONE)).toBe(false);
+  });
+
+  it('gives them up where the stroke a span names is gone', () => {
+    const onSecond: EigenhandPfadSpan[] = [{ stroke: 1, slot: 0, first: 0, last: 1, herkunft: 'auto' }];
+    expect(spansStillFit([[[0, 0]], [[1, 1], [2, 2]]], [[[0, 0]]], onSecond)).toBe(false);
+    // A stroke BELOW the reach that changed length renumbers nothing here, but
+    // a dropped one would — so everything up to the reach is compared.
+    expect(spansStillFit([[[0, 0]], [[1, 1], [2, 2]]], [[[0, 0], [9, 9]], [[1, 1], [2, 2]]], onSecond)).toBe(false);
+  });
+
+  it('has nothing to give up where there are no spans', () => {
+    expect(spansStillFit([[[0, 0]]], [[[0, 0]], [[1, 1]]], [])).toBe(true);
+    expect(spansStillFit([[[0, 0]]], [[[0, 0]]], null)).toBe(false);
   });
 });

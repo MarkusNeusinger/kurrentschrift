@@ -17,9 +17,12 @@
 //     re-follow — claiming it for a boundary nobody touched would freeze a
 //     guess as truth and feed it to the Span-Zuordner's training set).
 //  2. The boundaries belong to the BAHN. They index samples, so a redrawn
-//     stroke invalidates every span on it; `sameStrokeShape` is what the
-//     editor asks before it resends them. Anpassen (which moves points and
-//     never their count) keeps them, drawing does not.
+//     stroke invalidates every span on it; `spansStillFit` is what the editor
+//     asks before it resends them. What that question is NOT is „did the
+//     drawing change at all": appending a run — the very thing the Absetzer
+//     warning asks for when a mark stroke is missing — leaves every existing
+//     index valid, and dropping the author's own corrected seams over it would
+//     destroy ground truth on the one surface built to create it.
 
 import type { EigenhandPfadSpan } from '@/lib/api';
 
@@ -148,16 +151,33 @@ export function seamAt(
 }
 
 /**
- * Whether two stroke lists have the same SHAPE — same number of strokes, each
- * with the same number of samples. That, and not equality of coordinates, is
- * what a stored span needs: it indexes positions, so moving a point keeps it
- * valid and adding or dropping one does not.
+ * Whether the stored boundaries still describe the drawing in hand.
+ *
+ * A span indexes positions, so what it needs is not equality of coordinates —
+ * Anpassen moves points and never their count, and an ironed-out wobble keeps
+ * its letters — but that the samples it names are still the same samples. Only
+ * the strokes a span actually REACHES are asked: strokes are appended to and
+ * truncated from the end, so a run drawn beside the ones the boundaries sit on
+ * shifts no index and invalidates nothing. Anything below that reach is
+ * compared in full, because a stroke dropped there would renumber the rest.
+ *
+ * The narrower question matters: the Absetzer-Soll invites exactly this edit
+ * („a mark stroke is missing"), and the wide answer would silently give up
+ * every `authored` seam the author corrected in an earlier session — which the
+ * per-box write, replacing the entry whole, then deletes for good.
  */
-export function sameStrokeShape(
-  a: readonly (readonly unknown[])[],
-  b: readonly (readonly unknown[])[],
+export function spansStillFit(
+  seeded: readonly (readonly unknown[])[],
+  current: readonly (readonly unknown[])[],
+  spans: readonly EigenhandPfadSpan[] | null | undefined,
 ): boolean {
-  return a.length === b.length && a.every((stroke, i) => stroke.length === b[i].length);
+  if (!spans) return false;
+  const reach = spans.reduce((max, span) => Math.max(max, span.stroke), -1) + 1;
+  if (reach > seeded.length || reach > current.length) return false;
+  for (let i = 0; i < reach; i += 1) {
+    if (seeded[i].length !== current[i].length) return false;
+  }
+  return true;
 }
 
 /** How many boundaries of this list the author has corrected by hand. */

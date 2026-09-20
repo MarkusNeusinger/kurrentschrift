@@ -1666,7 +1666,9 @@ export const admin = {
       // T5) — der i-Punkt und der Umlaut stehen nicht darin, ein Zug mehr ist
       // also oft richtig und zwei sind ein anderer Duktus.
       absetzerSoll: 'Soll (Körper) {{soll}}',
-      absetzerOk: 'Züge und Soll stimmen überein.',
+      // Kein eigener Satz für den Gleichstand: der Chip zeigt beide Zahlen
+      // nebeneinander und wechselt Farbe UND Variante. Ein „stimmt überein"
+      // im `title` wäre nur auf Hover zu erreichen — V25 verbietet das.
       absetzerMismatch:
         'Diese Bahn hat {{zuege}} Züge, die Schrift schreibt das Wort in {{soll}} verbundenen Körperläufen. Markenzüge — i-Punkt, Umlaut — zählt das Soll nicht mit: ein Zug mehr kann also richtig sein, zwei sind eine andere Strichreihenfolge.',
       modeDraw: 'Schreiben',
@@ -1712,6 +1714,14 @@ export const admin = {
       noGeometry:
         'Dieser Kasten stammt von einem Bogen, der vor der Schnitt-Geometrie gedruckt wurde — er hat kein Rechteck, in dem eine Bahn liegen könnte. Nachfahren geht hier nicht.',
       empty: 'Kein Kasten zum Nachfahren ausgewählt.',
+      // Eine von Hand gezeichnete Bahn gibt es nirgendwo sonst: kein
+      // Folger-Lauf stellt sie wieder her. Darum fragt die Fläche, bevor sie
+      // sie wegwirft.
+      discardTitle: 'Gezeichnete Bahn verwerfen?',
+      discardBody:
+        'In diesem Kasten steht eine ungespeicherte Zeichnung. Beim Schließen ist sie weg — von Hand gezeichnete Bahnen lassen sich nicht neu berechnen.',
+      discardStay: 'Weiterzeichnen',
+      discardLeave: 'Verwerfen und schließen',
     },
     // Die Fleckenmaske: die Toner-Punkte des Druckers, entfernt als DATEN.
     // Das gespeicherte Bild bleibt unberührt — die Kreise werden beim Abruf
