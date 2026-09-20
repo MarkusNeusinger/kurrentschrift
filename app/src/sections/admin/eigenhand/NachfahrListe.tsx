@@ -26,10 +26,9 @@ import { useSearchParams } from 'react-router-dom';
 
 import { InfoHint } from '@/components/InfoHint';
 import { useRovingList } from '@/hooks/useRovingList';
-import { getEigenhandPfadBoxes } from '@/lib/api';
-import type { EigenhandPfadFassung } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { NachfahrRow } from '@/sections/admin/eigenhand/NachfahrRow';
+import { StripTraceEditor } from '@/sections/admin/eigenhand/StripTraceEditor';
 import {
   BOX_FILTERS,
   BOX_STATUSES,
@@ -40,12 +39,14 @@ import {
   sortStripBoxRows,
   stripBoxTally,
   stripBoxesRankable,
+  traceTargetOf,
+  traceableBox,
   type BoxFilter,
   type BoxSort,
   type BoxStatus,
+  type StripTraceTarget,
 } from '@/sections/admin/eigenhand/stripBoxRows';
-import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
-import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
+import { useEigenhandPfadBoxes } from '@/sections/admin/eigenhand/useEigenhandPfadBoxes';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { useFileMark, useKorbItems } from '@/sections/admin/shell/korbState';
 import { korbCountsOf } from '@/sections/admin/shell/korbTargets';
@@ -71,39 +72,19 @@ export function NachfahrListe({
 }) {
   const t = de.admin.eigenhand.nachfahren;
   const [params, setParams] = useSearchParams();
-  const [fassungen, setFassungen] = useState<EigenhandPfadFassung[] | null>(null);
-  const [error, setError] = useState<ApiErrorText | null>(null);
+  const { fassungen, error, reload } = useEigenhandPfadBoxes(hand);
   const korbItems = useKorbItems();
   const fileMark = useFileMark();
   // Which rows are open — component state on purpose, the reason `LetterList`
   // gives: a link carries what the reader is looking FOR, not where they
   // happen to be looking.
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
+  // The tracing session: the box that was opened and the ORDER as it stood at
+  // that moment. Snapshotted rather than read live, because every save re-reads
+  // the hand and re-sorts the list — „weiter" would otherwise walk an order
+  // that moves under the pen (a box that just turned green leaves its place).
+  const [session, setSession] = useState<{ startKey: string; targets: StripTraceTarget[] } | null>(null);
   const roving = useRovingList();
-
-  // Drop the previous hand's boxes DURING RENDER — React's "adjusting state
-  // when a prop changes". Without it the new hand's name would stand over the
-  // old hand's Kästen until the request lands.
-  const [shownFor, setShownFor] = useState(hand);
-  if (shownFor !== hand) {
-    setShownFor(hand);
-    setFassungen(null);
-    setError(null);
-  }
-
-  useEffect(() => {
-    let cancelled = false;
-    getEigenhandPfadBoxes(hand, undefined, { retries: 2 })
-      .then((data) => !cancelled && setFassungen(data.fassungen))
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        setFassungen(null);
-        setError(apiErrorText(err));
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [hand]);
 
   const state = useMemo(
     () => readListState<BoxFilter, BoxSort, BoxStatus>(params, STRIP_BOX_LIST_SPEC),
@@ -276,6 +257,14 @@ export function NachfahrListe({
               hand={hand}
               expanded={expanded.has(row.key)}
               onToggle={() => toggle(row.key)}
+              // The editor walks the SELECTION in its current order, so
+              // „Speichern & weiter" continues down the list the author is
+              // looking at rather than through the whole Bestand.
+              onTrace={
+                traceableBox(row)
+                  ? () => setSession({ startKey: row.key, targets: selected.filter(traceableBox).map(traceTargetOf) })
+                  : undefined
+              }
               // The Korb row for a box: a WORD item whose specimen is the box
               // itself (V7) — same dialog, same note field, one more namespace.
               onMark={() =>
@@ -296,6 +285,24 @@ export function NachfahrListe({
       <Box sx={{ mt: 2 }}>
         <ListPager page={page} total={selected.length} onChange={(next) => update({ page: next })} />
       </Box>
+
+      {/* Keyed by the box it was opened on, so every opening starts fresh: the
+          editor holds a Fassung's list and a drawing, and neither may survive
+          into another session. */}
+      {session && (
+        <StripTraceEditor
+          key={session.startKey}
+          open
+          hand={hand}
+          targets={session.targets}
+          startKey={session.startKey}
+          onClose={() => setSession(null)}
+          // The Ampel of the saved box is derived from what was just stored, so
+          // the hand-wide read is asked again — while the editor stays open,
+          // because the session's own order is a snapshot.
+          onSaved={reload}
+        />
+      )}
     </Box>
   );
 }

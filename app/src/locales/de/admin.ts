@@ -1640,6 +1640,78 @@ export const admin = {
       authoredKeinNeuFolgen:
         'Von Hand gezogen — diese Bahn ist deine eigene Linie. Der Folger ersetzt sie nicht; das ginge nur am Terminal mit „--replace-authored".',
       korbMark: 'Kasten markieren',
+      trace: 'Nachfahren',
+    },
+    // Die Fläche, auf der der Autor einen Kasten mit dem Stift nachfährt —
+    // schlank neben dem Platten-Editor und mit ihm auf einer Zeichenfläche
+    // (Autor-Entscheid G, 2026-09-20). Was hier anders ist als auf der Platte:
+    // die Unterlage ist ein Blob (die Streifen sind admin-gegatet und
+    // `private, no-store`), der Rahmen kommt aus der gespeicherten Bahn minus
+    // dem Kastenrechteck, und „Speichern & weiter" geht zum nächsten Kasten
+    // der Liste, ohne die Fläche zu verlassen.
+    editor: {
+      title: 'Kasten nachfahren',
+      place: '{{strip}} · {{fassung}} · Kasten {{nr}}',
+      queue: '{{nr}} von {{total}}',
+      intro:
+        'Den Schreibweg mit dem Stift über der eigenen Schrift nachfahren. Jedes Absetzen beginnt einen neuen Zug; die blaue Grundlinie und die gestrichelte Mittellinie zeigen den Rahmen, in dem die Bahn gespeichert wird. Gespeichert wird sie als „von Hand" — deine eigene Linie, Grundwahrheit fürs Training, die kein Folger-Lauf ersetzt.',
+      introAria: 'Was diese Fläche speichert',
+      close: 'Schließen',
+      save: 'Speichern',
+      saveNext: 'Speichern & weiter',
+      saveLast: 'Letzter Kasten der Liste — „Speichern" schließt die Runde ab.',
+      strokeCount: '{{zuege}} Züge',
+      // Prüfstein 7: ohne diese Zahl liefert Nachfahren still eine neue
+      // Strichreihenfolge per Bild. Das Soll zählt NUR Körperläufe (Korrektur
+      // T5) — der i-Punkt und der Umlaut stehen nicht darin, ein Zug mehr ist
+      // also oft richtig und zwei sind ein anderer Duktus.
+      absetzerSoll: 'Soll (Körper) {{soll}}',
+      absetzerOk: 'Züge und Soll stimmen überein.',
+      absetzerMismatch:
+        'Diese Bahn hat {{zuege}} Züge, die Schrift schreibt das Wort in {{soll}} verbundenen Körperläufen. Markenzüge — i-Punkt, Umlaut — zählt das Soll nicht mit: ein Zug mehr kann also richtig sein, zwei sind eine andere Strichreihenfolge.',
+      modeDraw: 'Schreiben',
+      modeAdjust: 'Anpassen',
+      modeSpans: 'Grenzen',
+      modePan: 'Verschieben',
+      modeGroup: 'Modus',
+      zoom: 'Größe',
+      nudgeRadius: 'Radius',
+      undo: 'Letzten Zug zurück',
+      clear: 'Alle Züge löschen',
+      reset: 'Auf gespeicherten Stand zurück',
+      showStored: 'Gespeicherte Bahn zeigen',
+      drawHint: 'Finger sind deaktiviert — zum Verschieben den Schalter nutzen.',
+      adjustHint:
+        'Die Bahn mit dem Stift an einer Stelle ziehen: Punkte im Kreis folgen, außen läuft die Linie weich zurück. Züge werden nie geteilt oder zusammengelegt — nur verschoben.',
+      // Q15 (b) mit dem Autor-Zusatz: die Grenzen werden zugeordnet, gezeigt
+      // UND sind von Hand korrigierbar — und die Korrektur ist Trainingsstoff.
+      // Das steht hier, weil genau das der Grund ist, warum danach gefragt
+      // wird.
+      spansHint:
+        'Die Marke zwischen zwei Buchstaben mit dem Stift verschieben: sie sitzt auf dem letzten Punkt des linken Buchstabens. Eine so korrigierte Grenze ist Trainingsstoff für den Grenzen-Zuordner — sie wird als „von Hand" gespeichert und von keinem späteren Lauf überschrieben. Grenzen, die du nicht anfasst, bleiben die des Folgers.',
+      spansNone:
+        'Für diese Bahn sind noch keine Buchstabengrenzen zugeordnet — der Zuordner (tools.eigenhand.pfad --spans) kommt später. Bis dahin gibt es hier nichts zu verschieben.',
+      spansCount: '{{zahl}} Grenzen',
+      spansAuthored: '{{zahl}} von Hand',
+      spansDropped:
+        'Die Züge sind neu gezeichnet: die gespeicherten Buchstabengrenzen zeigen auf Punkte, die es nicht mehr gibt, und werden beim Speichern nicht mitgeschickt. Der Zuordner vergibt sie neu.',
+      // Der Rahmen kommt aus der gespeicherten Bahn — außer es gibt keine.
+      saat: 'In diesem Kasten steht noch keine Bahn: gezeichnet wird auf der GEDRUCKTEN Lineatur des Bogens (Saat), nicht auf einer Messung. Die gespeicherte Bahn bringt danach ihren eigenen Rahmen mit.',
+      loading: 'Die Bahnen dieser Fassung werden geladen …',
+      loadError: 'Die Bahnen dieser Fassung konnten nicht geladen werden.',
+      imageError: 'Der Ausschnitt dieses Kastens konnte nicht geladen werden.',
+      saveError: 'Die Bahn konnte nicht gespeichert werden.',
+      // 412: zwischen Lesen und Schreiben hat jemand — oder ein Folger-Lauf —
+      // dieselbe Fassung ersetzt. Die Zeichnung bleibt stehen; neu eingelesen
+      // wird nur der Stand, gegen den gespeichert wird.
+      conflict:
+        'Auf diese Fassung wurde geschrieben, seit sie hier gelesen wurde — gespeichert wurde nichts. Deine Zeichnung steht noch. „Stand neu einlesen" holt den aktuellen Stand; danach ersetzt Speichern, was inzwischen in diesem Kasten steht.',
+      conflictAction: 'Stand neu einlesen',
+      noToken:
+        'Dieser Fassung fehlt die Marke des gelesenen Standes — ohne sie wird nicht blind geschrieben. „Stand neu einlesen" holt sie.',
+      noGeometry:
+        'Dieser Kasten stammt von einem Bogen, der vor der Schnitt-Geometrie gedruckt wurde — er hat kein Rechteck, in dem eine Bahn liegen könnte. Nachfahren geht hier nicht.',
+      empty: 'Kein Kasten zum Nachfahren ausgewählt.',
     },
     // Die Fleckenmaske: die Toner-Punkte des Druckers, entfernt als DATEN.
     // Das gespeicherte Bild bleibt unberührt — die Kreise werden beim Abruf
