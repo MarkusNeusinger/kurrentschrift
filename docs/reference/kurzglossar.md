@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-20): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **108
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **109
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -687,6 +687,14 @@ keine Nachfahr-Arbeit. Ab PFAD_FORMAT 2 (Autor-Entscheid C, 2026-09-20).
 freien `meta`): die Indizes werden gegen die Zuglängen geprüft, und eine von
 Hand korrigierte Grenze ist FELDWEISE geschützt — ein gewöhnliches
 Neu-Folgen desselben Kastens geht durch, solange es sie mitbringt.
+→ [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.3
+
+**Tintentreue** — die referenzfreie Ampel je Wortkasten über einer Bahn:
+`folgt` · `folgt teils` · `folgt nicht`, dazu ein grauer Zustand mit Grund
+im Text. Der schlechteste Sensor entscheidet, eine feste Sensor-Ordnung
+benennt bei Gleichstand den Kasten; die Schwellen sind datierte Konstanten
+je Hand im Code und bis zur blinden Kalibrierung „vorläufig". Eine Fassung
+bekommt nur einen Zähler, nie eine Farbe. `core/eigenhand/tintentreue.py`.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.3
 
 **Fokusring** *(`focusRing`)* — der eine sichtbare Tastaturfokus: 2 px
