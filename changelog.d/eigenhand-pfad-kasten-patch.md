@@ -45,6 +45,11 @@
   comparison would refuse every save on the one deployment path the workbench
   has. The value is a content digest and this is an application lock, not a
   cache validator, so the weakened form says exactly as much.
+- **The `/verify-frontend` throwaway seeder reads before it pushes a path.**
+  Its client hands the answer's `ETag` back (`AdminApi.answer`) and the path
+  push echoes it. Without that every seeded run would have stopped on a 428
+  before filling a single path row, which is the one flow the throwaway stack
+  exists for (found in review).
 - **CORS exposes `ETag`.** The admin is same-origin today — the apex behind
   Cloudflare Access, the Vite proxy in dev — so nothing changes there; without
   it the token would go missing the day the workbench is served from anywhere
