@@ -247,6 +247,7 @@ die DB) — mit seiner Bedingung.
 | sep11 | Tintenpfad | [Tintenpfad-Arme + Kombination (#592)](#tintenpfad-arme-sep11--fünf-arme-drei-tragen-zwei-ehrliche-negative-die-kombination-als-kandidat-592) | fünf Arme · **drei tragen**, zwei ehrliche Negative · Kombination **Kandidat, nicht adoptiert** | Regel des Abends: Lesung der Tinte oder Regel des Dekoders, nie Glättung, nie Erfindung. **Spitzen-Lesung** (rail + walk bis ans Maskenende; 13 : 6 gegen #591, Gate 2 fällt wie geschrieben), **Normalen-Fit** (Zelt auf 4× feinerem Grau-Raster, Knick 9,74° → 8,03°, 15 : 4 — Träger ist das Grau, Scope-Frage an den Autor), **Tinten-Brücke** (2 von 9 Lücken, neutral; über `kann`/`han`/`regieren` liegt kein Haarstrich). **Stummel-Filter** no-op, Hypothese an der Quelle widerlegt — Nebenbefund: Hand 47 gegen Kandidat 79 Tinten-Umkehrungen, der Defekt ist der Überschuss +32; **Doppelstrich-Evidenz** feuert auf 0 von 63 (ß-Stämme 1,00–1,33 × Feder), die reine Dekoder-Regel `ratio 1,0` repariert p90 0,0907 → 0,0535 (3 : 0), aber nachträglich gewählt. Kombination: 13 Zeilen 0 · 95 · 1,34, 63 Wörter 0 · 330 · 4,77, dev-19 **0,041356** · 0,091040 · 0,7876, **18 : 1** gegen #591, **9 : 10** gegen Basis, 10 : 9 gegen It. 18 (der PR-Text hat die letzten beiden vertauscht) |
 | sep12 | Tintenpfad/Kette | [Tintenpfad-Adoption — die formale Runde auf der frischen Wurzel (A45)](#tintenpfad-adoption-sep12--die-formale-runde-auf-der-frischen-wurzel-der-tintenpfad-wird-standard-folger-a45) | Adoption · **adoptiert (A45)** · dazu eine Wurzel-Zeile ohne bewegte Headline | Ein Knopf: Folger-Wechsel Kette v5 → Tintenpfad mit den acht erklärten Schaltern, vorregistriert vor der ersten Zahl, BLAS gepinnt, Wurzel `c7f2efd9cf37…` (2026-09-12T21:33:43+00:00). Die Wurzel reproduziert die `sep10`-Headline ziffernidentisch (0,108339 / 0,148236) — neue Identität, keine Re-Baseline; der Substrat-Pin der 13 Schleifenzeilen kommt unverändert heraus. dev-19: Basis (neu gemessen) 0,045772 · 0,088356 · 0,7660 gegen Arm **0,038351 · 0,048012 · 0,7929**, gepaart **15 : 4** (Δ-Median −0,008311, p 0,019); die Vorgabe ohne die acht (`--legacy-p6`) 0,045033 · 0,090673 · 0,7867 und 7 : 12 — die Schalter SIND der Unterschied. Zähler: `cross_spurious` 10 → 3, `retrace_missing` 7 → 0, `lift_delta_total` 6 → 0, `overlap_cand` 4 → 0, Absorption 89 → 35; dagegen `cross_missing` 12 → 13. Sensoren über 63, gegen die BASIS: Papier-Umkehrungen Maske 44 → **0** (grau 49 → 3), Papier-Strecke Maske 55,57 → 1,20 xh, schlimmster Ausflug 0,323 → 0,091 xh; gegen die VORGABE, weil die Kette den Zähler gar nicht führt: Roh-Knick 10,24° → 8,17°. k0: Soll-Abstand 81 → 80, aiou-Median +0,0520 über 63 bewegte Wörter, **Gate (4) aber nicht verwertbar** — die Stack-Warnung fällt, weil der Tintenpfad keinen Struktur-Wächter hat, der Sensor auf einem Folger-PAAR also konstruktionsbedingt blind ist; das Kill-Kriterium war so zu weit geschrieben, das Verdikt hängt an den Gates (1)–(3), und die strenge Lesart liegt beim Autor. Nebenbei: `ink_bridge_xh=1.0` testet 7 Lücken und brückt **null** — auf dieser Wurzel inert, bleibt als Lesung |
 | sep13 | Tintenpfad | [Laufform A48 — die Saat-Korrespondenz](#laufform-a48-sep13--die-saat-korrespondenz-die-zuordnung-trägt-die-zeile-nicht) | Pre-Reg + gemessen · **ehrliches Negativ** an Gate (G) · Mechanismus bestätigt, nichts adoptiert | Weg (1) der §7.11-Zeile „Vorkommen aus der Tintenpfad-Bahn" (Autor-Entscheid **A48**): die Anker über die SAAT zuordnen statt über die Bogenlänge. Ein Knopf `harvest --occurrences {fit,tintenpfad}`, Vorgabe `fit` (ausgelieferter Stand byte-gleich, Wort-Records bis auf `seconds`). **Die Zuordnung trägt:** Gate (K), wie vorregistriert über die KÖRPER-ITEMS gelesen, steht bei **328 von 334 = 98,2 %** (Schranke 80 %; durchgehend bewiesen 88,9 %, über die Item-Punkte 98,8 %, Beweis-Reste Median 8,0e-15 je Slot, max 1,03e-13) — das dritte Glied der Kette ist das einzige, über das `core/compose.py` nicht Buch führt, und es wird je Punkt BEWIESEN statt geschätzt, lokal, weil der `d`-Anstieg stückweise affin ist. Daneben, und KEINE Gate-Zahl: die Identifikation greift auf **277 von 277** Slots, gesetzt werden **92,5 %** aller Anker (30 736 / 33 240) — die Anker-Quote zählt eine andere Frage, und die 2 504 fehlenden sind nachgezählt: **85,2 %** liegen gar nicht erst im komponierten Item (weggeschnitten), 14,5 % sind beweis-bedingt, **0,3 %** scheitern an der Saat. (G) fällt damit an der Schere, nicht am Beweis und nicht an der Saat. **Die Zeile trägt nicht:** die Komposition schneidet die Kopplungs-Enden weg, es fehlen **7,5 %** aller Anker (2 504 / 33 240; Median-Slot 7 von 120, die 212 unvollständigen 9), nur 65 Slots sind vollständig, und die Ganz-oder-gar-nicht-Regel lässt **58 von 277** Vorkommen übrig (Fit-Kontrolle desselben Laufs 227), Zeilen mit n ≥ 4 **5 statt 16**. Gate (F) grün (zwei Ernten byte-gleich, Diagnose nur in `seconds` verschieden), (J) grün (`core/` unberührt, 2 903 Tests mit den lokalen Fixtures, 2 892 ohne). Gate (H): Anker-Abstand zur schlüsselgleichen Kontrollkarte Median **0,0523 xh** (p90 0,1328, max 0,2891), auf den 58 gemeinsamen Vorkommen 0,0542 / 0,1436 / 0,5235 — weit über dem Ableseboden. Gate (I) asymmetrisch: gegen die stehende Karte Wörter **0,104883** (−0,003456, grün) und Paare 0,149306 (+0,001070, **rot** bei Schranke +0,0005, kein Kill); gegen die KONTROLLE auf gleicher Schlüsselmenge (0,108951 / 0,148119) Wörter −0,004068 bei **31 : 21 : 44** gepaart — mit dem Vorbehalt, dass die Arm-Zeilen auf viel weniger Vorkommen stehen (`e` n = 3 gegen 30). Rettungswege: die geschnittenen Enden fitten (Weg 2), oder `core/compose.py` einen Abtastindex mitführen lassen (Autor-Entscheid) |
+| sep20 | Eigenhand | [Tintentreue — vorläufige Schwellen](#tintentreue-sep20--vorregistrierung-der-vorläufigen-schwellen-je-kasten) | Pre-Reg · **nichts adoptiert** | Die Ampel je Wortkasten (`core/eigenhand/tintentreue.py`): drei gemessene Stufen, ein grauer Zustand mit Grund, der schlechteste Sensor entscheidet (`severity = max` + `SENSOR_ORDER`, nicht `_summarise`). Acht Startwerte samt Herkunft, alle an der PLATTE bzw. dev-19 geborgt und als „vorläufig" etikettiert, bis die EINE blinde Kalibrierung je Hand läuft (Q10 b); Format-1-Zeilen bleiben grau, `jumps`/`hairpins` bewerten mangels Anker nicht. Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile; kein Lineal bewegt, keine Wurzel angefasst |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -17503,3 +17504,167 @@ in [`verfahren-tintenpfad.md`](verfahren-tintenpfad.md) (der offene Block
 „Vorkommen aus der Tintenpfad-Bahn" auf den gemessenen Stand). Artefakte
 `temp/laufform-a48/` (`PREREG.md`, `occ-fit.json`, `occ-tp-1.json`,
 `occ-tp-2.json`, `karte-*.json`, `diag-*.csv`, `ruler-*.txt`, Logs).
+
+### Tintentreue `sep20` — Vorregistrierung der vorläufigen Schwellen je Kasten
+
+Vorregistrierung VOR der ersten gerechneten Ampel (die §11b-Praxis).
+Gegenstand ist `core/eigenhand/tintentreue.py`: die referenzfreie Ampel je
+WORTKASTEN eines geschriebenen Streifens, beim Lesen abgeleitet nach dem
+Muster von `core/eigenhand/befund.py`. **Nichts adoptiert, nichts in die DB
+geschrieben** — das Modul speichert nichts, und keine der acht Zahlen unten
+ist an der Hand des Autors gemessen.
+
+**Keine Duell-Route, keine Verfahrensseite, keine Ledger-Zeile.** Die
+Tintentreue misst kein Verfahren, sie liest dessen Ausgabe. Die Route-Spalte
+trägt darum „Eigenhand", bewusst außerhalb von `ROUTE_PAGES`
+(`tools/docs_register/__init__.py`) — damit verlangt das Gate keine
+Ledger-Zeile auf einer `verfahren-*.md`, und der Headline-Ledger bleibt
+unberührt: er indexiert Wort- und Paar-Zahlen und mintet keine. Stünde hier
+versehentlich „Tintenpfad", verlangte dasselbe Gate eine Ledger-Zeile
+desselben Datums in `verfahren-tintenpfad.md` — falsche Buchführung für
+eine Ampel, die keinen Arm bewegt. Der Satz steht hier, damit das nächste
+Audit nicht fragt.
+
+**Die Autor-Entscheide, die sie trägt.** **Q9 (b)** (2026-09-18): die Ampel
+rechnet mit den Sensoren 1–5; Sensor 6 (`ductus_soll`) bleibt draußen, weil
+er eingefrorene Fixture-Fälle liest. **Q10 (b)** (2026-09-18): Start mit
+geborgten Werten unter dem Etikett „vorläufig", danach EINE vorregistrierte
+Kalibrierung je Hand — 30 Kästen blind beurteilt, Schwellen einmal justiert,
+datiert eingefroren, nie ein Regler. **Entscheid D** (2026-09-20): die
+beiden fehlenden Sensoren rechnet das WERKZEUG beim Folgen und legt sie ab;
+`core` liest nur (der `core`↛`tools`-Bann, `tests/test_imports.py`).
+**Entscheid E** (2026-09-20): eine Fassung bekommt KEINE Ampelfarbe, nur
+einen Zähler („3 von 4 Kästen folgen") — eine Farbe wäre ein zweites Urteil
+mit eigenem Wortschatz neben `befund.vorschlag` über derselben Fassung.
+
+**Was gemessen wird und woran.** Fünf Sensoren je Wortkasten, jeder gegen
+die EIGENE Tinte des Streifens. Ein Streifen hat per Doktrin keine
+Referenzspur (`../proposals/eigenhand-erfassung.md` §12, Prüfstein 2), also
+scheiden `dtw_xh`, Chamfer, LDTW und `ductus_soll` ausdrücklich aus — alle
+vier sind referenzgebunden, und ein Maß gegen eine fremde Spur wäre genau
+die Vergleichsart, die diese Erfassung nicht führt. Gelesen werden die vom
+Folger abgelegten Zahlen aus `pfade[].meta.tintenpfad`, nie Pixel.
+
+| # | Sensor | Lesung | bewertet |
+|---|---|---|---|
+| 1 | **Absetzer (Bahn)** | `paper_lifts + 1` gegen `body_runs_expected(wort)` (`core/eigenhand/befund.py`), also KÖRPERläufe ohne Markenzüge — der Marken-Soll hängt an der Tafel-Zeile und ist eigene Arbeit | ja |
+| 2 | **Tinte ohne Bahn** | `ink_unvisited_share` | ja |
+| 3 | **Papier-Exkursion** | `paper_excursion_xh`, größter Abstand Bahn → eigene Tintenmaske in xh (PFAD_FORMAT 2) | ja |
+| 4 | **AIoU** | `aiou` der gerasterten Bahn gegen die Tintenmaske (PFAD_FORMAT 2) | ja |
+| 5 | **Sprünge und Haken** | `jumps + hairpins` | **nein — siehe unten** |
+
+**Die Regel.** Der schlechteste Sensor entscheidet, kein gewichtetes Maß:
+grün nur, wenn JEDER bewertete Sensor in seiner grünen Grenze liegt; gelb,
+wenn jeder in seiner gelben liegt und nicht jeder grün ist; rot, sobald EIN
+Sensor seine gelbe Grenze überschreitet. Ein guter Sensor kauft einem
+schlechten nie eine Stufe. Das ist der Zwilling von `befund`s
+`severity = max(…)` samt Namens-Tiebreak über `GRUND_ORDER` — **nicht** von
+`_summarise`, das WÖRTER faltet und innerhalb eines Wortes gewichtet
+verrechnet (Korrektur vom 2026-09-20). Ausgegeben werden Stufe, benennender
+Sensor und die Rohwerte, **nie eine Skalarzahl**: eine 0–100-Zahl stünde
+neben `befund.guete` und würde binnen eines Monats mit ihr verrechnet.
+
+**Die acht Startwerte samt Herkunft** (`core/eigenhand/tintentreue.py`,
+`VORLAEUFIG`, Stand 2026-09-20):
+
+| Sensor | grün | gelb | woher die Zahl kommt |
+|---|---|---|---|
+| Tinte ohne Bahn | ≤ 0,05 | ≤ 0,15 | Der schlimmste gemessene Wert, den das Repo für diesen Sensor hat: **0,096** an `kann` (§14 „Tintenpfad-Arme `sep11`"), auf dem adoptierten `sep12`-Stand derselbe Fall mit **0,095** — und das ist ein bekanntes ABDECKUNGSVERSAGEN (der k-Auslauf wurde nie geboardet; [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9 führt dafür ein eigenes Gate `kann` → < 0,03). Die gelbe Grenze liegt darum über diesem Fall, die grüne bei gut seiner Hälfte. **Sie liegt damit auch über der erklärten Skip-Linie 0,10** ([`werkzeuge.md`](werkzeuge.md): „`ink_unvisited_share` über 0,10 ist ein erklärter Skip") — bewusst: ein Skip ist der FOLGER, der aufgibt und gar keine Bahn ablegt; diese Ampel beurteilt die Bahn, die er abgelegt HAT. Fiele die Kalibrierung anders aus, ist 0,10 der nächstliegende Kandidat für Gelb |
+| Absetzer (Bahn) | = Soll | ± 1 | Kein Messwert, eine Regel: ein unerklärtes Federereignis wird geduldet, zwei nicht. Dieselbe Logik wie `befund`s `BODY_BREAK_PENALTY` |
+| Papier-Exkursion | ≤ 0,20 xh | ≤ 0,35 xh | **0,35** ist die vorregistrierte Inventar-Schwelle der K-D-Runde (`tools/tracebench/excursions.py::EXCURSION_THRESHOLDS`, §14 „Kette K-D `aug21`“). **0,20** hat keinen eigenen Anker; es ist die Ablesung des Kommentars daneben („ordinary on-ink riding stays well under 0.35") und damit die schwächste der acht Zahlen |
+| AIoU | ≥ 0,75 | ≥ 0,65 | Der dev-19-Median des Tintenpfads ist **0,7929** ([`verfahren.md`](verfahren.md), Stand `sep12`). Grün liegt knapp darunter: „so gut, wie der Folger auf der PLATTE üblicherweise ist" |
+
+**Das Etikett „vorläufig" und warum es dort steht.** Drei der vier Anker
+sind an der 1922er PLATTE bei 30–35 px x-Höhe kalibriert, der vierte am
+dev-19-Satz derselben Platte. Ein Streifen liegt bei 300 dpi und ist die
+Schrift einer ANDEREN Hand. Keine der acht Zahlen ist also an dem gemessen,
+worüber sie urteilt; sie sind geborgt, nicht erhoben. `Schwellen.vorlaeufig`
+trägt das bis in die Antwort, damit keine Fläche eine Kalibrierung
+suggeriert, die nicht stattgefunden hat. Ersetzt werden sie EINMAL je Hand
+durch die blinde Runde (Q10 b; deren eigene Vorregistrierung kommt mit dem
+Kalibrier-Instrument und regelt Ziehung, Blindstellung und die Abbildung der
+sechsteiligen `humanbench`-Taxonomie auf drei Stufen).
+
+**Sprünge und Haken bewerten nicht** (Zeile 5 der Tabelle oben; Sensor 3 in
+der Zählung der Vorlage `../proposals/admin-redesign.md` §6.3, die nach
+Herkunft ordnet, während die Tabelle oben nach `SENSOR_ORDER` zählt) — **und
+das ist der einzige bewusste Verzug gegen Q9 (b).** Die Vorregistrierung
+führt acht Zahlen für VIER Sensoren; für
+`jumps`/`hairpins` nennt sie keine. Ein Sprung ist ein Strangwechsel, ein
+Haken eine Rückwende auf demselben Strang — beides schreibt die Kurrent
+legitim (Kreuzungen, Retrace-Zonen), eine Rohzahl ist also kein Defekt, und
+eine Grenze ohne Anker wäre die einzige der Reihe, die nichts belegt. Der
+Sensor wird darum GELESEN und angezeigt, aber er macht keinen Kasten gelb
+oder rot. Seine Grenze ist ein benanntes offenes Stück der Kalibrierrunde.
+Der Verzug steht hier, statt still zu bleiben, und liegt beim Autor.
+
+**Selbst entschieden (Routine-Engineering), hier gebucht.**
+**(a) Die Tiebreak-Ordnung** `SENSOR_ORDER` = Absetzer → Tinte ohne Bahn →
+Papier-Exkursion → AIoU → Sprünge/Haken, nach `befund`s Regel 3
+„Duktus-Treue schlägt Glätte": eine falsche Zahl von Zügen ist ein falscher
+Duktus, danach fehlende Tinte, danach erfundene Tinte, danach das
+Flächenmittel, das beides noch einmal und unschärfer sieht.
+**(b) Die Ordnung der grauen Gründe** — `kein Eintrag` → `von Hand
+gezeichnet` → `Maske geändert` → `Format 1 — unvollständig gemessen` →
+`unvollständig gemessen` —, geordnet danach, was der Leser TUN soll.
+**Berichtigt beim Bau:** grau macht dabei die fehlende MESSUNG, nicht die
+Herkunft. `verfahren` bleibt dauerhaft `authored` (davon lebt der
+Nachfahr-Schutz `pfad.displaced_authored`), eine Ampel am Herkunftsfeld
+bliebe darum für immer grau — und der Autor bekäme nach dem Nachfahren, dem
+Zweck der ganzen Phase, keine Rückmeldung auf seine eigene Bahn. `von Hand
+gezeichnet` steht also für eine nachgefahrene Bahn OHNE Sensoren; sobald
+`pfad --messen` (V21) welche hinterlässt, trägt sie dieselbe Ampel wie jede
+andere, und der Zähler „von Hand" ist genau V21s ungemessene Hälfte.
+**(c) Ein Loch in einem vollständigen Format macht grau**, nicht grün: der
+fehlende Sensor könnte der schlechteste gewesen sein.
+
+**Format 1 bleibt grau.** Der Bestand ist mit drei Sensoren gefolgt worden.
+Eine Farbe daraus behauptete ein Urteil für Sensoren, die auf diesen Zeilen
+nie gerechnet wurden — und erzeugte damit falsche Nachfahr-Arbeit. Der
+gespeicherte Marker `eigenhand_strips.pfade_format` (Migration 0032) macht
+das unterscheidbar; `core/eigenhand/tintentreue.py::VOLLSTAENDIG_AB_FORMAT`
+ist die Grenze.
+
+**Die Gates, mit Kill-Kriterien.** Sie gelten für den Tag, an dem die
+blinde Runde die acht Zahlen ersetzen soll — vorher wird nichts adoptiert:
+**(A) Trennschärfe** — über die 30 blind beurteilten Kästen muss die Ampel
+mit dem menschlichen Urteil in ≥ 70 % übereinstimmen UND die drei Stufen
+müssen geordnet sein (der Anteil „gut" fällt monoton von folgt zu folgt
+nicht). *Kill:* < 50 % oder nicht monoton — dann ist der Sensorsatz das
+Problem und nicht die Zahl, und die Ampel wird nicht adoptiert.
+**(B) Kein toter Zweig** — jeder der bewerteten Sensoren muss über die 30
+mindestens einen Kasten BENENNEN. *Kill:* zwei von vier benennen nie einen —
+der Satz wird neu geschnitten, bevor irgendeine Zahl eingefroren wird.
+**(C) Keine falsche Freigabe** — ein Kasten, den der Beurteiler schlecht
+nennt, darf nicht grün sein. *Kill:* > 10 % solcher Kästen; die
+Falsch-Grün-Rate ist die einzige, die Arbeit am falschen Ort erzeugt.
+**(D) Ein Satz, ein Datum** — die kalibrierten Zahlen werden als EIN
+datierter Satz übernommen. *Kill:* jede Nachjustage einer einzelnen Schwelle,
+nachdem sichtbar wurde, welchen Kasten sie kippt.
+**(E) Keine Bench-Berührung** (unten). *Kill:* jede Bewegung dort.
+
+**Welche eingefrorenen Lineale sich nicht bewegen — und es hier auch nicht
+getan haben.** Kein Edit an `core/quality.py`, `core/quality_suetterlin.py`
+oder `core/word_metric.py`, auch kein „nur ein optionales Argument"; keine
+Fixture-Wurzel angefasst; keine Tintentreue-Zahl in einem Bench-Report. Der
+heikelste Nachbar ist `DESPECKLE_MIN_AREA_PX = 24` in `core/word_metric.py`
+— `tools/eigenhand/pfad.py` importiert `despeckle` von dort und definiert
+damit heute schon mit, was auf einem 300-dpi-Streifen Tinte ist; eine
+„Verbesserung für Streifen" an dieser Zahl wäre eine stille Re-Baseline der
+Wort-Headline 0,108339 / 0,148236. Braucht der Streifen eine andere
+Entspeckelung, kommt sie als eigene Konstante nach `core/eigenhand/`.
+
+**Und die Regel über allem:** die Ampel liest keine Bench-Zahl und speist
+keine. Die Schwellen sind an EINE Hand kalibriert (Q10 b) und zwischen zwei
+Händen nie vergleichbar — eine hand-übergreifende „Tintentreue-Verteilung"
+wäre derselbe Fehler wie ein gemeinsamer `bench_loss`.
+
+**Was diese Runde nicht beantwortet, und nicht beantworten kann.** Ob die
+acht Zahlen an 300 dpi taugen. Lokal ist das nicht prüfbar: die
+Streifen-Pixel liegen ausschließlich in der geteilten DB und im
+gitignorierten lokalen Speicher, und die Runde braucht 30 echte Kästen und
+den blinden Durchgang des Autors. Geprüft ist hier allein die REGEL — Fold,
+Tiebreak, graue Zustände, defensives Lesen des ungeprüften `meta` — gegen
+`tests/fixtures/tintentreue_cases.json`, die zugleich den TypeScript-Leser
+`app/src/sections/admin/eigenhand/pfadRohzahlen.ts` an denselben Antworten
+festhält, wie `shaping_cases.json` es für die beiden Shaper tut.
