@@ -419,6 +419,7 @@ def _merged(
     where: str = "",
     archived: dict[int, dict] | None = None,
     replace_authored: bool = False,
+    apply: bool = True,
     _get=request_json,
 ) -> tuple[list[dict], bool]:
     """The freshly followed entries over the paths the Fassung holds, and whether one was given up.
@@ -478,10 +479,22 @@ def _merged(
         # And it names the follow-up, the way the refusal above does: what the
         # check proves is that the drawing is in this machine's `kartei.json`,
         # on one disk, which is not yet archived (found in review, PR #634).
+        #
+        # A DRY run says „would", because nothing is given up until the PUT:
+        # the line is assembled here, before the two paths part ways, and the
+        # database copy is still there afterwards (Copilot review, PR #635).
+        boxes = ", ".join(str(index) for index in hit)
         print(
-            f"  --replace-authored: handing the hand-drawn path at box {', '.join(str(index) for index in hit)} "
-            "over to this run's own result. The only copy left is this machine's kartei.json — file it:\n"
-            f"    uv run python -m tools.eigenhand.snapshot --hand {hand or '<hand>'}",
+            (
+                f"  --replace-authored: handing the hand-drawn path at box {boxes} over to this run's own "
+                "result. The only copy left is this machine's kartei.json — file it:\n"
+                f"    uv run python -m tools.eigenhand.snapshot --hand {hand or '<hand>'}"
+            )
+            if apply
+            else (
+                f"  --replace-authored: an --apply run WOULD hand the hand-drawn path at box {boxes} over to "
+                "this run's own result. This is a dry run — the drawing stays in the database."
+            ),
             flush=True,
         )
     elif hit:
@@ -558,6 +571,7 @@ def main(argv: list[str] | None = None) -> int:
             where=f"{row['strip']}/{row['fassung']}",
             archived=archived_pfade(kartei, row["strip"], row["fassung"]) if args.replace_authored else {},
             replace_authored=args.replace_authored,
+            apply=args.apply,
         )
         if not args.apply:
             out = args.out or _local_path(hand, row["strip"], row["fassung"])

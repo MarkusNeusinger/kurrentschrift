@@ -165,9 +165,19 @@ def pull_pfade(hand: str, base: str, token: str) -> int:
     demand up there (it is a few thousand points per word) and the strip listing
     deliberately does not carry it.
 
-    NEVER deletes. A Fassung the server holds no authored Bahn for keeps
-    whatever this machine has — after `--replace-authored` the local copy IS the
-    only remaining one, and that is exactly the copy this chain exists for.
+    NEVER deletes, and per BOX, not per Fassung (Copilot review, PR #635). A
+    Fassung the server holds no authored Bahn for keeps whatever this machine
+    has — but so does a single box of one: if the author hands box 0 to a
+    follower and keeps drawing box 1, the server answers with box 1 alone, and
+    writing that answer as the record would drop the only remaining copy of
+    box 0. The pulled entries are merged over the held ones by `box_index`.
+
+    That merge needs one format policy. The entries carry the API's own
+    `PFAD_FORMAT`, one declaration for the whole record, so entries written
+    under an older one cannot be carried under a newer declaration without
+    mislabelling them. Where that happens AND boxes would have to be retained,
+    the Fassung is left untouched and named at the end — a decision for the
+    operator, not for this loop.
     """
     listing = request_json("GET", f"{base}/eigenhand/strips/{quote(hand)}", token) or {}
     rows = listing.get("strips", [])
@@ -179,6 +189,8 @@ def pull_pfade(hand: str, base: str, token: str) -> int:
     today = date_cls.today().isoformat()
     bahnen = fassungen = unchanged = 0
     homeless: list[str] = []
+    clashes: list[str] = []
+    retained_boxes: list[str] = []
     for row in sorted(rows, key=lambda item: (item["strip"], item["fassung"])):
         strip, fassung = row["strip"], row["fassung"]
         where = f"{strip}/{fassung}"
@@ -195,10 +207,25 @@ def pull_pfade(hand: str, base: str, token: str) -> int:
             homeless.append(where)
             continue
         declared = _declared_format(answer, where)
-        if pfade_of(record) == authored and (record.get("pfade") or {}).get("pfad_format") == declared:
-            unchanged += len(authored)
+        held = pfade_of(record)
+        held_format = (record.get("pfade") or {}).get("pfad_format")
+        answered = {entry["box_index"] for entry in authored}
+        retained = [entry for entry in held if entry["box_index"] not in answered]
+        if retained and held_format is not None and held_format != declared:
+            clashes.append(
+                f"{where} (box {', '.join(str(entry['box_index']) for entry in retained)}, "
+                f"held under Streifen-Pfad format {held_format}, the API answers {declared})"
+            )
             continue
-        record["pfade"] = pfad_record(authored, declared, today)
+        # Said on every run, not only when something changed: „the server no
+        # longer answers here" is a standing fact about the last copy, and the
+        # run that reports it is the one before the next snapshot.
+        retained_boxes += [f"{where} box {entry['box_index']}" for entry in retained]
+        merged = sorted([*authored, *retained], key=lambda entry: entry["box_index"])
+        if held == merged and held_format == declared:
+            unchanged += len(merged)
+            continue
+        record["pfade"] = pfad_record(merged, declared, today)
         bahnen += len(authored)
         fassungen += 1
 
@@ -208,17 +235,34 @@ def pull_pfade(hand: str, base: str, token: str) -> int:
         f"{hand}: {bahnen} hand-drawn Bahn(en) in {fassungen} Fassung(en) pulled into the Kartei, "
         f"{unchanged} already there"
     )
+    if retained_boxes:
+        # The give-up signal: the server no longer answers with a drawing this
+        # machine holds, so the Kartei is now its only copy anywhere.
+        print(
+            f"kept (the server no longer holds a drawing there — this Kartei is the last copy): "
+            f"{', '.join(retained_boxes)}"
+        )
     if fassungen:
         print(
             f"reminder: snapshot so the archive carries them — uv run python -m tools.eigenhand.snapshot --hand {hand}"
         )
+    stop: list[str] = []
     if homeless:
-        raise SystemExit(
+        stop.append(
             f"{len(homeless)} Fassung(en) carry a hand-drawn Bahn this machine does not know: "
             f"{', '.join(homeless)}\nEverything else was written; these Bahnen are NOT archived. Their Kartei "
             "rows are missing here — restore this hand's data root first (`sync --from <snapshot>` is the "
             "other direction) or run this on the machine that holds it."
         )
+    if clashes:
+        stop.append(
+            f"{len(clashes)} Fassung(en) hold boxes the API no longer answers for, under an OLDER "
+            f"Streifen-Pfad format: {', '.join(clashes)}\nThey were left untouched, so nothing is lost — but "
+            "one record declares one format, and carrying those entries under the new one would mislabel "
+            "them. Archive this Kartei as it is, then decide per box whether the old drawing is still wanted."
+        )
+    if stop:
+        raise SystemExit("\n\n".join(stop))
     return 0
 
 

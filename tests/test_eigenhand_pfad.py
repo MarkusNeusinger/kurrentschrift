@@ -508,6 +508,22 @@ class TestFollowerHandover:
         assert "replace_authored" not in url
         assert [entry["verfahren"] for entry in body] == [AUTHORED]
 
+    def test_a_dry_run_says_it_WOULD_hand_the_drawing_over(self, tmp_path, monkeypatch, capsys):
+        # Nothing is given up until the PUT, and the merge runs before the two
+        # paths part ways — so a dry run must not claim the Kartei is the last
+        # copy while the database still holds the drawing (review, PR #635).
+        from tools.eigenhand import pfad as tool
+
+        drawing = {"box_index": 0, "word": "lesen", "verfahren": AUTHORED}
+        _stub_run(monkeypatch, fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}], stored=[drawing])
+        monkeypatch.setattr(tool, "load_kartei", lambda _hand: _kartei_with([drawing]))
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("a dry run must not write"))
+        out = tmp_path / "pfade.json"
+        assert tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--replace-authored", "--out", str(out)]) == 0
+        printed = capsys.readouterr().out
+        assert "WOULD hand" in printed
+        assert "snapshot --hand" not in printed
+
     def test_the_override_rides_only_on_a_row_that_gives_a_drawing_up(self, monkeypatch):
         # The flag is set once for a whole strip. A row that carries no
         # hand-drawn path at all must still go up WITHOUT it — otherwise the

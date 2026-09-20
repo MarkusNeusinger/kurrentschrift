@@ -550,6 +550,33 @@ class TestHandDrawnBahnChain:
         _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): []}))
         assert _record()["pfade"]["entries"] == [_bahn()]
 
+    def test_one_given_up_box_does_not_take_its_neighbour_with_it(self, dataroot, monkeypatch, capsys):
+        """„Never deletes" has to hold per BOX, not per Fassung.
+
+        The author hands box 0 to a follower and keeps drawing box 1, so the
+        server answers with box 1 alone. Writing that answer as the record
+        would drop the only remaining copy of box 0 (Copilot review, PR #635).
+        """
+        _build(dataroot)
+        both = [_bahn(box=0), _bahn(box=1, word="das")]
+        _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): both}))
+        capsys.readouterr()
+        _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): [_bahn(box=1, word="das")]}))
+        assert _record()["pfade"]["entries"] == both
+        # And the operator is told, because the Kartei is now the last copy.
+        assert "S0001/F01 box 0" in capsys.readouterr().out
+
+    def test_a_retained_box_under_an_older_wire_format_stops_rather_than_mislabels(self, dataroot, monkeypatch):
+        # One record declares ONE format. Carrying an entry written under the
+        # old one under a new declaration would mislabel it, and dropping it
+        # would lose it — so the Fassung is left alone and named.
+        _build(dataroot)
+        _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): [_bahn(box=0), _bahn(box=1, word="das")]}))
+        newer = _FakePfadApi({("S0001", "F01"): [_bahn(box=1, word="das")]}, declared=2)
+        with pytest.raises(SystemExit, match="under an OLDER"):
+            _pull_pfade(monkeypatch, newer)
+        assert _record()["pfade"]["pfad_format"] == 1  # untouched, nothing lost
+
     def test_a_drawing_whose_fassung_this_machine_does_not_know_ends_the_run_loudly(self, dataroot, monkeypatch):
         _build(dataroot)
         fake = _FakePfadApi({("S0001", "F01"): [_bahn()], ("S0002", "F01"): [_bahn(word="das")]})

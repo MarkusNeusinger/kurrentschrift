@@ -35,12 +35,11 @@
 > berichtigt — die EIGENHAND-Ernte (Phase 5) schreibt nie `word_instances`
 > (die Platten-Ernte tut es weiter, das ist ihr Referenzsatz), und die
 > Quellen-Frage ist entschieden (`sources.kind='eigenhand'`).
-> **Am 2026-09-20 gebaut** (erster PR der Phase 2, Autor-Entscheide A und B):
-> die **Bahn-Archivkette** `pull --pfade → snapshot → sync --from` für
-> nachgefahrene Bahnen samt Formatversion des Artefakts und lautem
-> Abbruch bei unvollständigem Restore (§7.5/§8.1) — die Zusage „Repo +
-> Archiv genügen" gilt damit auch für sie, und der erste nachgefahrene
-> Kasten darf entstehen.
+> **Am 2026-09-20 gebaut** (erster PR der Phase 2 des Admin-Redesigns — nicht
+> der Phasen dieses Docs; Autor-Entscheide A und B): die **Bahn-Archivkette**
+> `pull --pfade → snapshot → sync --from` mit Formatversion und lautem Abbruch
+> (§7.5/§8.1). „Repo + Archiv genügen" gilt damit auch für nachgefahrene
+> Bahnen, und der erste Kasten darf entstehen.
 
 ## 1 Anlass
 
