@@ -3,7 +3,7 @@
 
 import { Box } from '@mui/material';
 
-import type { EigenhandPfad } from '@/lib/api';
+import type { EigenhandBahn } from '@/sections/admin/eigenhand/pfadBahnen';
 import type { Zoom } from '@/sections/admin/eigenhand/stripZoom';
 import { PathOverlay } from '@/sections/admin/shell/PathOverlay';
 import type { Stroke } from '@/sections/admin/shell/pathOverlay';
@@ -13,6 +13,10 @@ import type { Stroke } from '@/sections/admin/shell/pathOverlay';
  * it. The stored registration is the STRIP's own pixel frame, so a word crop
  * is served by subtracting that crop's rectangle: one stored frame, both views,
  * and nothing about the crop's padding has to be remembered with the path.
+ *
+ * `EigenhandBahn`, not `EigenhandPfad`: since format 2 a stored entry may be a
+ * Skip-Eintrag with no frame and no scale at all, and a layer is not where that
+ * is noticed. `bahnenOf` takes them out where the list is read.
  */
 export function PfadLayer({
   pfade,
@@ -23,7 +27,7 @@ export function PfadLayer({
   originY = 0,
   showIndex = false,
 }: {
-  pfade: EigenhandPfad[];
+  pfade: EigenhandBahn[];
   widthPx: number;
   heightPx: number;
   zoom: Zoom;

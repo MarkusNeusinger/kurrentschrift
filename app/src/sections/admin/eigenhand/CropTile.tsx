@@ -8,6 +8,7 @@ import type { EigenhandStrip, EigenhandStripBox } from '@/lib/api';
 import { InfoHint } from '@/components/InfoHint';
 import { de } from '@/locales/admin';
 import type { LupeTarget } from '@/sections/admin/eigenhand/Lupe';
+import { bahnenOf } from '@/sections/admin/eigenhand/pfadBahnen';
 import { PfadLayer } from '@/sections/admin/eigenhand/PfadLayer';
 import { PfadRohzahlenChips } from '@/sections/admin/eigenhand/PfadRohzahlenChips';
 import { StripImage } from '@/sections/admin/eigenhand/StripImage';
@@ -46,7 +47,7 @@ export function CropTile({
   // page of 24 tiles asks for exactly the paths of the tiles one can see.
   const cut = box.rect_px ?? null;
   const pfade = useStripPfade(hand, row.strip, row.fassung, wantPfade && near && cut !== null);
-  const drawn = (pfade.pfade ?? []).filter((p) => p.box_index === box.index);
+  const drawn = bahnenOf(pfade.pfade).filter((p) => p.box_index === box.index);
   const title = `${row.strip} · ${row.fassung} · ${box.word}`;
   return (
     <Box

@@ -1136,12 +1136,37 @@ export interface EigenhandPfadRegistration {
   baseline_row: number;
 }
 
+// Since Streifen-Pfad format 2 an entry may also say that a box carries NO
+// path, and why: the four situations that used to be one indistinguishable
+// state „kein Eintrag" (`grund`), plus the letter boundaries of a path as a
+// checked field with their provenance. A row written under format 1 answers
+// `null` for all four — the list is one list, and a reader tells the two kinds
+// apart by `status`, never by an empty `strokes`.
+export type EigenhandPfadStatus = 'ok' | 'skipped';
+export type EigenhandPfadGrund = 'not_selected' | 'no_geometry' | 'unauthored' | 'gave_up' | 'other';
+export type EigenhandPfadSpanHerkunft = 'auto' | 'authored';
+
+export interface EigenhandPfadSpan {
+  stroke: number;
+  slot: number;
+  first: number;
+  last: number;
+  herkunft: EigenhandPfadSpanHerkunft;
+}
+
 export interface EigenhandPfad {
   box_index: number;
   word: string;
+  status: EigenhandPfadStatus | null;
+  grund: EigenhandPfadGrund | null;
+  detail: string | null;
   strokes: number[][][];
-  registration_px: EigenhandPfadRegistration;
-  xh_px: number;
+  letter_spans: EigenhandPfadSpan[] | null;
+  // Null on a SKIP only: a box refused before anything was registered has
+  // neither frame nor scale. Anything that draws a path takes the narrowed
+  // `EigenhandBahn` instead of checking twice (`eigenhand/pfadBahnen.ts`).
+  registration_px: EigenhandPfadRegistration | null;
+  xh_px: number | null;
   verfahren: string;
   konfiguration: Record<string, unknown>;
   meta: Record<string, unknown>;

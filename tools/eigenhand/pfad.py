@@ -29,6 +29,12 @@ sits in the shared database would make it none. One command fixes it —
 
 — and there is deliberately no second „I know what I am doing" flag beside it.
 
+The LETTER BOUNDARIES the author corrected by hand survive every run too, and
+without a flag: they are protected as a field of their own since PFAD_FORMAT 2,
+so a re-follow of such a box carries them onto its own result instead of
+dropping them. Where the fresh Bahn cannot hold them, the stored entry is kept
+whole and the run says so.
+
 WHAT IT READS. Everything over the admin API, nothing off a local scan: the
 strip listing (geometry, words, box rectangles), the Bogen layout (the printed
 ruling), the strip PNG itself — served with the Fleckenmaske applied and, for
@@ -88,7 +94,14 @@ import numpy as np  # noqa: E402
 
 from core.database.models import LAUFFORM_VARIANT  # noqa: E402
 from core.eigenhand.ids import style_of_hand  # noqa: E402
-from core.eigenhand.pfad import PFAD_FORMAT, frame_for_box, is_authored  # noqa: E402
+from core.eigenhand.pfad import (  # noqa: E402
+    FIELD_SPANS,
+    STATUS_SKIPPED,
+    authored_spans,
+    frame_for_box,
+    is_authored,
+    push_body,
+)
 from core.eigenhand.plan import load_plan, shaping_form_of  # noqa: E402
 from tools.eigenhand.apiclient import admin_token, api_base, request_bytes, request_json  # noqa: E402
 from tools.eigenhand.kartei import archived_pfade, load_kartei  # noqa: E402
@@ -409,6 +422,53 @@ def _local_path(hand: str, strip: str, fassung: str) -> Path:
     return hand_dir(hand) / "pfade" / f"{strip}-{fassung}.json"
 
 
+def _spans_fit(spans: list[dict], strokes: list) -> bool:
+    """Whether these letter boundaries still index samples this Bahn has."""
+    return all(
+        isinstance(span.get("stroke"), int)
+        and 0 <= span["stroke"] < len(strokes)
+        and isinstance(span.get("last"), int)
+        and span["last"] < len(strokes[span["stroke"]])
+        for span in spans
+    )
+
+
+def _carry_spans(fresh: dict, stored: dict | None) -> dict | None:
+    """This run's own result for one box, with the author's boundaries kept on it.
+
+    The second half of the field rule (`core.eigenhand.pfad.displaced_authored`):
+    a box whose letter boundaries the author corrected by hand may be followed
+    again — but the boundaries are not the follower's to throw away, and the
+    server refuses a push that drops them. So they ride along, and a hand-
+    corrected STROKE keeps its boundaries whole: this run's own spans on that
+    stroke step aside rather than being interleaved with them, because a letter
+    boundary is only meaningful next to the ones beside it.
+
+    „Whole" means the stroke's whole STORED set, not the corrected boundaries
+    alone. A stroke usually carries one hand-corrected boundary among several
+    the follower assigned; keeping only the corrected one would leave the
+    letters beside it unlabelled and call that a rescue (found in review,
+    PR #639). So every stored boundary of a stroke an authored one sits on
+    travels together, and this run's own boundaries there step aside.
+
+    Where the fresh Bahn cannot hold them at all — fewer strokes, or a stroke
+    too short for the samples they name — `None` says so, and the caller keeps
+    the STORED entry instead. Carrying them onto a Bahn they no longer fit would
+    be refused as a desynchronised span (`check_paths`), and re-indexing them is
+    the Span-Zuordner's job, not a silent repair inside a merge.
+    """
+    corrected = authored_spans(stored or {})
+    if not corrected:
+        return fresh
+    owned = {span["stroke"] for span in corrected}
+    held = [span for span in ((stored or {}).get(FIELD_SPANS) or []) if span.get("stroke") in owned]
+    strokes = fresh.get("strokes") or []
+    if not _spans_fit(held, strokes):
+        return None
+    mine = [span for span in (fresh.get(FIELD_SPANS) or []) if span.get("stroke") not in owned]
+    return {**fresh, FIELD_SPANS: sorted(mine + held, key=lambda span: (span.get("stroke", 0), span.get("first", 0)))}
+
+
 def _merged(
     base: str,
     token: str,
@@ -452,9 +512,17 @@ def _merged(
     hand-drawn path at all would switch the server's 409 off for boxes the
     local guard never even looked at (found in review, PR #634).
 
+    The LETTER BOUNDARIES the author corrected are kept separately and always
+    (`_carry_spans`): they are the other field the server protects, they are not
+    covered by `--replace-authored` — that flag hands over a Bahn, not the
+    boundaries on someone else's — and with the override set the server's own
+    refusal is switched off, so this merge is the only thing left between a
+    re-follow and a silent loss.
+
     `_get` is the seam the test calls through; every caller uses the default.
     """
     stored = (_get("GET", url, token) or {}).get("pfade") or []
+    by_stored_box = {entry.get("box_index"): entry for entry in stored}
     authored_boxes = {entry.get("box_index") for entry in stored if is_authored(entry)}
     hit = sorted(entry["box_index"] for entry in entries if entry["box_index"] in authored_boxes)
     if hit and replace_authored:
@@ -504,6 +572,26 @@ def _merged(
             flush=True,
         )
         entries = [entry for entry in entries if entry["box_index"] not in authored_boxes]
+    # A box whose Bahn is being handed over hands its boundaries over with it:
+    # they were drawn on THAT Bahn and say nothing about this run's own.
+    handed = set(hit) if replace_authored else set()
+    carried: list[dict] = []
+    for entry in entries:
+        if entry["box_index"] in handed:
+            carried.append(entry)
+            continue
+        with_spans = _carry_spans(entry, by_stored_box.get(entry["box_index"]))
+        if with_spans is None:
+            print(
+                f"  keeping the hand-corrected letter boundaries at box {entry['box_index']} — this run's Bahn "
+                "there cannot carry them (its strokes are shorter or fewer), so its own result is dropped",
+                flush=True,
+            )
+            continue
+        if with_spans is not entry:
+            print(f"  carrying the hand-corrected letter boundaries at box {entry['box_index']} over", flush=True)
+        carried.append(with_spans)
+    entries = carried
     followed = {entry["box_index"] for entry in entries}
     kept = [entry for entry in stored if entry.get("box_index") not in followed]
     if kept:
@@ -573,10 +661,26 @@ def main(argv: list[str] | None = None) -> int:
             replace_authored=args.replace_authored,
             apply=args.apply,
         )
+        # The declared format follows the BODY, not this image's own constant:
+        # the merge carries stored entries and hand-corrected boundaries this
+        # run did not produce, and declaring format 1 over them would be refused
+        # by the content rule (`core.eigenhand.pfad.push_body`).
+        body, wire_format, without_spans = push_body(body)
+        if without_spans:
+            # Named, never silent: this run DID assign those boundaries, and the
+            # push simply has no place for them until this image writes the
+            # checked field itself. They come back with the next run.
+            print(
+                f"  Streifen-Pfad format {wire_format}: dropping this run's own letter boundaries at box "
+                f"{', '.join(str(index) for index in without_spans)} — under this format they belong in the "
+                "entry's own `letter_spans`, which this version does not write yet (they are re-assigned "
+                "on every run; hand-corrected ones are never touched)",
+                flush=True,
+            )
         if not args.apply:
             out = args.out or _local_path(hand, row["strip"], row["fassung"])
             out.parent.mkdir(parents=True, exist_ok=True)
-            out.write_text(json.dumps({"format": PFAD_FORMAT, "pfade": body}, ensure_ascii=False, indent=1) + "\n")
+            out.write_text(json.dumps({"format": wire_format, "pfade": body}, ensure_ascii=False, indent=1) + "\n")
             print(
                 f"  dry run — {len(body)} path(s) ({len(entries)} followed) written to {out}, nothing stored",
                 flush=True,
@@ -588,9 +692,17 @@ def main(argv: list[str] | None = None) -> int:
         # covers every stored Fassung of the strip, and the server's 409 is the
         # one check that does not run on this machine.
         push_url = f"{url}?replace_authored=true" if handed_over else url
-        stored = request_json("PUT", push_url, token, {"format": PFAD_FORMAT, "pfade": body}) or {}
-        written += len(stored.get("pfade") or [])
-        print(f"  stored {len(stored.get('pfade') or [])} path(s) at {base}", flush=True)
+        stored = request_json("PUT", push_url, token, {"format": wire_format, "pfade": body}) or {}
+        # A skip is an entry, not a path. Counting the two together would put
+        # the four states back into one number — which is the whole reason the
+        # Skip-Eintrag exists (found in review, PR #639).
+        entries = stored.get("pfade") or []
+        paths = [entry for entry in entries if entry.get("status") != STATUS_SKIPPED]
+        skipped = len(entries) - len(paths)
+        written += len(paths)
+        print(
+            f"  stored {len(paths)} path(s){f' and {skipped} skipped box(es)' if skipped else ''} at {base}", flush=True
+        )
     if args.apply:
         print(f'{written} path(s) in the shared database — the workbench shows them under "Pfad zeigen"')
     return 0

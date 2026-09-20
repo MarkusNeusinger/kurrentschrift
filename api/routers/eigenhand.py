@@ -116,7 +116,14 @@ from core.eigenhand.bestand import bestand as build_bestand
 from core.eigenhand.faellig import faellig
 from core.eigenhand.flecken import FLECKEN_FORMAT
 from core.eigenhand.ids import STYLE_IDS, is_fassung_id, is_hand_id, is_sheet_id, is_strip_id, style_of_hand
-from core.eigenhand.pfad import PFAD_FORMAT, check_paths, displaced_authored, frames_of_row
+from core.eigenhand.pfad import (
+    FIELD_PATH,
+    FIELD_SPANS,
+    SUPPORTED_FORMATS,
+    check_paths,
+    displaced_authored,
+    frames_of_row,
+)
 from core.eigenhand.plan import load_plan, shaping_form_of, words_of
 
 
@@ -1200,6 +1207,12 @@ def _pfad_boxes(row, plan: dict, layout_row: dict) -> list[EigenhandStripBoxOut]
     ]
 
 
+# What a refusal calls the two pieces of hand work one box can hold. The FIELD
+# names are the contract (`core.eigenhand.pfad`); these are the words the
+# operator reads at the terminal, and they say what has to be pushed back.
+_DISPLACED_FIELDS = {FIELD_PATH: "the hand-drawn Bahn", FIELD_SPANS: "the hand-corrected letter boundaries"}
+
+
 @router.get("/strips/{hand}/{strip}/{fassung}/pfade", response_model=EigenhandPfadeOut)
 async def read_pfade(
     hand: str, strip: str, fassung: str, response: Response, db: AsyncSession = Depends(require_db)
@@ -1271,6 +1284,13 @@ async def write_pfade(
     (author decision Q4 (i), 2026-09-18). Authored over authored passes: that
     is the author correcting his own trace.
 
+    Since format 2 that rule compares FIELDS, not boxes: a box can hold the
+    author's own Bahn and, separately, letter boundaries he corrected by hand.
+    The boundaries are not a reason to lock the box — an ordinary re-follow
+    passes as long as it brings them back — and keeping the `verfahren` is no
+    longer enough to drop them unnoticed. Each refusal names which of the two
+    would be lost.
+
     Refused (422) when a path names a box this printed row does not have, a
     word the printed box and the frozen plan do not carry, a stroke outside the
     template-unit range, or a registration that does not lie on THIS strip —
@@ -1278,21 +1298,22 @@ async def write_pfade(
     wrong ink and keep doing it forever.
 
     The format is declared by the client and checked here, the same way a
-    pushed Befund is: the SERVER holds the contract, and a newer tool pushed at
-    an older API would otherwise store numbers this code reads under different
-    semantics. What passed the check is then STAMPED onto the row
-    (`pfade_format`, 0032) instead of being forgotten — the row, not the
-    deployed constant, is what a later read answers with. Today the check above
-    admits exactly `PFAD_FORMAT`, so the stamp is always 1 and this write moves
-    nothing; it is the half that has to be in place before a second format may
-    be admitted at all.
+    pushed Befund is: the SERVER holds the contract, and a tool pushed at an
+    API that does not know its shape would otherwise store numbers this code
+    reads under different semantics. The 409 therefore fires on an UNSUPPORTED
+    format only — the API reads and accepts every `SUPPORTED_FORMATS` and keeps
+    storing what was pushed, which is the first half of the lockstep
+    (`docs/proposals/admin-redesign.md` §6.3). What passed is STAMPED onto the
+    row (`pfade_format`, 0032) instead of being forgotten: the row, not the
+    deployed constant, is what a later read answers with, so a Fassung followed
+    under 1 and one pushed under 2 live side by side without either lying.
     """
-    if body.format != PFAD_FORMAT:
+    if body.format not in SUPPORTED_FORMATS:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail=(
-                f"this API reads Streifen-Pfad format {PFAD_FORMAT}, the push says {body.format} — "
-                "deploy the matching API before pushing, or re-follow with this one"
+                f"this API reads Streifen-Pfad format(s) {', '.join(str(known) for known in SUPPORTED_FORMATS)}, "
+                f"the push says {body.format} — deploy the matching API before pushing, or re-follow with this one"
             ),
         )
     row = await _pfad_row(hand, strip, fassung, db)
@@ -1302,17 +1323,17 @@ async def write_pfade(
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail=(
-                f"{strip}/{fassung} carries a path drawn by hand at box "
-                f"{', '.join(str(index) for index in displaced)}, and a followed path never replaces one — push "
-                "again leaving it as it is (tools.eigenhand.pfad merges around it by itself), or, to give the "
-                "hand-drawn path up, with ?replace_authored=true"
+                f"{strip}/{fassung} carries work of the author's own hand a followed push would take away: "
+                f"{', '.join(f'box {index} ({_DISPLACED_FIELDS[field]})' for index, field in displaced)}. Push "
+                "again keeping it (tools.eigenhand.pfad merges around it by itself), or, to give it up, with "
+                "?replace_authored=true"
             ),
         )
     layout_row = await _layout_row(hand, row.sheet, row.row_index, db)
     plan = load_plan()
     words = words_of(plan, row.strip) if row.strip in plan["strips"] else None
     try:
-        checked = check_paths(pushed, layout_row, row.width_px, row.height_px, words)
+        checked = check_paths(pushed, layout_row, row.width_px, row.height_px, words, body.format)
     except ValueError as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
     row.pfade = checked

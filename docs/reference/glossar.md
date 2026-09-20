@@ -57,8 +57,8 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Buchstabengrenzen einer Bahn) §5
-- **B** — Bahn §5 · Bahn-Archivkette §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn (geplant) §5
+- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Span-Herkunft) §5
+- **B** — Bahn §5 · Bahn-Archivkette §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Ebenen-Token §5 · Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
@@ -75,7 +75,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Rollen-Token §5 · Route G §4 · Roving-Liste §5 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Span-Herkunft (→ Buchstabengrenzen einer Bahn) §5 · Span-Zuordner (→ Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Subjekt-Stepper §5 · Sütterlin §1
+- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Skip-Eintrag §5 · Slant-Spalte §4 · Slot §2 · Span-Herkunft §5 · Span-Zuordner (geplant, → Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Subjekt-Stepper §5 · Sütterlin §1
 - **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) (geplant) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unteransicht (Eigenhand) §5 · Unvollständige Wortprobe §5
 - **Ü** — Übergabekarte §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
@@ -4335,19 +4335,94 @@ Bestand = 1): der Read antwortete vorher mit der Konstante `PFAD_FORMAT`,
 also mit dem, was das laufende Abbild glaubt — sobald die Konstante auf 2
 steht, läse sich jede unter 1 gefolgte Bahn als 2, und eine Ampel färbte
 Sensoren, die auf ihr nie gerechnet wurden. Format 1 und 2 koexistieren
-erst, seit die Marke je Zeile steht; geschrieben wird weiterhin nur
-Format 1, der Schreibweg stempelt die Marke bloß. Eine Spalte statt eines
+erst, seit die Marke je Zeile steht. Eine Spalte statt eines
 Umschlags in der JSON-Zelle, damit die verzögerte Zelle unangetastet
 bleibt — und nicht verzögert geladen, weil „welche Fassungen stehen noch
 auf dem alten Format" eine Listenfrage ist.
+**Seit dem 2026-09-20 LIEST und AKZEPTIERT die API beide Formate**
+(`SUPPORTED_FORMATS`) und speichert weiter, was gepusht wird; der 409 fällt
+nur noch bei einem Format, das dieses Abbild nicht kennt. Das ist die erste
+Hälfte des Lockstep: die API nimmt die neue Form einen Release VOR dem
+ersten Schreiber an, `PFAD_FORMAT` bleibt derweil die Zahl, die dieses
+Abbild SCHREIBT — die beiden Zahlen sind bewusst nicht dieselbe. Was
+Format 2 trägt, sind drei echte Schema-Änderungen (nicht die Sensoren 4/5:
+`meta` ist ein freier Dict, zwei Zahlen darin sind additiv und
+formatneutral): der → Skip-Eintrag, die → Span-Herkunft und der
+Feld-Vergleich des authored-Schutzes. Weil eine Zeile mit dem gestempelt
+wird, was sie gepusht bekam, sind Format-2-Felder unter Format 1 verweigert
+und umgekehrt `meta.letter_spans` unter Format 2 — eine Zelle, die ihre
+eigene Nummer nicht einhält, ist genau die Falschbeschriftung, gegen die
+die Marke gebaut wurde. Und `format` ist im Push seither PFLICHT: ein
+Vorgabewert, der an der wandernden Konstante hängt, ließe einen Push ohne
+Angabe die Nummer dieses Abbilds behaupten.
 *Technisch:* `core/eigenhand/pfad.py` (`frame_for_box` · `check_paths` ·
-`is_authored` · `displaced_authored` · `AUTHORED` · `PFAD_FORMAT`),
+`is_authored` · `authored_spans` · `displaced_authored` · `AUTHORED` ·
+`PFAD_FORMAT` · `SUPPORTED_FORMATS`),
 `eigenhand_strips.pfade` (Migration `0031`) + `…pfade_format`
 (Migration `0032`),
 `GET|PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade`,
 `tools/eigenhand/pfad.py`,
 `app/src/sections/admin/shell/PathOverlay.tsx`.
-→ Bahn-Archivkette; proposals/eigenhand-erfassung.md §7.5
+→ Skip-Eintrag; Span-Herkunft; Bahn-Archivkette;
+proposals/eigenhand-erfassung.md §7.5
+
+**Skip-Eintrag** — ein Eintrag der Pfad-Liste, der sagt, dass ein Wortkasten
+KEINE Bahn hat, und warum: `status: "skipped"` plus ein `grund` aus einer
+geschlossenen Liste, keine Züge, Registrierung und x-Höhe optional
+(Autor-Entscheid C vom 2026-09-20, ab PFAD_FORMAT 2). Vorher sahen vier
+verschiedene Lagen in der Datenbank identisch aus — „kein Eintrag": der
+Kasten war im Lauf nicht gewählt (`not_selected`), der Bogen hat keine
+Schnitt- oder Lineatur-Geometrie (`no_geometry`), das Wort braucht Glyphen,
+die auf der Tafel nicht eingerichtet sind (`unauthored`), oder der Folger
+hat aufgegeben (`gave_up`); `other` ist der ehrliche Platz für eine fünfte
+Lage, und `detail` eine kurze Zeile in den Worten des Folgers. Der
+Unterschied ist keine Kosmetik, sondern das, was die Nachfahr-Liste
+überhaupt erst triagieren lässt: „übersprungen: unautoriert" ist KEINE
+Nachfahr-Arbeit, sondern ein Absprung zur Tafel, während nur `gave_up`
+echte Folger-Arbeit ist. Die Liste ist GESCHLOSSEN — ein freier String
+verschmölze die vier binnen eines Monats wieder —, und der Eintragstyp
+steht in DERSELBEN Liste statt in einer zweiten daneben, weil ein Kasten
+genau einen Zustand hat und zwei Listen sich irgendwann widersprechen.
+Geschrieben wird er vom Werkzeug, das heute an diesen vier Stellen bloß
+`continue` sagt. Ein Skip darf NIE `verfahren: "authored"` behaupten: diese
+Herkunft heißt „eine Bahn, die der Autor GEZEICHNET hat", und alles
+dahinter setzt eine voraus — der 409 sperrt den Kasten, `pull --pfade`
+archiviert ihn, `--replace-authored` verlangt ihn zuvor archiviert. Ein
+authored Skip wäre eine Phantom-Zeichnung, aus der nie etwas verloren
+gehen kann. *Technisch:* `core/eigenhand/pfad.py` (`STATUS_VALUES` ·
+`SKIP_REASONS` · `MAX_DETAIL`), `api/schemas.py` (`PfadStatus` ·
+`PfadGrund`). → Streifen-Pfad; Nachfahr-Triage;
+proposals/admin-redesign.md §6.3, §6.4
+
+**Span-Herkunft** *(authored-Span)* — woher eine → Buchstabengrenze einer
+Bahn stammt: `auto` vom Folger, `authored` vom Autor von Hand korrigiert.
+Seit PFAD_FORMAT 2 sind die Grenzen ein GEPRÜFTES Feld des Eintrags
+(`letter_spans`) statt einer Zeile im freien `meta`, und das aus zwei
+Gründen. Erstens indizieren sie SAMPLES eines Zuges, und niemand hielt sie
+dagegen: der Folger vergibt sie auf der dekodierten Bahn, gespeichert
+werden die GEKAPPTEN Züge (`cap_word_strokes` dünnt über 4096 Punkte und
+über 128 Züge aus) — eine entsynchronisierte Grenze ist in jeder Zahl
+wohlgeformt, also kann nur der Zug sie abweisen, den sie nennt, und die
+Verweigerung nennt beide. Zweitens ist eine korrigierte Grenze Wahrheit von
+Hand und braucht denselben Schutz wie die → Bahn, aber nicht dieselbe
+Reichweite: der authored-Schutz vergleicht seit dem 2026-09-20 FELDER statt
+Kästen, sodass ein gewöhnliches Neu-Folgen des Kastens durchgeht, solange
+es die Grenzen mitbringt — das Werkzeug trägt sie von sich aus hinüber, und
+ein hand-korrigierter ZUG behält seine Grenzen ganz, statt mit den frisch
+gefolgten verschränkt zu werden. Passt die frische Bahn nicht mehr zu
+ihnen, bleibt der gespeicherte Eintrag stehen: Umindizieren ist Arbeit des
+Span-Zuordners, keine stille Reparatur im Merge. Eine Antwort VON HAND geht
+dagegen für beide Felder durch: Grenzen liegen auf einer Bahn und überleben
+sie nicht, also gibt ein Kasten, den der Autor neu zeichnet, die Grenzen der
+alten Zeichnung mit ihr auf — sonst könnte er einen selbst korrigierten
+Kasten gar nicht mehr nachzeichnen (die Grenzen fallen zu lassen wäre der
+409, sie mitzubringen der 422). Ein → Skip-Eintrag zählt dabei NIE als
+Antwort von Hand, was immer sein `verfahren` behauptet. *Technisch:*
+`core/eigenhand/pfad.py` (`SPAN_HERKUNFT` · `_checked_spans` ·
+`authored_spans` · `displaced_authored` · `FIELD_PATH`/`FIELD_SPANS`),
+`api/schemas.py::EigenhandPfadSpan`, `tools/eigenhand/pfad.py::_carry_spans`.
+→ Buchstabengrenzen einer Bahn; Streifen-Pfad;
+proposals/admin-redesign.md §6.3
 
 **Bahn-Archivkette** — die drei Glieder, die eine von Hand nachgefahrene →
 Bahn aus der geteilten Datenbank ins private Archiv und zurück bringen:
@@ -4358,8 +4433,12 @@ nötig, weil eine nachgefahrene Bahn das EINZIGE Eigenhand-Datum ist, das
 oben entsteht: Scan, Verdikt und → Fleckenmaske werden am Rechner des
 Autors gemacht und hochgeschoben, der Archivlauf greift dort einfach die
 Arbeitskopie ab — eine Bahn entsteht im Browser und muss erst
-heruntergeholt werden. Gezogen wird nur `authored`; ein GEFOLGTER →
-Streifen-Pfad ist eine Ableitung und wird neu gefolgt statt archiviert. Die
+heruntergeholt werden. Gezogen wird nur, was die Hand des Autors trägt: eine
+`authored`-Bahn und, seit PFAD_FORMAT 2, auch ein GEFOLGTER Eintrag, dessen
+Buchstabengrenzen von Hand korrigiert sind (→ Span-Herkunft) — auch die
+lassen sich nicht neu folgen, und die Kette hielte sonst nur für eines der
+beiden Stücke Handarbeit. Ein rein gefolgter →
+Streifen-Pfad bleibt eine Ableitung und wird neu gefolgt statt archiviert. Die
 Bahn landet als Satz in der zentralen `kartei.json` und nirgends sonst
 (Entscheid A): die Kartei wird bei jedem Archivlauf VOLL kopiert, ein
 abgelegtes Fassungs-Verzeichnis ist dagegen eine unveränderliche
@@ -4529,18 +4608,19 @@ Eigenhand, weil sich nur 24 von 140 Platten-Wörtern mit dem Streifen-Plan
 überschneiden. *Technisch:* `GET /eigenhand/strips/{hand}?item=`.
 → proposals/admin-redesign.md §5.1 (Idee 3)
 
-**Buchstabengrenzen einer Bahn (geplant)** *(authored-Spans ·
-Span-Herkunft)* — wo auf einer Streifen-Bahn ein Buchstabe anfängt und
-aufhört (`letter_spans`). Auf einer gefolgten Bahn schreibt sie der Folger
-mit; auf einer von Hand nachgefahrenen setzt sie der Werkzeugschritt `pfad
---spans` automatisch (der **Span-Zuordner**). Autor-Entscheid 2026-09-18:
+**Buchstabengrenzen einer Bahn** *(authored-Spans · Span-Herkunft)* — wo
+auf einer Streifen-Bahn ein Buchstabe anfängt und aufhört
+(`letter_spans`). Auf einer gefolgten Bahn schreibt sie der Folger mit; auf
+einer von Hand nachgefahrenen setzt sie der Werkzeugschritt `pfad --spans`
+automatisch (der **Span-Zuordner**, geplant). Autor-Entscheid 2026-09-18:
 die Grenzen werden im Kasten und im Editor angezeigt und sind von Hand
-korrigierbar. Eine korrigierte Grenze trägt eine eigene Herkunft
-(**authored-Span**), wird vom Zuordner nie ersetzt — dieselbe Schutzregel
-wie für die nachgefahrene Bahn —, wird archiviert und ist Trainings- und
-Prüfmenge des Zuordners. *Technisch:* nichts gebaut; vorgesehen
-`pfade[].meta.letter_spans` mit Span-Herkunft je Kasten in PFAD_FORMAT 2,
-`tools/eigenhand/pfad.py --spans`. → Trainingsmenge (nachgefahrene Bahnen);
+korrigierbar (die Anzeige ist geplant). Eine korrigierte Grenze trägt eine
+eigene Herkunft (**authored-Span**), wird vom Zuordner nie ersetzt, wird
+archiviert und ist Trainings- und Prüfmenge des Zuordners. *Technisch:* das
+geprüfte Feld `pfade[].letter_spans` samt → Span-Herkunft und dem
+Feld-Vergleich des authored-Schutzes steht seit dem 2026-09-20 (PFAD_FORMAT
+2); offen sind der Zuordner `tools/eigenhand/pfad.py --spans` und die
+Anzeige im Editor. → Span-Herkunft; Trainingsmenge (nachgefahrene Bahnen);
 proposals/admin-redesign.md §6.4
 
 **Ebenen-Token** *(`layer`, `layerDash`)* — die Farben und Stricharten der
