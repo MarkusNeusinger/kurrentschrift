@@ -42,8 +42,12 @@
 > Bahnen, und der erste Kasten darf entstehen. Im zweiten PR derselben Phase
 > trägt jede Streifen-Zeile ihre **Format-Marke** selbst
 > (`eigenhand_strips.pfade_format`, Migration `0032`, §7.5): erst damit
-> können `PFAD_FORMAT` 1 und 2 nebeneinander liegen; geschrieben wird
-> weiterhin nur Format 1. Am Ende derselben Phase steht der **Trainingssatz**
+> können `PFAD_FORMAT` 1 und 2 nebeneinander liegen. **Seit dem Lockstep
+> derselben Phase ist Format 2 in Gebrauch:** die API liest und akzeptiert 1
+> und 2, `PFAD_FORMAT` steht auf 2, und das Werkzeug schreibt Skip-Einträge,
+> die Span-Herkunft je Kasten und zwei zusätzliche Sensoren (§7.5). Ältere
+> Zeilen sagen weiter „1" und bleiben darum grau.
+> Am Ende derselben Phase steht der **Trainingssatz**
 > (§7.5): die von Hand nachgefahrenen Bahnen als lokaler, gitignorter Export
 > (`tools/eigenhand/training_set.py`), geteilt in `practice` und ZWEI getrennte
 > Rückhaltemengen — Autor-Entscheid vom 2026-09-20, der zugleich FM3 der
@@ -1277,9 +1281,49 @@ Bahn als 2, und Format 1 und 2 könnten nie nebeneinander liegen. Eine Spalte
 statt eines Umschlags in der JSON-Zelle — so bleibt die verzögerte Zelle
 unangetastet und jeder heutige Leser unverändert — und anders als `pfade`
 selbst ist sie NICHT verzögert: sie ist eine kleine Zahl, und „welche
-Fassungen stehen noch auf dem alten Format" ist eine Listenfrage.
-Geschrieben wird weiterhin nur Format 1; der Schreibweg stempelt die Marke
-bloß.
+Fassungen stehen noch auf dem alten Format" ist eine Listenfrage (das
+Prädikat dazu ist `pfade_format < PFAD_FORMAT AND pfade IS NOT NULL` — die
+Spalte ist überall NOT NULL, eine ungefolgte Fassung trägt also auch eine 1
+und ist keine Altformat-Arbeit).
+
+**Format 2 ist seit dem 2026-09-20 in Gebrauch** (dieser Abschnitt sagte bis
+dahin „geschrieben wird weiterhin nur Format 1"). Der Wechsel lief als
+LOCKSTEP über zwei Releases, damit Werkzeug und API nie in derselben Minute
+landen müssen: zuerst liest und akzeptiert die API 1 UND 2
+(`SUPPORTED_FORMATS`), während `PFAD_FORMAT` — die Zahl, die geSCHRIEBEN
+wird — noch 1 blieb; im zweiten Release steht `PFAD_FORMAT` auf 2. Der 409
+fällt nur noch auf eine Zahl, die dieses Abbild nicht kennt. Was Format 2
+wirklich trägt, sind **drei** Schema-Änderungen — die zwei zusätzlichen
+Sensoren gehören NICHT dazu, denn `meta` ist ein freier, nie geprüfter Dict
+und zwei Zahlen darin sind additiv:
+
+1. **Der Skip-Eintrag** (Autor-Entscheid C vom 2026-09-20): ein Eintrag
+   DERSELBEN Liste mit `status: "skipped"`, einem `grund` aus geschlossenem
+   Vokabular (`not_selected` · `no_geometry` · `unauthored` · `gave_up` ·
+   `other`), optionalem `detail`, ohne Züge, Registrierung und x-Höhe
+   optional. Vorher sahen vier ganz verschiedene Lagen in der DB gleich aus:
+   kein Eintrag. Eine Liste statt zweier, weil ein Kasten genau einen Zustand
+   hat.
+2. **Die Span-Herkunft:** `letter_spans` zieht aus dem freien `meta` in ein
+   GEPRÜFTES Feld, jede Spanne mit `herkunft` (`auto` \| `authored`), und die
+   Indizes werden gegen den Zug gehalten, in den sie zeigen — eine
+   entkoppelte Spanne ist in jeder einzelnen Zahl wohlgeformt, also nennt die
+   Abweisung Spanne UND Zug.
+3. **Der Feld-Schutz:** `displaced_authored` vergleicht nicht mehr nur
+   `verfahren` und `box_index`, sondern je FELD. Ein Push, der das
+   `verfahren` behält und die von Hand korrigierten Grenzen still fallen
+   lässt, wird damit benannt abgewiesen — und umgekehrt ist ein
+   grenzkorrigierter Kasten nicht mehr gegen ein gewöhnliches Neu-Folgen
+   gesperrt: die Grenzen müssen bloß mitkommen, was `tools.eigenhand.pfad`
+   von sich aus tut.
+
+Das deklarierte Format wird in BEIDE Richtungen als Inhaltsregel
+durchgesetzt: ein Format-2-Feld unter Format 1 wird abgewiesen, und ebenso
+eine Kopie von `letter_spans` im freien `meta` unter Format 2. `format` ist
+auf dem Schreibweg seit demselben Tag PFLICHT — solange nur ein Format
+zugelassen war, konnte ein formatloser Push nicht lügen; sobald zwei
+zugelassen sind, beanspruchte er die neuere Zahl und die Zeile bekäme sie
+aufgestempelt.
 Der vorletzte Punkt trägt den letzten: der Schlupf der Registrierung misst
 sich in x-Höhen des Pfades, also kaufte sich eine aufgeblasene `xh_px` jede
 Toleranz, die sie wollte — deshalb hängt die x-Höhe an der gedruckten Zeile
@@ -1342,9 +1386,10 @@ ABGELEITET und bleibt hinter derselben Tür.
 2026-09-18; Autor-Entscheid Q4 a mit Unterpunkt (i) in
 [`admin-redesign.md`](admin-redesign.md) §12.1). Alles in diesem Abschnitt
 beschreibt den GEFOLGTEN Pfad (`verfahren: tintenpfad`). Fährt der Autor
-einen Kasten im Wort-Editor von Hand nach (`verfahren: authored` — geplant
-als Phase 2 des Admin-Redesigns, heute schreibt das noch keine Fläche),
-gelten vier Sätze. Er ist **nicht ableitbar** — kein Werkzeug stellt eine
+einen Kasten von Hand nach (`verfahren: authored` — **seit dem 2026-09-20
+gibt es die Fläche dafür:** der Streifen-Editor der Phase 2, ein zweiter,
+schlanker Editor neben dem Platten-Dialog, der über `PATCH
+…/pfade/{box}` je Kasten speichert), gelten vier Sätze. Er ist **nicht ableitbar** — kein Werkzeug stellt eine
 Stifthand wieder her — und wird darum **archiviert wie Bild, Verdikt und
 Maske, aber auf dem umgekehrten Weg** (`pull --pfade → snapshot →
 sync --from`, §8.1; gebaut 2026-09-20 als erster PR der Phase 2, VOR dem
@@ -1413,13 +1458,17 @@ vom Terminal-Flag `--replace-authored` — bewusst keine vierte
 `force`-Fläche in der Werkbank, denn kein Browser-Code sendet den
 Parameter. `authored` über `authored` geht durch: das ist der Autor, der
 seine eigene Nachfahrung korrigiert, und genau das hält die spätere
-Zeichenfläche in der Werkbank offen. Die korrigierten Buchstabengrenzen
-aus Q15 bekommen einen eigenen Schutz, sobald PFAD_FORMAT 2 ihre Herkunft
-trägt; gelesen wird sie an derselben Stelle (`is_authored`), gelten wird
-sie aber je SPANNE und nicht je Kasten — ein gewöhnliches Neu-Folgen eines
-grenzkorrigierten Kastens muss durchgehen —, also braucht
-`displaced_authored` dann einen Vergleich je Feld statt dieser
-Kasten-Antwort.
+Zeichenfläche in der Werkbank offen. **Den eigenen Schutz der korrigierten
+Buchstabengrenzen aus Q15 gibt es seit dem 2026-09-20** (dieser Absatz
+sagte bis dahin „bekommen einen Schutz, sobald PFAD_FORMAT 2 ihre Herkunft
+trägt"): `displaced_authored` vergleicht je FELD, gelesen an derselben
+Stelle (`is_authored`) — so geht ein gewöhnliches Neu-Folgen eines
+grenzkorrigierten Kastens durch, solange die Grenzen mitkommen, und ein
+Push, der sie still fallen lässt, wird namentlich abgewiesen. Auf dem
+Kasten-Schreibweg gilt die Regel ausdrücklich NICHT: dort ist jeder
+Eintrag serverseitig `authored`, und die Regel lässt eine Antwort von Hand
+ohnehin für beide Felder durch — geschützt wird dieser Weg durch die
+Bahn-Marke (`If-Match`) und den Stempel.
 
 **Gebaut ist seit dem 2026-09-20 auch die Archiv-Hälfte von Q4** — die
 Kette, ohne die kein nachgefahrener Kasten entstehen darf. Drei Glieder:

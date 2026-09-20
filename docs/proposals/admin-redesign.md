@@ -6,38 +6,38 @@
 > 2026-09-19 (§4.6) sind mit #623 gebucht. Offen aus Phase 0 ist genau ein Schritt, der
 > Prod-Datenschritt V1 (`UPDATE sources.hand_id`): keine Admin-Route, darum SQL auf der
 > geteilten Cloud SQL, Snapshot davor, Rückfrage in der Sitzung. **Jede Browser-Prüfung
-> der Phase 1 lief auf dem Wegwerf-Stack mit SYNTHETISCHEN Daten** (die reservierte Menge
-> ist nicht seedbar): die GEFÜLLTEN Buchstaben-, Übergangs- und Wörter-Flächen hat vor dem
-> Blick des Autors im Prod-Admin niemand mit echten Daten gesehen (§15.4).
-> **Phase 2 (Tintentreue + Nachfahren) hat begonnen:** ihre nur lesende Erkundung ist
-> gelaufen und hat 22 Stellen DIESES Docs als falsch belegt — 21 davon hier in §6.2,
-> §6.3, §6.4, §6.7, §7.2 und §12.4 mit ihrem `datei:zeile`-Beleg in place berichtigt,
-> die 22. (der §15-Stand-Block) war schon mit #632 nachgezogen —, Runde 1 ihrer
-> Fragen ist am 2026-09-20 entschieden (§4.7: A, B, C, alle wie empfohlen), die Runden 2
-> und 3 (D–I) sind offen, und der Schnitt in dreizehn PRs steht in §15.6; gemergt ist von
-> Phase 2 nichts, der erste PR ist die Archiv-Kette. **Phase 5 wartet auf den Autor:**
-> FM1–FM6 aus [`freigabe-maschine.md`](freigabe-maschine.md) §10, der Lese-Sweep über die
-> Admin-API vor M1 (dort §12, mit Rückfrage) und V1 (§15.3). Die Phasen 3 und 4 sind
-> unberührt; die offenen Geschmacksfragen aus Phase 0/1 — jede mit der Empfehlung gebaut,
-> jede mit einem Wort kippbar — sammelt §15.5. Auf Wunsch des Autors entstanden („noch
-> nichts implementieren … ich will das erst mit dir durch diskutieren bevor wir
-> umsetzen", §1).
+> der Phasen 1 UND 2 lief auf dem Wegwerf-Stack mit SYNTHETISCHEN Daten** (die reservierte
+> Menge ist nicht seedbar): die gefüllten Arbeitsflächen hat vor dem Blick des Autors im
+> Prod-Admin niemand mit echten Daten gesehen (§15.4, §15.6).
+> **Phase 2 (Tintentreue + Nachfahren) ist geliefert bis auf zwei PRs:** ihre nur lesende
+> Erkundung hat 22 Stellen DIESES Docs als falsch belegt, alle berichtigt (21 hier in
+> place mit `datei:zeile`-Beleg, die 22. schon mit #632); alle neun Fragen A–I sind am
+> 2026-09-20 entschieden (§4.7; H gegen die Empfehlung und zugleich die Antwort auf FM3
+> der Freigabe-Maschine); und **elf der dreizehn PRs aus §15.6 sind gemergt** (#635–#644,
+> #647; daneben #645, #646). Offen bleiben **PR 12** (`pfad --spans`, die eine benannte
+> Ausnahme der Wellen-Ordnung) und **PR 13** (die Kalibrierung, Abschlussbedingung —
+> nicht baubar, solange keine von Hand gezeichnete Bahn existiert): **die Ampel steht,
+> geeicht ist sie nicht**, ihre acht Schwellen bleiben „vorläufig". **Phase 5 wartet auf den
+> Autor:** FM1, FM2, FM4, FM5, FM6 aus [`freigabe-maschine.md`](freigabe-maschine.md) §10 (FM3 ist
+> entschieden), der Lese-Sweep über die Admin-API vor M1 (dort §12, mit Rückfrage) und V1 (§15.3).
+> Die Phasen 3 und 4 sind unberührt; die offenen Geschmacksfragen — jede mit der Empfehlung gebaut,
+> jede mit einem Wort kippbar — sammeln §15.5 (Phase 0/1) und §15.7 (Phase 2, dort auch die drei
+> Schritte, die nur der Autor tun kann). Auf Wunsch des Autors entstanden („noch nichts
+> implementieren … ich will das erst mit dir durch diskutieren bevor wir umsetzen", §1).
 > **Der Rückfragen-Katalog ist seit dem 2026-09-18 beantwortet:** alle 25 Fragen, die
-> Unterpunkte zu Q4 und Q24, die Vorgaben V1–V26 und der Kleinkram — Entscheid-Zeile je
-> Frage in §12, Gesamttabelle in §4.5. Gewählte Form: **A zuerst, die C-Bausteine als
+> Unterpunkte zu Q4/Q24, die Vorgaben V1–V26 und der Kleinkram — Entscheid-Zeile je Frage
+> in §12, Gesamttabelle in §4.5. Gewählte Form: **A zuerst, die C-Bausteine als
 > Phase 4 darauf, B punktuell, Phase 5 parallel ab Phase 1** (Q1 a, Q5 a); Umsetzung §15,
 > das Nicht-Gewählte mit Grund §13. Zwei Entscheide weichen von der Empfehlung ab (Q6 b:
 > getestete Schreibflüsse DÜRFEN umgebaut werden, wenn die Suiten im selben PR mitziehen;
 > Q8 ohne c: die englischen Labels bleiben), drei tragen wörtliche Autor-Zusätze (Q4,
 > Q10, Q15), und daraus folgen zwei Leitsätze (§4.5): von Hand nachgefahrene Bahnen und
-> korrigierte Buchstabengrenzen sind AUCH die Trainingsmenge, die Folger und
-> Span-Zuordner besser macht; und die Eigenhand ist das Optimierungsziel, die Platte
-> bleibt Maßstab und „so ok". Die Doktrin bleibt, wo sie ist (werkbank §3–§6/§8,
-> eigenhand §2/§7/§12, handmodell §5, vision „Drei Rollen" — alle vier in §4.1
-> verlinkt); bewegt haben die Antworten nur, was §10.2 als erklärtes Proposal-Update
-> führt — am 2026-09-18 in den Ziel-Docs vollzogen, nie als stille Abweichung. Sonst:
-> Ist-Befund §3, Bindendes §4, Eigenhand-Statistik §6, Gestaltungs-Optionen §7–§9,
-> Szenarien §11; Kritik-Protokoll der Runde davor:
+> korrigierte Buchstabengrenzen sind AUCH die Trainingsmenge von Folger und
+> Span-Zuordner; und die Eigenhand ist das Optimierungsziel, die Platte bleibt Maßstab
+> und „so ok". Die Doktrin bleibt, wo sie ist (§4.1 verlinkt alle vier Docs); bewegt
+> haben die Antworten nur, was §10.2 als erklärtes Proposal-Update führt — am 2026-09-18
+> vollzogen, nie als stille Abweichung. Sonst: Ist-Befund §3, Bindendes §4,
+> Eigenhand-Statistik §6, Gestaltungs-Optionen §7–§9, Szenarien §11; Kritik-Protokoll:
 > [`../notes/admin-redesign-kritik-2026-09-17.md`](../notes/admin-redesign-kritik-2026-09-17.md).
 
 ## 1 Anlass
@@ -531,14 +531,16 @@ weil keine Modifier-Kombination über alle Betriebssysteme, Hilfstechniken
 und Browser-Erweiterungen hinweg nachweislich frei ist. Das ist der
 ehrliche Grund: eine Vorsichtsmaßnahme, keine Normerfüllung.
 
-### 4.7 Die Autor-Entscheide vom 2026-09-20 — Runde 1 der Phase 2
+### 4.7 Die Autor-Entscheide vom 2026-09-20 — die Runden 1 bis 3 der Phase 2
 
 Die nur lesende Erkundung der Phase 2 (§14, Schritt 5) ist am 2026-09-19
 gelaufen und hat neun Fragen an den Autor hinterlassen, in drei Runden
 geschnitten. **Runde 1 — die drei Fragen, die den ersten PR blockieren —
-hat der Autor am 2026-09-20 entschieden, alle drei wie empfohlen.** Die
-Runden 2 und 3 (Fragen D–I) sind offen; welcher PR auf welche wartet, steht
-in §15.6. Gemergt ist von Phase 2 noch nichts.
+hat der Autor am 2026-09-20 entschieden, alle drei wie empfohlen.**
+**Stand 2026-09-20, zweiter Eintrag des Tages:** die Runden 2 und 3
+(Fragen D–I) sind am selben Tag nachgezogen und stehen unter der ersten
+Tabelle; einer davon (H) geht gegen die Empfehlung. Welcher PR welche Frage
+trug, steht in §15.6.
 
 | Frage | Entscheid (Autor, 2026-09-20) | Der eine Grund |
 |---|---|---|
@@ -562,6 +564,48 @@ diese Lücke schweigt.
 Buchhaltung trug, war das folgenlos; als Träger der authored-Bahnen wird
 daraus die Bedingung, dass der Restore die NEUESTE Kartei liest und nicht
 die des genannten Stempels.
+
+**Runden 2 und 3 — die sechs Fragen D–I, entschieden am 2026-09-20.** Fünf
+davon wie empfohlen, eine (H) ausdrücklich dagegen.
+
+| Frage | Entscheid (Autor, 2026-09-20) | Der eine Grund |
+|---|---|---|
+| **D** — Wo entstehen die zwei fehlenden Messzahlen (Papier-Exkursion, AIoU): rechnet sie das Werkzeug beim Folgen und legt sie ab, oder rechnet sie der Server beim Lesen? | **(a)** Das **Werkzeug rechnet sie und die Zeile speichert sie** — „gemessen wird gespeichert, beurteilt wird abgeleitet" | Gerechnet wird an Pixeln, und die liegen nur beim Folgen vor; `core/` darf `tools` ohnehin nicht importieren (Test `tests/test_imports.py`). Die Ampel bleibt damit eine reine Ableitung beim LESEN, ohne eigene Messung. Geliefert mit #641 (die zwei Sensoren) und #638 (die Ableitung) |
+| **E** — Bekommt eine ganze Fassung eine Ampelfarbe? | **(b)** **Nein — sie bekommt einen Zähler**, „3 von 4 Kästen folgen" | Eine Farbe über der Fassung stünde als zweites Urteil mit eigenem Vokabular neben `befund.vorschlag` über demselben Gegenstand. Der Zähler sagt dasselbe, ohne ein zweites Urteil zu behaupten. Geliefert als `Kastenzaehler` (#638), je Fassung im meta-only Read (#640) |
+| **F** — Geht das Kalibrier-Instrument jetzt in den Bauplan, obwohl es zuletzt gebaut wird? | **(a)** **Ja, jetzt in den Plan — gebaut zuletzt** | Ein Posten, den die Tabelle nicht führt, wird nicht gebaut; die Runde selbst braucht aber Fassungen, die es noch nicht gibt. Er steht darum als PR 13 in §15.6 und ist die letzte Abschlussbedingung der Phase |
+| **G** — Ein Editor mit zwei Zielen oder ein zweiter, schlanker? | **(b)** **Ein zweiter, schlanker Streifen-Editor**; der Platten-Fluss bleibt unangetastet | Der Platten-Dialog hängt an der Platte über Speicherziel, Identität UND Unterlage (§6.4) — drei Nähte, jede mit eigener Testfläche. Geteilt wird, was wirklich gemeinsam ist: die Zeichenfläche als ein Bauteil, nicht als Kopie. Geliefert mit #644 (`StripTraceEditor.tsx` neben dem Platten-Dialog, gemeinsame `shell/TraceCanvas.tsx`) |
+| **H** — Eine Rückhaltemenge oder zwei? | **(c) ZWEI getrennte Mengen** — `holdout-follower` (aus jedem Folger-Versuch heraus) und `holdout-release` (aus allem heraus, bis eine Hand freigegeben wird). **Gegen die Empfehlung**, die gar keine Ziehung vorsah | Eine Menge für beides hieße, die Freigabe an Material zu messen, an dem der Folger schon gearbeitet hat. Derselbe Entscheid beantwortet **FM3 der Freigabe-Maschine in derselben Richtung** — dort Option (b), ebenfalls gegen die Empfehlung jenes Docs; gebucht ist er in [`freigabe-maschine.md`](freigabe-maschine.md) §10 FM3, damit niemand den überstimmten Rat baut. Geliefert mit #647 |
+| **I** — Wird der Bestand nachgemessen? | **(a)** **Nein — die bestehenden Fassungen bleiben grau** | Eine Bahn, die unter Format 1 gefolgt wurde, hat die Sensoren 4 und 5 nie gesehen; ihr eine Farbe zu geben hieße, für eine Messung zu bürgen, die nie stattfand. Grau mit Grund („Format 1 — unvollständig gemessen") ist die wahre Aussage, und ein Neu-Folgen bleibt jederzeit möglich. Gebaut so seit #636/#638 |
+
+**Zu H, und nur das:** der Entscheid geht gegen die Empfehlung dieses
+Plans. Warum der Autor anders gewählt hat, ist seine Sache; gebucht ist,
+WAS gilt — zwei disjunkte Mengen, gezogen als eigener, einmaliger Akt über
+die Streifen des eingefrorenen Plans, mit Vorregistrierung im Messjournal
+§14 („Trainingssatz `sep20`").
+
+**Drei weitere Entscheide desselben Tages**, die neben den Fragen A–I
+fielen und hier stehen, damit sie nicht in PR-Texten verstreut bleiben —
+der erste vom Autor, die beiden anderen im Bau entschieden und ihm
+vorgelegt:
+
+1. **Ein deutscher Fachbegriff ohne etablierte englische Entsprechung darf
+   ein Bezeichner sein** — Autor-Entscheid, gebucht und seit #645 enger
+   gefasst in [`sprachregelung.md`](../reference/sprachregelung.md) §5:
+   dort steht die Regel, ihr Test und ihr heutiger Umfang, und dort allein.
+   Dieser Plan stellt sie nicht nach; wer benennt, liest §5.
+2. **Der Sensor „Sprünge und Haken" wird gelesen und gezeigt, aber nicht
+   bewertet** — bis die Kalibrierung ihm eine Grenze gibt. Es ist der eine
+   bewusste Verzug gegen Q9 (b): die Vorregistrierung führt acht Zahlen für
+   VIER Sensoren, für diesen keine, und ein Sprung (Strangwechsel) wie ein
+   Haken (Rückwende) schreibt die Kurrent legitim. Er macht darum keinen
+   Kasten gelb oder rot. Entschieden im Bau von #638, dem Autor ausdrücklich
+   vorgelegt (Messjournal §14, „Tintentreue `sep20`"), und ein benanntes
+   offenes Stück der Kalibrierrunde (PR 13).
+3. **Von Hand korrigierte Buchstabengrenzen überleben ein Neu-Folgen.** Der
+   Feld-Schutz aus Q15 (b) sperrt einen grenzkorrigierten Kasten NICHT gegen
+   einen gewöhnlichen Folgerlauf; die Grenzen müssen bloß mit ihm
+   zurückkommen, und `tools.eigenhand.pfad` trägt sie von sich aus mit. Der
+   Schutz beißt dort, wo ein Push sie still fallen ließe. Gebaut mit #639.
 
 ## 5 Leitideen, auf die sich das Panel einigt
 
@@ -1161,8 +1205,8 @@ Adapter braucht Props `hand: {id, resolved}` oder V1, dazu den fehlenden
 Wrapper `putEigenhandPfade` (+ `types.ts`). Unterlage `GET
 /eigenhand/strips/{hand}/{strip}/{fassung}`, Rahmen aus `registration_px` −
 `rect_px`, Saat = gespeicherte Bahn, jeder Absetzer ein Zug. **Prüfstein 7
-sichtbar:** die Absetzer-Zahl des Tafel-Duktus (`body_runs_expected` +
-Markenzüge) steht als Soll neben der Bahn, Warnung bei Abweichung — sonst
+sichtbar:** die Absetzer-Zahl des Tafel-Duktus steht als Soll neben der
+Bahn, Warnung bei Abweichung — sonst
 liefert Nachfahren still eine neue Strichreihenfolge per Bild. Keine
 Stift-Telemetrie im Format (Verwurf 2026-08-22). **Entschieden 2026-09-18
 (Q14 a):** der Dialog läuft auf dem Tablet im Vollbild, Werkzeuge oben;
@@ -1190,6 +1234,33 @@ Die Unterlage muss darum eine **Blob-URL** werden, wie `StripsPanel.tsx:4-7,
 schlanker Streifen-Editor gebaut wird, ist offen** (Frage G, Runde 3,
 §15.6); die Blob-Unterlage gilt in beiden Fällen.
 
+**Gebaut 2026-09-20 als ein ZWEITER, schlanker Editor** (Entscheid G,
+§4.7; #644): `StripTraceEditor.tsx` neben dem Platten-Dialog, und die
+Zeichenfläche selbst als ein gemeinsames Bauteil `shell/TraceCanvas.tsx`
+herausgezogen statt kopiert — kopierte Geometrie driftet, und dann sind sich
+zwei Flächen uneins, wo ein Zug liegt. Der Platten-Fluss behält seinen
+dev-19-Wächter, seine Hand-Auflösung und sein Stapel-Speichern.
+
+**Nachzutragen zum Rahmen (2026-09-20, aus dem Bau von #644):** die
+**nominale Lineatur des Kastens muss aus der API kommen**. Der Rahmen ist
+`registration_px` − `rect_px` — aber genau der Kasten, den der Autor von
+Hand zeichnet, ist oft der, dessen Folger aufgegeben hat, und dessen
+Skip-Eintrag trägt weder Registrierung noch x-Höhe. Ohne einen nominalen
+Rückfall hätte er also GAR KEINEN Rahmen. `EigenhandStripBoxOut` nennt
+darum seit #644 zusätzlich `nominal_baseline_row` + `nominal_xh_px`,
+gelesen aus demselben `frame_for_box`-Aufruf, der schon `rect_px` liefert.
+Die Alternative wäre die Crop-Arithmetik (`band_mm`/`cut_mm`) ein zweites
+Mal in TypeScript gewesen. Es ist NOMINAL, also in der Oberfläche als
+„Saat" beschriftet, nie als Messung.
+
+**Und das Absetzer-Soll zählt KÖRPERläufe, sonst nichts** (Korrektur
+2026-09-20, dieselbe wie in §6.3, Zeile 2): `body_runs_expected(word)`
+zählt über `shape_word` ausschließlich verbundene Körperläufe — i-Punkt und
+Umlaut kommen darin nicht vor. Die Warnung im Editor sagt das mit, denn ein
+Lauf MEHR kann bei einem markierten Wort richtig sein, zwei mehr sind eine
+andere Strichreihenfolge. Der Server rechnet das Soll und liefert es je
+Kasten mit (#640), damit Editor und Absetzer-Sensor nie zwei Zahlen führen.
+
 **Speichern:** `PATCH …/pfade/{box}` je Kasten. `eigenhand_strips` hat kein
 `updated_at` (nur `created_at`, `erzeugt_am` ist ein Datum) → Content-ETag
 (sha256 über `pfade`) im GET, `If-Match` im PATCH, 412 bei Konflikt — ohne
@@ -1203,6 +1274,42 @@ Tool-Push über
 einen `authored`-Kasten → 409, Überschreiben nur mit ausdrücklichem
 Terminal-Flag; keine vierte force-Fläche (Q4 — entschieden 2026-09-18:
 Unterpunkt (i)).
+
+**Nachgezogen 2026-09-20 an der gebauten Fassung (#642) — die kurze Zeile
+oben ist als Spezifikation zu eng.** Sie stimmt in allem, was sie sagt, und
+lässt vier Dinge aus, die der Schreibweg wirklich tut:
+
+- **Der Token deckt `{format, pfade}`, nicht `pfade` allein**
+  (`core.eigenhand.pfad.pfad_etag`). Eine Liste und die Bedeutung, der ihre
+  Einträge gehorchen, sind EINE Aussage; ein Token über die halbe Aussage
+  finge zu lügen an, sobald die beiden Hälften auseinanderlaufen können.
+- **Die Leiter ist 428 · 412 · 409**, nicht nur 412: **428**, wenn ein
+  Schreibweg gar nicht sagt, auf welcher Liste er gemacht wurde (lieber
+  laut als still), **412** bei einem Token, das nicht mehr gilt, und
+  **409**, wenn ein Kasten-Schreibweg ein anderes Format deklariert als die
+  Zeile trägt — ein Kasten kann die anderen neben sich nicht umetikettieren.
+  Keine der beiden Verweigerungen nennt den gespeicherten Token: sonst
+  schriebe man blind, holte ihn aus der 428 und hätte das ungesehene
+  Überschreiben zurück.
+- **`If-Match: *` wird abgewiesen.** HTTP liest es als „irgendeine aktuelle
+  Fassung", und genau das „ich habe nicht hingesehen" soll die Bedingung
+  fangen.
+- **Ein SCHWACHER Validator desselben Digests wird angenommen** (`W/"…"`).
+  Cloudflare schwächt eine starke Marke, sobald es die Antwort neu kodiert,
+  und diese Antworten gehen gzip-komprimiert durch genau diese Zone — ein
+  strenger Vergleich hieße: jedes Speichern 412, auf dem Tablet, aus einem
+  von hier unsichtbaren Grund. Der Wert ist ein Inhalts-Digest und das hier
+  eine Anwendungs-Sperre, keine Cache-Prüfung.
+- Der Token schließt das LANGE Fenster (Lesen bis Schreiben). Das kurze
+  (zwei Schreibwege mit demselben, noch gültigen Token) schließt eine
+  **Zeilensperre** auf beiden Schreibwegen (`for_update`) — auf SQLite
+  wirkungslos, und die HTTP-Suiten lesen sich darum unverändert.
+
+`displaced_authored` gilt auf dem Kasten-Weg ausdrücklich nicht, und das ist
+keine Lücke: jeder Eintrag, den diese Route ablegt, ist serverseitig
+`authored` gestempelt, und die Regel lässt eine Antwort VON HAND für beide
+Felder ohnehin durch. Was dort schützt, sind der Token, der Stempel und
+`check_paths`, das einen authored Skip-Eintrag rundheraus abweist.
 
 **Berichtigt 2026-09-20 — die 409-Zeile ist in drei Punkten zu eng.**
 (a) Der REGULÄRE Tool-Push löst den 409 nie aus: `_merged` mischt von sich
@@ -1310,7 +1417,7 @@ darin Platz finden, legt das Proposal der Freigabe-Maschine fest (Q24 i,
 | `core/eigenhand/tintentreue.py` — Ampel-Regel (`severity = max` + `SENSOR_ORDER`, nicht `_summarise`, §6.3), Konstanten je Hand + Datum; §14-Vorregistrierung; Glossar. **Berichtigt 2026-09-20:** vier §14-Vorgänge, nicht einer — Tintentreue-Schwellen, Sensor-4-Schwelle bei 300 dpi, die Kalibrierrunde und der Span-Zuordner; eine gemeinsame Fixture `tests/fixtures/tintentreue_cases.json` klammert den Python- an den TS-Zwilling `pfadRohzahlen.ts`, wie `shaping_cases.json` es tut | core + docs | S · 2 |
 | **Das Kalibrier-Instrument — fehlte in dieser Tabelle, ergänzt 2026-09-20.** Q10 (b) verlangt 30 blind beurteilte Streifenkästen „nach dem humanbench-Muster"; `humanbench` liest aber eingefrorene Fixture-Crops (`tools/humanbench/build.py:80-82,998-999`) und bricht bei abweichender Wurzel ab (`:1266-1298`), und seine Taxonomie hat sechs Fit-Kategorien (`page.py:122-135`), die Ampel drei Stufen. Das ist ein Nachbau: Streifen-Modus, eigene Frage, eigenes Kategorienset, Abbildung auf drei Stufen — davor geht `menschliche-bewertung.md` nach (dort `:39-43` der ausdrückliche Nachzieh-Anlass) | `tools/humanbench/*` oder neu, docs | M · 2, zuletzt |
 | `PATCH …/pfade/{box}` + ETag/`If-Match` — **`If-Match` wird auch auf dem vollen `PUT` VERLANGT** (mit 412), nicht nur der ETag mitgeschickt, sonst schützt es nichts; `patchEigenhandPfad` + `types.ts`. Es gibt im Repo keinen ETag-Präzedenzfall, der PR schreibt ihn samt Test, dass `private, no-store` und ETag nebeneinander stehen bleiben | API + SPA | S · 2 |
-| Editor-Adapter und — Q14 a — „Speichern & weiter", Absetzer-Soll, Anzeige und Korrektur der Buchstabengrenzen (Q15); die Suiten ziehen im selben PR mit (Q6 b). **Berichtigt 2026-09-20:** Tablet-Vollbild und Werkzeuge oben SIND gebaut (`WordTraceEditorDialog.tsx:346`, `:332-335`), dafür ist die Naht größer als „Props für die Hand" — Speicherziel, Identität und Unterlage hängen an der Platte (§6.4). Erster Komponententest dieser Fläche, es referenziert heute keine `*.test.tsx` den Dialog | `WordTraceEditorDialog` oder ein zweiter, schlanker Streifen-Editor (Frage G) | L · 2 |
+| Editor-Adapter und — Q14 a — „Speichern & weiter", Absetzer-Soll, Anzeige und Korrektur der Buchstabengrenzen (Q15); die Suiten ziehen im selben PR mit (Q6 b). **Berichtigt 2026-09-20:** Tablet-Vollbild und Werkzeuge oben SIND gebaut (`WordTraceEditorDialog.tsx:346`, `:332-335`), dafür ist die Naht größer als „Props für die Hand" — Speicherziel, Identität und Unterlage hängen an der Platte (§6.4). Erster Komponententest dieser Fläche, es referenziert heute keine `*.test.tsx` den Dialog. **Ergänzt 2026-09-20 (aus dem Bau, #644):** der Editor braucht die NOMINALE Lineatur des Kastens aus der API (`nominal_baseline_row` + `nominal_xh_px` in `EigenhandStripBoxOut`) — ein Kasten, dessen Folger aufgegeben hat, trägt weder Registrierung noch x-Höhe und hätte sonst gar keinen Rahmen; und das Absetzer-Soll zählt KÖRPERläufe ohne Markenzüge (§6.4), serverseitig gerechnet, damit Editor und Sensor nie zwei Zahlen führen | ein zweiter, schlanker Streifen-Editor (Entscheid G, §4.7) neben `WordTraceEditorDialog`, Zeichenfläche als gemeinsames Bauteil | L · 2 |
 | `pfad --spans`: Buchstabengrenzen über eine nachgefahrene Bahn legen, ohne authored-Spans zu ersetzen (der Feld-Schutz kommt aus dem Format-PR, nicht aus dieser Zeile); eigener §14-Nachweis (grüne Auto-Bahnen „wie von Hand"); die Saat-Zuordnung aus A48 trägt nur auf dekodierten Bahnen — neue Arbeit | `tools/eigenhand/pfad.py`, Messjournal §14 | M · 2–3 (Q15) |
 | Archiv-Regel für authored-Pfade UND authored-Spans: `pull --pfade → snapshot → sync --from`, Formatversion, Prüfung nach `eigenhand-erfassung.md` §8.1 — VOR dem ersten nachgefahrenen Kasten. **Berichtigt 2026-09-20 — „drei Werkzeuge" verliert die Daten still, so wie es hier stand.** `snapshot.py` behandelt ein Fassungs-Verzeichnis als EINE unveränderliche Kopiereinheit am relativen Pfad und überspringt alles, was in irgendeinem früheren Snapshot liegt (`tools/eigenhand/snapshot.py:57-76,92-100`): eine später in eine schon abgelegte Fassung gelegte Datei käme nie ins Archiv, und der Lauf meldete Erfolg. Entscheid A (§4.7) umgeht das — die Bahn reist als Zeile in der `kartei.json`, die jeder Lauf VOLL kopiert (`:164`). Dazu: die `known_gaps` des DB-Snapshot-Manifests (`tools/dbsnapshot/fetch.py:400-413`, heute schweigt es über genau diese Lücke) und die laute Schlusszeile des Restores. Entscheid B (§4.7): `--replace-authored` verweigert, solange der Kasten nicht archiviert ist | vier Werkzeuge: `pull.py`, `snapshot.py`, `sync.py`, `dbsnapshot/fetch.py` | M · 2 (Q4 a; Entscheide A + B) |
 | Lokaler, gitignorter Export der authored-Bahnen (und authored-Spans) als Trainings- und Entwicklungssatz des Folgers; die dev-19-Kopfzahl liest ihn nie, gemessen wird nur mit vorregistrierter, eingefrorener Rückhaltemenge (§4.5, Leitsatz 1) | `tools/`, nie Repo-Inhalt | S · 2, nach den ersten Nachfahrungen |
@@ -1486,8 +1593,10 @@ Füllmuster (leer · schraffiert · voll) ab `md`, gefilterte Liste „nur
 offene, nach Gewicht" darunter · Quoten (gewichtet UND ungewichtet) ·
 Übergabekarten in Reihenfolge (pull → ingest → Siebung → apply → sync → pfad
 → snapshot), dazu die eine Zeile `report --faellig`. *streifen*: Wortsuche ·
-Item · Sortierung (Befund · Tintentreue · Streifen) · Filter „Nachfahren:
-Alle · Nötig · Erledigt · Ohne Bahn" · Zähler „k grün · j von Hand · n
+Item · Sortierung (Befund · Tintentreue · Streifen) · die **Nachfahr-Liste**
+mit der Status-Achse „Alle · Nötig · Erledigt · Ohne Bahn" (bis zum
+2026-09-20 stand hier „Filter ‚Nachfahren'" — es ist keiner, siehe den
+Absatz unter diesem) · Zähler „k grün · j von Hand · n
 nötig" · je Fassung Befund-Chips + Fleckenpinsel (unverändert), je Kasten
 Crop + Overlay + Rohzahlen-Chip/Ampel · Herkunft · „Saat: Tafel-Duktus" ·
 „Maske geändert". *statistik* (Q11 b, entschieden 2026-09-18): Belegzahlen,
@@ -1504,6 +1613,18 @@ Streifen-Befund (`:1068,1137,1293`, `befundOrder.ts:31`). Der Posten ist der
 Zubau einer ganzen Listenfläche mit eigenem Zeilenmodell — **eine Zeile je
 KASTEN** — auf `?reiter=streifen` mit einer `status=`-Achse (keine eigene
 Unterroute, V2). Er ist damit M, nicht S (§15.6, PR 8).
+
+**Gebaut 2026-09-20 als „Die Nachfahr-Liste" (#643).** `stripBoxRows.ts` ist
+das vierte Zeilenmodell neben `letterRows`/`pairRows`/`wordRows`, an
+`shell/listState.ts` und `shell/WorkList.tsx` verdrahtet; sie LEITET kein
+Urteil ab, sondern liest Stufe, benennenden Sensor, Grund und `offen` aus
+dem meta-only Read (#640) — ein zweites Lesen im Client wäre eine zweite
+Regel mit eigener Drift. Ordnung ist die Leiter Schwere → Streifen
+(`rot · Folger fand nichts · grau · gelb · von Hand · grün`), nie eine
+Skalarzahl. **Die Liste ist zugleich die Vorgabe-Fläche des Reiters**
+(V14), die Kachel-Galerie der `?ansicht=galerie`-Opt-in daneben; der
+freistehende Warn-Chip „Maske geändert" ist dabei gelöscht und in der Ampel
+aufgegangen.
 
 Quellen: `/eigenhand/*` — alles EXISTS, `zurueckgezogen`, `redo`,
 `sheets.last` heute ungezeigt; Sensoren je Kasten in der Liste MISSING
@@ -2742,7 +2863,15 @@ berührt oder sichtbar Geschmackssache ist.
   keine Rolle trägt Viridian.
 - **V14 Übersichten:** kompakte Liste als Vorgabe, Galerie Opt-in, 24er-
   Seiten, Zustand in der URL; Virtualisierung erst ab ~500 Zeilen, nie MUI X
-  DataGrid.
+  DataGrid. **Ergänzt 2026-09-20 — die Regel gilt auch für den
+  Streifen-Reiter, und das stand in keiner Zeile.** `?reiter=streifen` öffnet
+  seit #643 auf der **Nachfahr-Liste**, nicht auf der Kachel-Galerie; die
+  Galerie ist derselbe `?ansicht=galerie`-Opt-in wie in den drei
+  Übersichten (`DEFAULT_LIST_VIEW = 'liste'`,
+  `app/src/sections/admin/shell/listState.ts`). Ohne diesen Satz las sich
+  V14 als Regel nur für die drei Vorlagen-Übersichten, und die eine Fläche,
+  die eine Bilderwand ERSETZT hat, wäre die einzige ohne geschriebene
+  Vorgabe geblieben. Das Zurückkippen steht als Geschmacksfrage in §15.7.
 - **V15 Kopfleiste:** höchstens vier Bereichs-Links; Handy zweizeilig mit
   Scroll-Snap; Bottom-Nav nur mit §7-Nachtrag im Design-System.
 - **V16 Migrationen** je Phase gebündelt (ein Schema-PR, Snapshot davor,
@@ -2760,7 +2889,20 @@ berührt oder sichtbar Geschmackssache ist.
 - **V20 Schreibweg der Bahn:** `PATCH …/pfade/{box}` mit Content-ETag
   (sha256 über `pfade`) und `If-Match`, 412 bei Konflikt — `eigenhand_strips`
   hat kein `updated_at`; der Vollersatz bleibt dem Tool; Tool-Push über
-  `authored` → 409.
+  `authored` → 409. **Präzisiert 2026-09-20 an der gebauten Fassung (#642),
+  ohne die Vorgabe zu bewegen:** der Token hasht `{format, pfade}` und nicht
+  `pfade` allein (Liste und Bedeutung sind eine Aussage); die Leiter ist
+  **428** ohne Bedingung · **412** bei ungültigem Token · **409**, wenn ein
+  Kasten-Schreibweg ein anderes Format deklariert als die Zeile trägt;
+  **`If-Match: *` wird abgewiesen**, ein **schwacher Validator** desselben
+  Digests dagegen angenommen (Cloudflare schwächt die Marke beim
+  Neukodieren); und neben dem Token steht auf beiden Schreibwegen eine
+  **Zeilensperre** für das kurze Fenster innerhalb einer Anfrage.
+  Die Begründung je Punkt in §6.4, „Nachgezogen 2026-09-20". Die Forderung
+  „dasselbe `If-Match` auch auf dem vollen `PUT`" ist eingelöst: beide
+  Werkzeuge reichen den ETag ihres eigenen GET durch, und eine abgewiesene
+  Bedingung sagt dem Bedienenden seit #646, welcher Lauf zu wiederholen ist
+  — wiederholt wird NICHTS von selbst.
 - **V21 Nachgefahrene Bahnen werden gemessen** (`pfad --messen`, Sensoren
   1/3/4/5 sind referenzfrei); „von Hand" ist ein Herkunfts-Chip, nie eine
   Ampelfarbe; bis dahin zwei Zähler (gemessen / ungemessen).
@@ -2980,7 +3122,8 @@ wer eine davon wieder aufmacht, braucht einen neuen Entscheid.
    [`freigabe-maschine.md`](freigabe-maschine.md) §10 zu beantworten. —
    **Erledigt 2026-09-20:** alle acht Phase-1-PRs sind gemergt (#621, #622,
    #626, #625, #624, #627, #629, #631), der Stand dazu steht in §15.4. V1
-   und FM1–FM6 sind unverändert offen.
+   ist unverändert offen; von den sechs Rückfragen ist inzwischen FM3
+   entschieden (Schritt 6).
 5. **Phase 2 — Tintentreue + Nachfahren** (§15.1, Zeile 2; Spezifikation
    §6.3, §6.4, §6.7). Sie beginnt mit einer **nur lesenden Erkundung**:
    erst steht im Code und in den Daten, was heute wirklich in `pfade` liegt
@@ -2996,11 +3139,13 @@ wer eine davon wieder aufmacht, braucht einen neuen Entscheid.
    in **dreizehn PRs** ergeben (§15.6).
 6. **Was weiter beim Autor liegt.** Der Prod-Datenschritt V1 (§15.2) — ein
    `UPDATE` auf der geteilten Cloud SQL, mit Snapshot davor und Rückfrage in
-   der Sitzung. Und für Phase 5 (§15.3) die sechs Rückfragen FM1–FM6 aus
-   [`freigabe-maschine.md`](freigabe-maschine.md) §10 sowie der Lese-Sweep
-   über die Admin-API vor M1 (dort §12), der ebenfalls eine Rückfrage
-   braucht. Ohne diese drei Dinge bleibt Phase 5 angehalten; Phase 2
-   hängt an keinem von ihnen.
+   der Sitzung. Und für Phase 5 (§15.3) die Rückfragen **FM1, FM2, FM4, FM5
+   und FM6** aus [`freigabe-maschine.md`](freigabe-maschine.md) §10 sowie der
+   Lese-Sweep über die Admin-API vor M1 (dort §12), der ebenfalls eine
+   Rückfrage braucht. **FM3 (Rückhaltemenge) ist am 2026-09-20 entschieden**
+   — zwei getrennte Mengen, Option (b), zugleich Entscheid H dieses Plans
+   (§4.7). Ohne diese Dinge bleibt Phase 5 angehalten; Phase 2 hängt an
+   keinem von ihnen.
 7. **Der eine Nachzug, der Phase 1 schließt: erledigt 2026-09-20 mit #633.**
    Issue #628 — `<Typography color="text.secondary">` ist unter
    `@mui/material` 9 wirkungslos, 161 Stellen renderten in voller Tinte statt
@@ -3011,13 +3156,29 @@ wer eine davon wieder aufmacht, braucht einen neuen Entscheid.
    `pull --pfade → snapshot → sync --from`, weil nichts einen nachgefahrenen
    Kasten schreiben darf, bevor er wiederherstellbar ist. **Runde 1 der
    Phase-2-Fragen ist am 2026-09-20 entschieden** (A, B, C — §4.7, alle drei
-   wie empfohlen), damit ist PR 1 baubar. **Offen sind die Runden 2 und 3:**
-   Frage D (wo die zwei neuen Messzahlen entstehen), E (ob eine ganze Fassung
-   eine Ampelfarbe bekommt), F (ob das Kalibrier-Instrument in den Bauplan
-   geht), G (ein Editor mit zwei Zielen oder ein zweiter, schlanker), H
-   (Rückhaltemenge) und I (ob der Bestand nachgemessen wird). Welcher PR auf
-   welche wartet, steht in §15.6; keine davon hält PR 1 auf, und für jede ist
-   der Weg ohne Entscheid dort benannt.
+   wie empfohlen), damit ist PR 1 baubar. Die Runden 2 und 3 (D–I) waren
+   beim Schreiben dieses Schritts offen. — **Erledigt 2026-09-20:** die Welle
+   ist gebaut, siehe Schritt 9; D–I sind am selben Tag entschieden (§4.7),
+   H gegen die Empfehlung.
+9. **Stand 2026-09-20, Abschluss der Welle: Phase 2 ist geliefert bis auf
+   PR 12 und PR 13.** Elf der dreizehn PRs aus §15.6 sind gemergt — die
+   Archiv-Kette (#635), der gespeicherte Format-Marker mit Revision `0032`
+   (#636), der Vorab-Split (#637), die Ampel (#638), Format 2 auf der
+   Leseseite (#639), der meta-only Read (#640), der schreibende Lockstep
+   (#641), der Kasten-Schreibweg mit Bahn-Marke (#642), die Nachfahr-Liste
+   (#643), der Streifen-Editor (#644) und der Trainingssatz (#647); dazu
+   zwei PRs außerhalb des Schnitts, die Sprachregel (#645) und die
+   Bedien-Hälfte einer abgewiesenen Bedingung (#646).
+   **Offen sind zwei.** **PR 12 (`pfad --spans`)** ist die eine benannte
+   Ausnahme der Wellen-Ordnung: er darf hinter Phase 3 rutschen, und das ist
+   §15.6 so geschrieben — sein Ergebnis hängt an keiner anderen Fläche.
+   **PR 13 (das Kalibrier-Instrument und die EINE Kalibrierung je Hand)** ist
+   dagegen Abschlussbedingung der Phase und **lässt sich heute nicht bauen**:
+   die Runde beurteilt 30 geschriebene Streifenkästen blind, und es gibt noch
+   keine einzige von Hand gezeichnete Bahn. Bis dahin bleiben die acht
+   Schwellen „vorläufig" und die Ampel sagt das in ihrer eigenen Antwort mit.
+   **Phase 2 gilt darum als noch nicht abgeschlossen** — die Ampel ist
+   gebaut, geeicht ist sie nicht.
 
 ## 15 Umsetzung der gewählten Form (Stand 2026-09-20)
 
@@ -3027,23 +3188,30 @@ Bauplan dazu; die Spezifikation der Flächen bleibt, wo sie steht (§5–§7,
 für Phase 4 §9), hier stehen Reihenfolge, Schnitt und Bedingungen. Die
 Aufwände sind die Vermutungen aus §6.7, keine Messungen.
 
-**Stand 2026-09-20, zweite Fassung des Tages** (sie ersetzt die erste, die
-Phase 2 noch vor ihrer Erkundung stehen sah). **Die Phasen 0 und 1 sind
-gebaut** — die neun PRs aus §15.2 und die acht aus §15.4 sind gemergt, der
-eine Nachzug #628 mit **#633** (§15.4); offen ist allein der
+**Stand 2026-09-20, dritte Fassung des Tages** (sie ersetzt die zweite, die
+Phase 2 noch als „begonnen, nichts gemergt" führte). **Die Phasen 0 und 1
+sind gebaut** — die neun PRs aus §15.2 und die acht aus §15.4 sind gemergt,
+der eine Nachzug #628 mit **#633** (§15.4); offen ist allein der
 Prod-Datenschritt V1, der auf die Rückfrage in der Sitzung wartet.
-**Phase 2 hat begonnen** (§15.1, Zeile 2): die nur lesende Erkundung ist
-gelaufen, sie hat 22 Stellen dieses Docs als falsch belegt — 21 davon in
-§6.2, §6.3, §6.4, §6.7, §7.2 und §12.4 in place berichtigt, jede mit ihrem
-`datei:zeile`-Beleg, die 22. schon mit #632 —, Runde 1 ihrer Fragen ist am
-2026-09-20 entschieden
-(§4.7) und der Schnitt in dreizehn PRs steht in **§15.6**; gemergt ist von
-Phase 2 nichts, der erste PR ist die Archiv-Kette. Phase 5 hat ihr
+**Phase 2 ist geliefert bis auf zwei PRs** (§15.1, Zeile 2): die nur lesende
+Erkundung hat 22 Stellen dieses Docs als falsch belegt — 21 davon in §6.2,
+§6.3, §6.4, §6.7, §7.2 und §12.4 in place berichtigt, jede mit ihrem
+`datei:zeile`-Beleg, die 22. schon mit #632 —, alle neun Fragen A–I sind am
+2026-09-20 entschieden (§4.7, H gegen die Empfehlung), und von den dreizehn
+PRs des Schnitts sind **elf gemergt** (§15.6, mit Nummern und einer Zeile je
+Zeile). Offen bleiben **PR 12** (`pfad --spans` — die eine benannte
+Ausnahme, darf hinter Phase 3 rutschen) und **PR 13** (Kalibrier-Instrument
+und die EINE Kalibrierung je Hand — Abschlussbedingung, aber nicht baubar,
+solange es keine einzige von Hand gezeichnete Bahn gibt). **Die Phase ist
+darum noch nicht abgeschlossen: die Ampel steht, geeicht ist sie nicht**,
+und ihre acht Schwellen bleiben ausdrücklich „vorläufig". Phase 5 hat ihr
 erstes Doc (§15.3, Schritt 1) und ihren Pin-PR (Schritt 2); gebaut ist von
-ihr nichts, und sechs Rückfragen plus der Lese-Sweep halten den Bau an. Die
-Phasen 3 und 4 sind unberührt. Die Reihenfolge der Sätze in §15.2–§15.6 ist
-die Chronologie, nicht die Nummerierung: §15.4 bis §15.6 sind angehängt,
-weil § Nummern nie umgeschrieben werden.
+ihr nichts, und fünf Rückfragen (FM1, FM2, FM4, FM5, FM6 — FM3 ist seit dem
+2026-09-20 entschieden) plus der Lese-Sweep halten den Bau an. Die
+Phasen 3 und 4 sind unberührt. Was Phase 2 an Geschmacksfragen und
+Autor-Schritten hinterlässt, sammelt **§15.7**. Die Reihenfolge der Sätze in
+§15.2–§15.7 ist die Chronologie, nicht die Nummerierung: §15.4 bis §15.7
+sind angehängt, weil § Nummern nie umgeschrieben werden.
 
 ### 15.1 Die Phasen 0–5
 
@@ -3051,7 +3219,7 @@ weil § Nummern nie umgeschrieben werden.
 |---|---|---|---|
 | **0** Reparaturen + Regeln | die eine Liste aus §5.2: Overflow · Tab-Titel · erwartete 404 stumm · Wort-Detail ohne `word_instance` · Korb-Drawer mit Filtern · Rohzahlen-Chip · Apply-Guard · authored-Regel · Ebenen-, Rollen- und `mono`-Token — dazu der Wegwerf-Verify-Stack als ausführbares Rezept | V1, V8, V17, V22, V23, V26; Kleinkram | §5.2, §6.7; Schnitt in §15.2 |
 | **1** Scope + Arbeitslisten | Scope-Leiste mit zwei Feldern, die nicht schaltet; `h=` optional in den `focus.ts`-Buildern, Korb- und Todoist-Links tragen es immer; kompakte Liste als Vorgabe mit URL-Zustand in den drei Übersichten; `?reiter=`-Split der Eigenhand-Seite; Übergabekarten-Bauteil + `report --faellig`; Tastatur-Regel; Rollen-Etiketten und „Bahn" statt „Pfad" in der Oberfläche. Der Picker bleibt Einstieg; ein „Heute" vor Phase 4 läge unter `/admin/heute` | Q2 a, Q7 b, Q8 a + b (nicht c), Q25 a, **P1-Q1 c, P1-Q3 a, P1-Q11 b** (§4.6); V2, V14, V15, V19, V24 | §5.1 Ideen 1, 4, 11, 18; §7.1–§7.2; PR-Schnitt §15.4 |
-| **2** Tintentreue + Nachfahren | **Zeile neu geschrieben 2026-09-20 nach der Erkundung** — sie führte sonst den alten und den berichtigten Plan nebeneinander. Was gebaut wird: die Archiv-Kette für authored-Bahnen und authored-Spans VOR dem ersten nachgefahrenen Kasten; der gespeicherte Format-Marker; dann PFAD_FORMAT 2 im Lockstep mit seinen DREI echten Schema-Änderungen — Skip-Einträge, Span-Herkunft je Kasten, Feld-Schutz (die Sensoren 4/5 sind additiv und gehören nicht zum Format, §6.3); das Werkzeug schreibt im zweiten Release die fünf Sensoren; `tintentreue.py` mit „vorläufigen" Schwellen und §14-Vorregistrierung, zuletzt die EINE Kalibrierung je Hand samt dem Instrument, das es dafür noch nicht gibt; meta-only Read; der Vorab-Split von `StripsPanel`; eine ganze Nachfahr-Listenfläche mit einer Zeile je KASTEN (kein „Filter", §7.2) in der Ordnung Schwere → Streifen; `PATCH …/pfade/{box}` + ETag; der Streifen-Editor mit „Speichern & weiter", Absetzer-Soll und den Buchstabengrenzen (Vollbild und Werkzeuge oben sind schon gebaut, §6.4); `pfad --spans`; der lokale Trainings-Export | Q4 a + (i), Q6 b, Q9 b, Q10 b, Q12 b, Q13 (Phase 2: b), Q14 a, Q15 b mit Korrektur, Q18; V5, V7, V20, V21; **Entscheide A, B, C** (§4.7) | §6.3, §6.4, §6.7; PR-Schnitt **§15.6** |
+| **2** Tintentreue + Nachfahren | **Zeile neu geschrieben 2026-09-20 nach der Erkundung** — sie führte sonst den alten und den berichtigten Plan nebeneinander. Was gebaut wird: die Archiv-Kette für authored-Bahnen und authored-Spans VOR dem ersten nachgefahrenen Kasten; der gespeicherte Format-Marker; dann PFAD_FORMAT 2 im Lockstep mit seinen DREI echten Schema-Änderungen — Skip-Einträge, Span-Herkunft je Kasten, Feld-Schutz (die Sensoren 4/5 sind additiv und gehören nicht zum Format, §6.3); das Werkzeug schreibt im zweiten Release die fünf Sensoren; `tintentreue.py` mit „vorläufigen" Schwellen und §14-Vorregistrierung, zuletzt die EINE Kalibrierung je Hand samt dem Instrument, das es dafür noch nicht gibt; meta-only Read; der Vorab-Split von `StripsPanel`; eine ganze Nachfahr-Listenfläche mit einer Zeile je KASTEN (kein „Filter", §7.2) in der Ordnung Schwere → Streifen; `PATCH …/pfade/{box}` + ETag; der Streifen-Editor mit „Speichern & weiter", Absetzer-Soll und den Buchstabengrenzen (Vollbild und Werkzeuge oben sind schon gebaut, §6.4); `pfad --spans`; der lokale Trainings-Export. **Stand 2026-09-20: elf der dreizehn PRs sind gemergt**, offen sind `pfad --spans` (die benannte Ausnahme) und die Kalibrierung (nicht baubar ohne gezeichnete Bahnen) — §15.6 | Q4 a + (i), Q6 b, Q9 b, Q10 b, Q12 b, Q13 (Phase 2: b), Q14 a, Q15 b mit Korrektur, Q18; V5, V7, V20, V21; **Entscheide A–I** (§4.7) | §6.3, §6.4, §6.7; PR-Schnitt **§15.6**, Offenes **§15.7** |
 | **3** Rollen-Spalten + Stufe 1 | Router-Zeilen; Rollen-Spalten in Buchstabe · Übergang · Wort mit der zweiten Hand eingeklappt, beschriftet, nie verrechnet; Belegleiste; beschriftete Leerflächen für Phase 5; `hands.kind` + `work_items.hand_id` als EIN Schema-PR; Stufe 1 = Belegzahlen, Tintentreue-Verteilung, Ausschnitt-Stapel, Feder-Halbbreite — keine Pipeline aus Bahnen; Kohorten-Filter + Warn-Chip „gemischte Federn" | Q3 a, Q11 b, Q16 a; V1, V4, V7, V16 | §5.1 Ideen 2, 3, 9; §6.1, §6.2, §6.5 |
 | **4** C-Bausteine auf A | „Heute" wird `/admin`, mit Bestandskopf (nur Zahlen, keine Marke) und nach der Wachstumsschleife der Eigenhand geordnet; der Picker wandert in den Vorlagen-Chip; `?liste=` + ‹ ›; Arbeitsvorrat; Nachfahr-Liste nach Schwere → Bahn-Deckung → Gewicht → Streifen, die Streifenfolge als Umschalter; „Speichern & weiter" entlang der Liste; Korb-Seite `/admin/korb` | Q5 a, Q7 a, Q13 (ab Phase 4: a + c), Q24 a; Leitsatz 2 | §9.1–§9.2 mit dem Vokabular aus §5.0 |
 | **5** Produktionshand | läuft PARALLEL ab Phase 1 — eigenes Gleis, §15.3 | Q1 a, Q17, Q19–Q24 | §6.6, §6.7 |
@@ -3153,12 +3321,17 @@ in dieser Reihenfolge — jeder ist die Voraussetzung des nächsten:
    ist nichts. Bandschnitt dort §4.2, was die Schritte 3, 6 und 7 davon
    aufnehmen §11, sechs Rückfragen §10 (eine davon, die Rückhaltemenge, VOR
    Schritt 4).
-   **Damit steht das Doc, nicht die Antwort:** die sechs Rückfragen
-   **FM1–FM6 sind offen** (FM1 Paare im Stand · FM2 Feder · FM3
-   Rückhaltemenge · FM4 blinder Durchgang · FM5 Randcache · FM6 zwei
-   Platten-Hände) und **blockieren den Bau der Phase 5** — FM1 schneidet,
-   was ein Stand überhaupt bindet, und FM3 ist VOR Schritt 4 zu beantworten,
-   sonst misst die Regression auf der Trainingsmenge.
+   **Damit steht das Doc, nicht die Antwort:** **fünf der sechs Rückfragen
+   sind offen** (FM1 Paare im Stand · FM2 Feder · FM4 blinder Durchgang ·
+   FM5 Randcache · FM6 zwei Platten-Hände) und **blockieren den Bau der
+   Phase 5** — FM1 schneidet, was ein Stand überhaupt bindet.
+   **FM3 (Rückhaltemenge) ist am 2026-09-20 entschieden** (aktualisiert am
+   2026-09-20, die erste Fassung führte alle sechs als offen): Option (b),
+   zwei getrennte Mengen, gegen die Empfehlung jenes Docs — derselbe
+   Entscheid ist H dieses Plans (§4.7), gebucht in `freigabe-maschine.md`
+   §10 FM3 und gebaut mit #647. Die alte Bedingung „FM3 vor Schritt 4" ist
+   damit erledigt; an ihre Stelle tritt die engere, dass die ZIEHUNG vor der
+   ersten von Hand gezeichneten Bahn liegt.
 
    **Zwei Befunde nimmt der Schema-PR (Schritt 3) aus dem Doc mit; beide am
    2026-09-19 im Code nachgeprüft:**
@@ -3507,7 +3680,8 @@ Zeile 2; hier der Schnitt aus der nur lesenden Erkundung vom 2026-09-19
 (§14, Schritt 5), deren 22 Befunde oben in §6.2, §6.3, §6.4, §6.7, §7.2 und
 §12.4 in place berichtigt sind — bis auf den einen, der schon mit #632
 nachgezogen war. Es sind **dreizehn PRs**, die der Reihe nach gemergt
-werden. Gemergt ist noch keiner.
+werden. **Stand 2026-09-20: elf sind gemergt, PR 12 und PR 13 sind offen**
+— die Nummern und die Abweichungen stehen in der zweiten Tabelle unten.
 
 | # | PR | Was er liefert | Aufwand | Abhängigkeit | Entscheid, der ihn trägt |
 |---|---|---|---|---|---|
@@ -3524,6 +3698,30 @@ werden. Gemergt ist noch keiner.
 | 11 | **Lokaler, gitignorter Trainings-Export** | die authored-Bahnen und -Spans als Trainings- und Entwicklungssatz des Folgers, eigene Wurzel AUSSERHALB von `tools/*/fixtures`, `.gitignore` und ein Test, der die Trennung pinnt; Statusfilter gegen den Archiv-Read, damit zurückgezogene Fassungen draußen bleiben. **Er zieht KEINE Rückhaltemenge** | S–M | PR 10 (es muss authored-Kästen geben) | Q4 (a) mit Autor-Zusatz, Leitsatz 1 (§4.5). **Frage H** |
 | 12 | **`pfad --spans`** | der automatische Grenzen-Zuordner über eine nachgefahrene Bahn, der authored-Spans nie ersetzt; eigener kleiner §14-Nachweis (grüne Auto-Bahnen „wie von Hand") | M | PR 3 + PR 10 | Q15 (b) mit Korrektur, V21. **Der einzige PR der Welle, der sie VERLASSEN darf** — siehe die Notiz unter der Tabelle |
 | 13 | **Das Kalibrier-Instrument und die EINE Kalibrierung je Hand** | der Posten, den §6.7 nicht führte: ein Streifen-Modus für `humanbench` (oder ein Geschwister-Bauer), eigene Frage, eigenes Kategorienset, Abbildung auf drei Stufen; davor der Nachzug in `menschliche-bewertung.md`, danach der §14-Adoptionseintrag, der die acht Zahlen datiert einfriert und „vorläufig" streicht | M + die Runde | PR 5 + genügend Fassungen (die Menge zählt FASSUNGEN, nicht Wochen — Q18) | Q10 (b) mit Autor-Zusatz. **Fragen F und I** |
+
+**Stand 2026-09-20 — was ankam.** Eine Zeile je PR: die Nummer und, wo das
+Gebaute von der Zeile oben abweicht, worin. Elf sind gemergt, zwei offen.
+
+| # | Gemergt | Was ankam, gegen die Zeile oben |
+|---|---|---|
+| 1 | **#635** | wie geplant. Dazu drei Löcher, die erst der Review fand: `sync --from` las die Kartei aus dem GENANNTEN Stempel statt aus dem neuesten (die Last aus §4.7), ein Restore überschrieb einen lebenden Kasten, und ein älteres Archivformat wurde abgewiesen statt gelesen |
+| 2 | **#636** | wie geplant; Revision `0032`, die einzige Migration der Phase. Der Marker ist ausdrücklich NICHT verzögert — „welche Fassungen stehen noch auf Format 1" ist eine Listenfrage, und das Prädikat dazu (`pfade_format < PFAD_FORMAT AND pfade IS NOT NULL`) steht neben Spalte und Deferral |
+| 3 | **#639** | wie geplant: `SUPPORTED_FORMATS = (1, 2)` liest, `PFAD_FORMAT` schreibt weiter 1 — die Lücke zwischen beiden Zahlen IST der Lockstep. `EigenhandPfadeIn.format` wurde dabei Pflicht, weil ein formatloser Push sonst die neuere Zahl beanspruchte |
+| 4 | **#641** | wie geplant: `PFAD_FORMAT` auf 2, beide Sensoren beim Folgen gerechnet und gespeichert (Entscheid D). Sensor 4 war wirklich nur eine Umverdrahtung. Zwei Dinge schreibt das Werkzeug bewusst NICHT: `not_selected` (ein `--box`-Lauf sagt nichts über die anderen Kästen, und die Schreibung ist eine volle Ersetzung) und einen Skip über einer gespeicherten Bahn (er würfe eine gute Bahn weg, um zu vermerken, dass DIESER Lauf sie nicht reproduziert hat) |
+| 5 | **#638** | wie geplant, mit einem benannten Verzug: **„Sprünge und Haken" wird gelesen, aber nicht bewertet** (§4.7). Kein Skalar, `severity = max` + `SENSOR_ORDER`, und die Fassung bekommt den Zähler statt einer Farbe (Entscheid E) |
+| 6 | **#640** | wie geplant. Der Read ist ein Strom, kein `list` — sonst läge jede Bahn der ganzen Hand gleichzeitig im Speicher, um ein paar Zahlen je Kasten auszurechnen. Ein Skip-Eintrag bekam dabei seinen eigenen grauen Zustand, statt als „unvollständig gemessen" zu lesen |
+| 7 | **#637** | wie geplant, reine Verschiebung: 1318 → 326 Zeilen, keine Testdatei angefasst, gerendertes Markup vor und nach byte-gleich |
+| 8 | **#643** | **die Zeile hieß „Filter", gebaut ist eine LISTE.** Es gab keine Eigenhand-Arbeitsliste zu filtern (§7.2); `stripBoxRows.ts` ist ein neues, viertes Zeilenmodell, und die Liste ist seither die Vorgabe-Fläche des Reiters (V14). `specimen_kind='strip'` ritt als Ein-Zeilen-Flip mit |
+| 9 | **#642** | wie geplant, und genauer als die Zeile: der Token deckt `{format, pfade}`, die Leiter ist 428 · 412 · 409, `If-Match: *` wird abgewiesen, ein schwacher Validator angenommen, und eine Zeilensperre deckt das kurze Fenster (§6.4, V20). Die Bedien-Hälfte einer abgewiesenen Bedingung kam mit **#646** nach |
+| 10 | **#644** | **die Zeile erwartete EINEN umgebauten Dialog, gebaut ist ein ZWEITER, schlanker** (Entscheid G) — mit der Zeichenfläche als gemeinsamem Bauteil, nicht als Kopie. Neu gegenüber der Zeile: die nominale Lineatur des Kastens aus der API, ohne die ein aufgegebener Kasten gar keinen Rahmen hätte (§6.4) |
+| 11 | **#647** | **die Zeile sagte „Er zieht KEINE Rückhaltemenge" — Entscheid H hat das umgedreht:** zwei getrennte Mengen, gezogen als eigener, einmaliger Akt über die Streifen des eingefrorenen Plans. Derselbe Entscheid beantwortet FM3 der Freigabe-Maschine (§15.3) |
+| 12 | **offen** | `pfad --spans`. Die eine benannte Ausnahme der Wellen-Ordnung: er darf hinter Phase 3 rutschen und ist dann ein Nachzügler mit eigenem Datum |
+| 13 | **offen** | Kalibrier-Instrument und die EINE Kalibrierung je Hand. **Abschlussbedingung der Phase und heute nicht baubar:** die Runde beurteilt 30 geschriebene Streifenkästen blind, und es existiert noch keine einzige von Hand gezeichnete Bahn. Bis dahin bleiben die acht Schwellen „vorläufig", und die Ampel sagt das in ihrer Antwort mit |
+
+Zwei PRs fuhren neben dem Schnitt: **#645** (die Sprachregel als
+[`sprachregelung.md`](../reference/sprachregelung.md) §5) und **#646** (was
+dem Bedienenden gesagt wird, wenn eine Bedingung abgewiesen wird —
+wiederholt wird nichts von selbst).
 
 **Die Reihenfolge gilt für alle dreizehn — mit genau einer benannten
 Ausnahme.** PR 12 (`pfad --spans`) darf nach Phase 3 rutschen; §6.7 gibt ihm
@@ -3561,19 +3759,17 @@ Abschlussbedingung der Phase.
    authored-Bahn entsteht. Vorher gibt es nichts zu verlieren, nachher
    hängt alles davon ab, dass 1–3 stehen.
 
-**Was auf wen wartet.** Runde 1 (A, B, C) ist am 2026-09-20 entschieden
-(§4.7) — PR 1 und PR 3 sind damit frei. Offen sind, mit dem PR, den sie
-berühren: **Frage D** (Messzahlen im Werkzeug oder auf dem Server) → Umfang
-von PR 3/4, nicht ihr Start · **Frage E** (Ampelfarbe für eine ganze
-Fassung) → PR 5 · **Frage F** (Kalibrier-Instrument in den Bauplan) → PR 13
-· **Frage G** (ein Editor mit zwei Zielen oder ein zweiter, schlanker) →
-PR 10 · **Frage H** (eine Rückhaltemenge oder zwei) → PR 11 · **Frage I**
-(Bestand nachmessen) → berührt keinen PR, aber Prod. Für jede ist der Weg
-ohne Entscheid festgelegt, damit nichts wartet, was nicht warten muss:
-D → (a) wie geplant · E → die Ampel bleibt je Kasten, die Fassung bekommt
-einen Zähler · F → die Ampel bleibt dauerhaft „vorläufig" · G → zwei
-Editoren mit gemeinsamen Bauteilen · H → keine Ziehung, nur die
-Grundgesamtheit · I → der Bestand bleibt grau.
+**Was auf wen wartete — erledigt am 2026-09-20.** Runde 1 (A, B, C) gab
+PR 1 und PR 3 frei; die Runden 2 und 3 kamen am selben Tag nach (§4.7) und
+trafen, jede in ihrem PR: **D** → PR 3/4 (das Werkzeug rechnet, die Zeile
+speichert) · **E** → PR 5 (Zähler statt Farbe) · **F** → PR 13 (steht im
+Plan, gebaut zuletzt) · **G** → PR 10 (ein zweiter, schlanker Editor) ·
+**H** → PR 11 (zwei Mengen, gegen die Empfehlung) · **I** → kein PR, aber
+Prod (der Bestand bleibt grau). Vier von sechs fielen genau so aus, wie der
+Weg ohne Entscheid es vorgezeichnet hatte (D, E, G, I) — **zwei nicht:**
+F setzte das Kalibrier-Instrument in den Plan, statt die Ampel dauerhaft
+„vorläufig" stehen zu lassen, und H verlangte zwei Ziehungen, wo der Weg
+ohne Entscheid gar keine vorsah.
 
 **Regeln der Welle** — dieselben wie in §15.2 und §15.4: jeder PR ist für
 sich grün und braucht keinen späteren zum Bauen oder Linten; gemergt wird
@@ -3600,3 +3796,53 @@ Pixeln; diese Teile werden gegen Fixtures und einen Fake-API-Client
 unit-getestet, und der Ende-zu-Ende-Lauf ist eine Handlung des Autors am
 Terminal — mit Snapshot davor und als Todoist-Aufgabe in seinem Projekt
 **kurrentschrift**.
+
+### 15.7 Was Phase 2 hinterlässt — Geschmacksfragen und Autor-Schritte (Stand 2026-09-20)
+
+Derselbe Zweck wie §15.5, für die Phase-2-Welle: gebaut wurde jeweils die
+Empfehlung, und hier steht sie gesammelt statt verstreut in elf PR-Texten.
+**Das ist eine Liste, kein Entscheid** — ohne ein Wort des Autors bleibt
+alles, wie es gebaut ist. Die Nummern sind nur Adressen für die Antwort.
+
+**Geschmacksfragen**
+
+29. **Der Streifen-Reiter öffnet auf der LISTE, nicht auf der Galerie**
+    (#643, V14). Die Bilderwand war vor der Welle das Erste, was man dort
+    sah; sie ist jetzt der `?ansicht=galerie`-Opt-in daneben. Kipp: es ist
+    **kein** Ein-Zeilen-Schalter — `DEFAULT_LIST_VIEW` in
+    `app/src/sections/admin/shell/listState.ts` bedient alle vier Listen,
+    eine andere Vorgabe für DIESE Fläche braucht also eine eigene Angabe
+    am `ListSpec` oder an der Lesestelle in `StripsPanel.tsx`.
+30. **Die Galerie-Kacheln tragen die Ampel** (#644, Nachzug zu #643). Der
+    Kasten zeigt sein Urteil damit an beiden Orten im selben Chip — bewusst
+    EIN Bauteil (`AmpelChip.tsx`), weil zwei Flächen mit zwei Farbschemata
+    genau die Drift sind, gegen die die Ampel den freistehenden Warn-Chip
+    ersetzt hat. Kosten: eine handweite Abfrage, die nur im Galerie-Modus
+    läuft. Kipp: das `view === 'galerie'`-Argument an
+    `useEigenhandPfadBoxes` plus die `ampel`-Eigenschaft von `CropTile`.
+
+**Drei Schritte, die nur der Autor tun kann** — keiner davon ist lokal
+prüfbar, und die ersten beiden stehen VOR der ersten gezeichneten Bahn:
+
+31. **Die Archiv-Kette einmal ganz durchlaufen** — `pull --pfade → snapshot
+    → sync --from`, mit einem Archiv-Snapshot davor. Sie ist gegen einen
+    Fake-API-Client und die In-Process-Suite geprüft, aber noch nie über
+    echte Daten gelaufen, und sie ist der Grund, warum PR 1 der erste PR
+    war. **Vor dem ersten nachgefahrenen Kasten**, sonst schützt sie
+    nichts.
+32. **Die zwei Rückhaltemengen ziehen** (`--draw <key>`, Entscheid H). Die
+    Ziehung braucht kein Netz, keinen Admin-Token und keine einzige Bahn;
+    sie läuft über die Streifen des eingefrorenen Plans. Genau deshalb
+    gehört sie **vor die erste Bahn** — danach zöge man, nachdem man das
+    Material gesehen hat. Ein zweites Ziehen wird verweigert, ohne
+    Override.
+33. **Das Tablet beurteilen** (Q14 a): Stiftverzögerung, Handballen-Abwehr,
+    ob die Umschalter erreichbar sind, während die Hand aufliegt, und ob
+    die Bahn über echter 300-dpi-Tinte überhaupt lesbar liegt. Der
+    Browserlauf der Welle hatte eine Maus und einen flachen grauen Streifen
+    als Unterlage.
+
+Und der eine Posten, der daran hängt: **PR 13**, die Kalibrierung. Sie
+braucht 30 geschriebene Kästen für die blinde Runde; bis dahin bleiben die
+acht Schwellen „vorläufig", und die Ampel sagt das in ihrer eigenen Antwort
+mit.
