@@ -469,28 +469,50 @@ explanatory comment. This is unchanged:
 
 **No → the German word stays.** A translation invented for the occasion is
 worse than the word itself, and it would make the code and the docs name
-the same thing differently — these terms are already in
-`docs/reference/glossar.md` and in settled design docs:
+the same thing differently. The list is **short, and meant to stay short**:
+a term qualifies only when it is a headword in `docs/reference/glossar.md`,
+carries no English gloss there, and a reader of this domain would not
+recognise it under an English name.
 
 | Fachbegriff | Identifier | Where |
 |---|---|---|
-| Befund | `class Befund`, `def befund`, fields `vorschlag`/`grund`/`guete`/`unstetigkeit`/`kringel`/`duktus`/`deckung`/`lesbarkeit`/`rang`/`abgeloest_von`, `VORSCHLAEGE`, `GRUND_*` | `core/eigenhand/befund.py` |
-| Tintentreue | `class Tintentreue`, `class Schwellen`, `sensoren_of`, `class Kastenzaehler`, `STUFEN`, `SENSOR_*` | `core/eigenhand/tintentreue.py` |
-| Laufform | the module itself, `LAUFFORM_END_WINDOW` | `core/laufform.py` |
+| Befund | the module itself, `class Befund`, `def befund`, `befunde_of_strip`, `befund_index`, `BEFUND_FORMAT` | `core/eigenhand/befund.py` |
+| Tintentreue | the module itself, `class Tintentreue`, `def tintentreue`, `TINTENTREUE_FORMAT` | `core/eigenhand/tintentreue.py` |
+| Laufform | the module itself, `LAUFFORM_VARIANT`, `LAUFFORM_END_WINDOW`, `laufform_by_key` | `core/laufform.py`, `core/compose.py`, `core/aggregate.py` |
 
 `verdict` is a worse translation of „Befund" than the word itself: a
 Befund is the measured sheet plus the ONE reason and the suggestion, not a
 verdict — the tick on the paper stays the status.
 
+**The other German names in those same modules are legacy, not
+precedent.** They DO have ordinary English equivalents, and the repo
+mostly names them itself: `deckung` is coverage (the glossary's own
+headword is **Deckung** *(coverage)*), `duktus` is ductus (which the rest
+of `core/` writes that way), `kringel` is a loop (the same module has
+`_loops`, `loop_expectation`, `LOOP_*`), `unstetigkeit` is discontinuity
+(`core/continuity.py` is the English name for that very quantity), and
+`vorschlag`/`grund`/`guete`/`lesbarkeit`/`rang`/`VORSCHLAEGE`/`GRUND_*`,
+`class Schwellen`/`schwellen_of`, `class Kastenzaehler`/`def zaehler`,
+`sensoren_of`, `STUFEN`, `SENSOR_*` are suggestion, reason, quality,
+legibility, rank, thresholds, a box counter, sensors and levels. They stay
+only because the language rule is **forward-only and never restyle-swept**
+(`sprachregelung.md` §4, §5.3) — not because they are untranslatable.
+Please do not report them; equally, do not read them as licence for the
+next one. A NEW field, function, constant or module asks the question
+again, and an established English term wins.
+
 This **replaces** the older reading "English identifier + explanatory
-comment" for domain terms of that kind, which is why the modules above
-look the way they do. Do not report them, or a new module that follows
-them, as a language violation. Limits: schema **keys** in stored payloads
-stay English; the **values** of the `GRUND_*` constants are German display
-strings (`GRUND_NICHTS = "nichts fällt auf"`), which is the data case, not
-an identifier; a German identifier without a glossary entry is not covered
-— that term gets its entry in the same PR; and the decision is
-forward-only, never a renaming sweep in either direction.
+comment" for the three terms above, which is why those modules look the way
+they do. Do not report them, or a new term that passes the same test, as a
+language violation. **The carve-out is for identifiers only** — schema
+**keys** in stored payloads stay English (`KEY_SPRUENGE = "jumps"`); the
+**values** of the `GRUND_*` constants are German display strings
+(`GRUND_NICHTS = "nichts fällt auf"`), which is the data case, not an
+identifier; the exception is **per term, never per module**, so a module
+named after a §5.2 Fachbegriff inherits nothing for its other names; a
+German identifier without a glossary entry is not covered — that term gets
+its entry in the same PR; and the decision is forward-only, never a
+renaming sweep in either direction.
 
 ### Python Style
 

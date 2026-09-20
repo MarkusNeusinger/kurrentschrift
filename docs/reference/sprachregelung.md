@@ -8,7 +8,8 @@
 > Autor-Entscheid 2026-09-20: §5 erlaubt deutsche Fachbegriffe **ohne
 > etablierte englische Entsprechung** als Bezeichner und löst damit den
 > dritten Verworfen-Punkt in §3 ab; Kommentare und docstrings bleiben
-> englisch, ausnahmslos.
+> englisch, ausnahmslos. Die Ausnahme gilt **je Begriff, nie je Modul**;
+> der übrige deutsche Namensbestand ist Altbestand (§5.3).
 
 Begleitdokument zu [`architektur.md`](../concepts/architektur.md) und
 [`naming-und-setup.md`](../concepts/naming-und-setup.md). Hält fest, *welche* Sprache wo gilt
@@ -88,10 +89,9 @@ auf Deutsch. Das ist kein Bruch zur anyplot-Linie, sondern dieselbe Regel
   Schema-Linie aus §3 der Referenz; Begriff gehört in den Kommentar,
   nicht in den Bezeichner.~~ **Abgelöst durch den Autor-Entscheid
   2026-09-20 (§5)**, und zwar nur für Fachbegriffe **ohne** etablierte
-  englische Entsprechung. Wo es einen etablierten Begriff gibt, gilt der
-  Verworfen-Punkt unverändert weiter. Er bleibt als Historie stehen: die
-  ursprüngliche Begründung ist der Grund, warum §5 die Ausnahme so eng
-  zuschneidet.
+  englische Entsprechung. Wo es einen etablierten Begriff gibt, gilt er
+  unverändert weiter; seine Begründung ist der Grund, warum §5 die
+  Ausnahme so eng zuschneidet.
 
 ---
 
@@ -188,40 +188,63 @@ Begriff, den ein Leser dieser Domäne wiedererkennt?*
 Hier gilt die frühere Form **unverändert** weiter: englischer Identifier
 plus **ein** erklärender Kommentar —
 `width_profile  # Schwellzug: pressure-driven stroke-width modulation`.
-„Stroke width“, „slant“ und „error text“ sind die etablierten Begriffe;
-sie wegzuwerfen wäre Verlust, kein Gewinn.
+„Stroke width“, „slant“ und „error text“ sind etabliert; sie wegzuwerfen
+wäre Verlust, kein Gewinn.
 
 ### 5.2 Nein — es gibt keinen
 
+Die Liste ist **kurz, und das ist Absicht**: Glossar-Stichwort, dort keine
+englische Entsprechung in Klammern, und ein Leser der Domäne erkennt den
+Begriff unter einem englischen Namen nicht wieder.
+
 | Fachbegriff | Bezeichner | Anker |
 |---|---|---|
-| Befund | `class Befund`, `def befund`, die Felder `vorschlag`/`grund`/`guete`/`unstetigkeit`/`kringel`/`duktus`/`deckung`/`lesbarkeit`/`rang`/`abgeloest_von`, `VORSCHLAEGE`, `GRUND_*` | `core/eigenhand/befund.py` |
-| Tintentreue | `class Tintentreue`, `class Schwellen`, `sensoren_of`, `class Kastenzaehler`, `STUFEN`, `SENSOR_*`, `GRUND_*` | `core/eigenhand/tintentreue.py` |
-| Laufform | das Modul selbst, `LAUFFORM_END_WINDOW` | `core/laufform.py` |
+| Befund | das Modul selbst, `class Befund`, `def befund`, `befunde_of_strip`, `befund_index`, `BEFUND_FORMAT` | `core/eigenhand/befund.py` |
+| Tintentreue | das Modul selbst, `class Tintentreue`, `def tintentreue`, `TINTENTREUE_FORMAT` | `core/eigenhand/tintentreue.py` |
+| Laufform | das Modul selbst, `LAUFFORM_VARIANT`, `LAUFFORM_END_WINDOW`, `laufform_by_key` | `core/laufform.py`, `core/compose.py`, `core/aggregate.py` |
 
 **Befund** ist der Fall, an dem der Entscheid hängt: `verdict` ist die
-schlechtere Übersetzung als das Wort selbst. Ein Befund ist das gemessene
-Blatt samt dem EINEN Grund und dem Vorschlag — kein Urteil, denn der Haken
-auf dem Papier und die Siebung bleiben der Status.
+schlechtere Übersetzung. Ein Befund ist das gemessene Blatt samt dem EINEN
+Grund und dem Vorschlag — kein Urteil, denn der Haken auf dem Papier
+bleibt der Status.
 
-### 5.3 Was das ersetzt, und was bleibt
+### 5.3 Der übrige deutsche Namensbestand ist Altbestand, kein Beleg
+
+In genau denselben Modulen stehen weitere deutsche Namen, die §5.2
+**nicht** deckt — für sie gibt es sehr wohl einen etablierten englischen
+Begriff, und das Repo belegt ihn meist selbst:
+
+| Deutscher Name | Entsprechung | Beleg im Repo |
+|---|---|---|
+| `deckung` | coverage | [`glossar.md`](glossar.md) führt das Stichwort als **Deckung** *(coverage)* |
+| `duktus` | ductus | §2 schreibt `ductus` vor; `core/` benutzt sonst durchweg `ductus` |
+| `kringel` | loop | dasselbe Modul heißt die Sache `_loops`, `loop_expectation`, `LOOP_*` |
+| `unstetigkeit` | discontinuity | `core/continuity.py` trägt für die Größe den englischen Modulnamen |
+| `vorschlag`, `grund`, `guete`, `lesbarkeit`, `rang`, `abgeloest_von`, `VORSCHLAEGE`, `GRUND_*`, `Schwellen`, `schwellen_of`, `Kastenzaehler`, `zaehler`, `Rohzahlen`, `Sensorwert`, `sensoren_of`, `STUFEN`, `SENSOR_*` | suggestion, reason, quality, legibility, rank, superseded by, thresholds, box counter, raw numbers, sensor value, sensors, levels | Alltagswörter mit eindeutiger Entsprechung |
+
+Sie **bleiben stehen**, aber aus einem anderen Grund: die Sprachregelung
+wirkt vorwärts und kommt nie als Umbenennungs-Sweep zurück (§4, §5.4).
+Sie sind **kein Präzedenzfall** — wer NEU benennt, stellt die Frage aus §5
+neu, und ein etablierter englischer Begriff gewinnt auch dann, wenn direkt
+daneben ein deutscher Altname steht. **Die Ausnahme ist begriffs-, nicht
+modulweit:** `core/eigenhand/befund.py` steht nicht als Ganzes unter §5.2,
+nur „Befund" selbst tut es.
+
+### 5.4 Was das ersetzt, und was bleibt
 
 Dieser Abschnitt **ersetzt** die frühere Lesart „englischer Identifier +
-erklärender Kommentar“ für deutsche Fachbegriffe **mit Glossar-Eintrag**
-und ohne etablierte Entsprechung. Für deutsche Wörter, die eine normale
-englische Entsprechung HABEN, bleibt sie die Regel (§5.1, §2). Der dritte
+erklärender Kommentar“ **nur** für die Fachbegriffe aus §5.2. Für Wörter
+mit etablierter Entsprechung bleibt sie die Regel (§5.1, §2); der
+Altbestand aus §5.3 ist nicht gedeckt, nur nicht zurückgebaut. Der dritte
 Verworfen-Punkt in §3 ist damit abgelöst und bleibt als Historie stehen.
 
 **Warum jetzt.** Die Regel stand als „ohne Ausnahme“, während gemergter
 Code seit `core/laufform.py` (#443) und `core/eigenhand/befund.py` das
 Gegenteil praktizierte — ein stehender Widerspruch, kein Einzelfall.
-Copilot hat ihn auf #638 als Finding gemeldet („The repository rule is
-explicit that identifiers and docstrings are English without exceptions“),
-und jedes weitere Modul der Eigenhand-Kette hätte dasselbe Finding erzeugt.
-Die Begriffe stehen zudem bereits im Glossar und in entschiedenen Docs
-(`admin-redesign.md` §6.3, `messjournal.md` §14, `glossar.md`) — ein
-englischer Bezeichner ließe Code und Docs dieselbe Sache verschieden
-benennen.
+Copilot meldete ihn auf #638 als Finding, und jedes weitere Modul der
+Eigenhand-Kette hätte dasselbe erzeugt. Die drei Begriffe stehen zudem
+bereits im Glossar und in entschiedenen Docs — ein englischer Bezeichner
+ließe Code und Docs dieselbe Sache verschieden benennen.
 
 **Die Grenze.** Der Entscheid betrifft **Bezeichner**, sonst nichts:
 
@@ -232,6 +255,8 @@ benennen.
 - Ein deutscher Bezeichner ohne Glossar-Eintrag ist keiner: wer einen
   Begriff so benennt, trägt ihn im selben PR in
   [`glossar.md`](glossar.md) nach.
+- Die Ausnahme gilt **je Begriff, nie je Modul** (§5.3); Altbestand ist
+  kein Argument für einen weiteren deutschen Namen.
 - Eine **Umbenennung in beide Richtungen** ist kein Aufräum-Sweep. Der
   Entscheid wirkt vorwärts (§4); bestehende Namen bleiben, wie sie sind.
 
