@@ -76,7 +76,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Rollen-Token §5 · Route G §4 · Roving-Liste §5 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Span-Herkunft (→ Buchstabengrenzen einer Bahn) §5 · Span-Zuordner (→ Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Subjekt-Stepper §5 · Sütterlin §1
-- **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue (geplant) §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) (geplant) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
+- **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) (geplant) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unteransicht (Eigenhand) §5 · Unvollständige Wortprobe §5
 - **Ü** — Übergabekarte §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Varianten-Band (geplant) §5 · Verbinder-Mitschnitt §4 · Vergleichsstreifen (geplant) §5 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschlag (Streifen-Befund) §5 · Vorschub-Kalibrierung §2 · Vorschrift §1
@@ -4735,16 +4735,29 @@ benannter Nachzug, dort ist die Farbe teils die Handlungsanweisung).
 `sections/admin/shell/LayerDot.tsx`. → Ebenen-Token; Rollen-Token;
 concepts/design-system.md §2
 
-**Tintentreue (geplant)** — die referenzfreie Ampel je Wortkasten: folgt ·
+**Tintentreue** — die referenzfreie Ampel je Wortkasten: folgt ·
 folgt teils · folgt nicht, plus ein grauer ungemessener Zustand mit Grund
-im Text. Der schlechteste Sensor entscheidet, gerechnet wird mit fünf
-Sensoren (Autor-Entscheid 2026-09-18, Q9 b); die Schwellen sind
-vorregistriert und „vorläufig", bis die EINE vorregistrierte Kalibrierung
-je Hand gelaufen ist — 30 Kästen blind beurteilt, datiert eingefroren, nie
-ein Regler (Q10 b; eigenhand-erfassung.md §7.3). Sie liest keine Bench-Zahl
-und speist keine. *Technisch:* `core/eigenhand/tintentreue.py` (geplant),
-Sensoren aus `pfade[].meta.tintenpfad`; Formatwechsel PFAD_FORMAT 2 für
-Exkursion und AIoU. → proposals/admin-redesign.md §6.3
+im Text („kein Eintrag" · „von Hand gezeichnet" · „Maske geändert" ·
+„Format 1 — unvollständig gemessen" · „unvollständig gemessen", in dieser
+Vorrangfolge). Grau macht dabei die fehlende MESSUNG, nie die Herkunft:
+eine nachgefahrene Bahn, die das Werkzeug gemessen hat, trägt dieselbe
+Ampel wie jede andere (V21). Der schlechteste Sensor entscheidet, bei Gleichstand
+benennt eine feste Sensor-Ordnung den Kasten; gerechnet wird mit fünf
+Sensoren (Autor-Entscheid 2026-09-18, Q9 b), von denen vier eine
+vorregistrierte Grenze haben — `jumps`/`hairpins` werden gelesen und
+gezeigt, aber mangels Anker nicht bewertet. Die Schwellen stehen als
+datierte Konstanten JE HAND im Code (nie in der DB, nie ein Regler) und
+tragen das Etikett „vorläufig", bis die EINE vorregistrierte Kalibrierung
+je Hand gelaufen ist — 30 Kästen blind beurteilt, datiert eingefroren
+(Q10 b; eigenhand-erfassung.md §7.3). Eine FASSUNG bekommt nie eine
+Ampelfarbe, nur einen Zähler („3 von 4 Kästen folgen", Autor-Entscheid E
+vom 2026-09-20), und ausgegeben wird nie eine Skalarzahl — Stufe,
+benennender Sensor, Rohwerte. Sie liest keine Bench-Zahl und speist keine.
+*Technisch:* `core/eigenhand/tintentreue.py` (beim Lesen abgeleitet wie
+→ Streifen-Befund), Sensoren aus `pfade[].meta.tintenpfad`; Zeilen unter
+PFAD_FORMAT 1 bleiben grau, weil Exkursion und AIoU auf ihnen nie
+gerechnet wurden. → Rohzahlen-Chip; messjournal.md §14 „Tintentreue
+`sep20`"; proposals/admin-redesign.md §6.3
 
 **Trainingsmenge (nachgefahrene Bahnen) (geplant)** — die von Hand
 nachgefahrenen Streifen-Bahnen der Eigenhand (`verfahren: authored`) und

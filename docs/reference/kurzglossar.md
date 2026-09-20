@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-19): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **106
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **107
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -673,6 +673,14 @@ als Vorgabe), über die Admin-API abgelegt, in der Werkbank nur gezeigt —
 Reihenfolge, Richtung und Absetzer. Die Saat ist der Tafel-Duktus, nicht
 diese Hand. `core/eigenhand/pfad.py`.
 → [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §7.5
+
+**Tintentreue** — die referenzfreie Ampel je Wortkasten über einer Bahn:
+`folgt` · `folgt teils` · `folgt nicht`, dazu ein grauer Zustand mit Grund
+im Text. Der schlechteste Sensor entscheidet, eine feste Sensor-Ordnung
+benennt bei Gleichstand den Kasten; die Schwellen sind datierte Konstanten
+je Hand im Code und bis zur blinden Kalibrierung „vorläufig". Eine Fassung
+bekommt nur einen Zähler, nie eine Farbe. `core/eigenhand/tintentreue.py`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.3
 
 **Fokusring** *(`focusRing`)* — der eine sichtbare Tastaturfokus: 2 px
 Viridian, 2 px Abstand, exportiert aus `app/src/styles/focusRing.ts` und vom

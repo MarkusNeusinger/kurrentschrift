@@ -6,6 +6,8 @@
 // stored unvalidated. Both facts are invisible on a screenshot: a chip reading
 // „Absetzer 0" says nothing about whether it was counted. Pinned here instead.
 
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 
 import type { EigenhandPfad } from '@/lib/api';
@@ -96,4 +98,69 @@ describe('pfadRohzahlen', () => {
     expect(pfadRohzahlen(pfad({ tintenpfad: [1, 2, 3] }))).toMatchObject({ measured: false });
     expect(pfadRohzahlen(pfad({ tintenpfad: 'keine' }))).toMatchObject({ measured: false });
   });
+
+  it('survives a meta that is not an object either', () => {
+    // The optional chain carries these; Python's `isinstance(…, Mapping)` is a
+    // differently written guard for the same rule, so the shared fixture below
+    // pins all four shapes on both sides.
+    for (const meta of [null, undefined, 'keine', [1, 2, 3], 7]) {
+      expect(pfadRohzahlen({ ...pfad({}), meta } as unknown as EigenhandPfad)).toMatchObject({ measured: false });
+    }
+  });
+
+  it('refuses an integer wider than a float64, which JSON.parse hands over as Infinity', () => {
+    // Valid JSON on both sides: Python builds an arbitrary-precision int and
+    // has to catch the OverflowError, JavaScript gets Infinity. Both answer
+    // „no reading"; the shared fixture pins the pair.
+    const huge = JSON.parse('{"tintenpfad":{"paper_lifts":1e400,"jumps":0,"hairpins":0}}');
+    expect(pfadRohzahlen(pfad(huge))).toMatchObject({ paperLifts: null, jumps: 0 });
+  });
+});
+
+// Twin-sync guard: this reader and `core/eigenhand/tintentreue.py::rohzahlen`
+// read the SAME unvalidated blob in two languages with two null rules, and the
+// traffic light derived over there has to call „gemessen" what this panel calls
+// `measured` — otherwise the numbers show for a box the light calls grey. Both
+// sides assert the shared fixture, as shaping.ts/shaping.py do
+// (tests/fixtures/shaping_cases.json); the Python half lives in
+// tests/test_eigenhand_tintentreue.py.
+//
+// The fixture carries no NaN/Infinity by construction: `json.loads` takes them
+// and `JSON.parse` does not, so those two stay in each language's own cases
+// above.
+type TintentreueCase = {
+  name: string;
+  pfad: EigenhandPfad | null;
+  rohzahlen: {
+    ink_unvisited_share: number | null;
+    paper_lifts: number | null;
+    jumps: number | null;
+    hairpins: number | null;
+    gemessen: boolean;
+  } | null;
+};
+
+// Read via node fs rather than an import so the fixture can live at the repo
+// root, shared with the Python test.
+const CASES: TintentreueCase[] = JSON.parse(
+  readFileSync(new URL('../../../../../tests/fixtures/tintentreue_cases.json', import.meta.url), 'utf-8'),
+);
+
+describe('pfadRohzahlen twin parity', () => {
+  it('has a non-empty shared fixture', () => {
+    expect(CASES.length).toBeGreaterThan(0);
+  });
+
+  it.each(CASES.filter((c): c is TintentreueCase & { pfad: EigenhandPfad } => c.pfad !== null))(
+    'reads $name like core/eigenhand/tintentreue.py',
+    ({ pfad: entry, rohzahlen }) => {
+      expect(pfadRohzahlen(entry)).toEqual({
+        inkUnvisitedShare: rohzahlen?.ink_unvisited_share ?? null,
+        paperLifts: rohzahlen?.paper_lifts ?? null,
+        jumps: rohzahlen?.jumps ?? null,
+        hairpins: rohzahlen?.hairpins ?? null,
+        measured: rohzahlen?.gemessen ?? false,
+      });
+    },
+  );
 });
