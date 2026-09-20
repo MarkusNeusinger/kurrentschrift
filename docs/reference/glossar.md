@@ -4491,10 +4491,17 @@ ist —, deshalb stehen Marke und `no-store` nebeneinander statt
 gegeneinander. Das Format gehört mit in die Marke, weil Liste und Semantik
 EINE Aussage sind. Das kurze Fenster INNERHALB einer Anfrage schließt die
 Marke nicht; dafür nimmt der Schreibweg die Zeile unter eine Sperre.
+Am Terminal kommt die Verweigerung als eigene Ausnahme an (`StaleRead`),
+damit der Lauf den Satz anhängen kann, den nur er schreiben kann — welchen
+Befehl der Bedienende wiederholt: `pfad --apply` hält an und nennt ihn,
+`sync --from` zählt die Fassung als NOT restored und geht die übrigen
+weiter durch. Automatisch wiederholt wird nie: dieselbe Mischung ein
+zweites Mal gegen die neue Liste geschickt wäre genau das verlorene
+Update, das die Marke eben verweigert hat.
 *Technisch:* `core/eigenhand/pfad.py::pfad_etag`,
 `api/routers/eigenhand.py` (`_pfad_precondition` · `read_pfade` ·
 `write_pfade` · `write_pfad_box`), `tools/eigenhand/apiclient.py`
-(`request_json_with_etag`), `app/src/lib/api/endpoints.ts`
+(`request_json_with_etag` · `StaleRead`), `app/src/lib/api/endpoints.ts`
 (`getEigenhandPfadeWithEtag` · `patchEigenhandPfad`).
 → Streifen-Pfad; Bahn; Bahn-Archivkette;
 proposals/admin-redesign.md §6.7
