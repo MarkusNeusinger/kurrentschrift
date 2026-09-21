@@ -12,7 +12,14 @@ from core.eigenhand import coverage
 from core.eigenhand import plan as plan_mod
 from core.eigenhand.plan import STREIFEN_JSON
 from tools.eigenhand import pool, progression, universe
-from tools.eigenhand.corpus import PINNED_FIRST, REFERENCE_WORDS, pool_entries, shaping_form
+from tools.eigenhand.corpus import (
+    ALLTAG_WORDS,
+    PINNED_FIRST,
+    REFERENCE_WORDS,
+    alltag_floors,
+    pool_entries,
+    shaping_form,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -368,6 +375,195 @@ class TestGlyphFloor:
         # the stats (and warned about), never quietly dropped.
         _plan, stats = pool.build_wave({"format": 1, "waves": [], "strips": {}}, 12, {"l>e": 100.0})
         assert stats["floor_unmet"], "a wave too small to meet the floor must report it"
+
+
+class TestGrundwortschatz:
+    """The everyday words: planted as a wave, kept coming by a floor, interleaved.
+
+    The defect behind all of it (author, 2026-09-21, found by writing the
+    first sheets): both builder phases measure a word by the items it carries,
+    items grow with word length, so `Schwindsucht` beat `ist` every round.
+    Measured on the plan as it stood: of the 50 commonest German words, one
+    stood in the first 40 strips.
+    """
+
+    def test_a_word_class_listed_twice_keeps_the_higher_floor(self):
+        floors = alltag_floors()
+        # `sein` is both a possessive pronoun (Kern) and a verb — being needed
+        # twice over is not a reason to ask for it less often.
+        assert floors["sein"] == max(floors["ist"], floors["gehen"])
+        assert set(floors) == set(ALLTAG_WORDS)
+
+    def test_the_everyday_wave_packs_where_a_pin_does_not(self):
+        # A pin gives its word the whole row because the word is singled out;
+        # an everyday word earns its place by being ordinary, and four to six
+        # of them fit a row — a row each would waste most of a sheet.
+        empty = {"format": 2, "waves": [], "strips": {}, "forms": {}, "pins": [], "alltag": []}
+        plan, wave = pool.alltag_wave(json.loads(json.dumps(empty)), ["ich", "du", "er", "sie", "es"])
+        assert len(wave["strips"]) == 1
+        assert plan["strips"][wave["strips"][0]]["words"] == ["ich", "du", "er", "sie", "es"]
+        pinned, _ = pool.pin_words(json.loads(json.dumps(empty)), ["das", "lesen"])
+        assert len(pinned["pins"]) == 2, "the pin contract is unchanged by the everyday wave"
+
+    def test_the_everyday_wave_appends_and_moves_nothing(self):
+        plan = {
+            "format": 2,
+            "waves": [{"wave": 0, "strips": ["S0001"]}],
+            "strips": {"S0001": {"wave": 0, "words": ["Galoppieren"]}},
+            "forms": {},
+            "pins": [],
+            "alltag": [],
+        }
+        frozen = json.loads(json.dumps(plan["strips"]))
+        plan, wave = pool.alltag_wave(plan, ["ich", "du"])
+        pool.verify_immutable({"strips": frozen}, plan)
+        assert plan["strips"]["S0001"] == frozen["S0001"]
+        assert plan["alltag"] == wave["strips"]
+
+    def test_an_already_planned_word_is_not_planted_again(self):
+        plan = {
+            "format": 2,
+            "waves": [],
+            "strips": {"S0001": {"wave": 0, "words": ["ich"]}},
+            "forms": {},
+            "pins": [],
+            "alltag": [],
+        }
+        plan, wave = pool.alltag_wave(plan, ["ich", "du"])
+        assert wave["planted"] == ["du"] and wave["skipped"] == ["ich"]
+
+    def test_the_everyday_strips_interleave_rather_than_lead(self):
+        # The decision this encodes (owner, 2026-09-21): five everyday rows
+        # and two frozen ones, so a seven-row Bogen is mostly writable and
+        # still moves the coverage work. A leading BLOCK would only postpone
+        # the wall of compounds instead of breaking it up.
+        plan = {
+            "format": 2,
+            "waves": [],
+            "strips": {f"S{n:04d}": {"wave": 0, "words": ["x"]} for n in range(1, 13)},
+            "forms": {},
+            "pins": ["S0001"],
+            "alltag": [f"S{n:04d}" for n in range(2, 10)],
+        }
+        assert plan_mod.ALLTAG_PATTERN == (5, 2)
+        assert plan_mod.ordered_strips(plan) == [
+            "S0001",  # the pin still leads, whatever else is ordered
+            "S0002", "S0003", "S0004", "S0005", "S0006",  # five everyday
+            "S0010", "S0011",  # two frozen
+            "S0007", "S0008", "S0009",  # the everyday block runs out
+            "S0012",  # and the rest simply streams on
+        ]  # fmt: skip
+
+    def test_a_plan_without_the_block_orders_exactly_as_before(self):
+        # Additive, like `pins` — which is why the plan format stays 2.
+        plan = {
+            "format": 2,
+            "waves": [],
+            "strips": {f"S{n:04d}": {"wave": 0, "words": ["x"]} for n in range(1, 6)},
+            "pins": [],
+        }
+        assert plan_mod.ordered_strips(plan) == ["S0001", "S0002", "S0003", "S0004", "S0005"]
+
+    def test_a_strip_cannot_be_both_pinned_and_everyday(self):
+        plan = {
+            "format": 2,
+            "waves": [],
+            "strips": {f"S{n:04d}": {"wave": 0, "words": ["x"]} for n in range(1, 4)},
+            "pins": ["S0001"],
+            "alltag": ["S0001", "S0002"],
+        }
+        ordered = plan_mod.ordered_strips(plan)
+        assert ordered == ["S0001", "S0002", "S0003"]
+        assert len(ordered) == len(set(ordered)), "a strip appeared twice in plan order"
+
+    @staticmethod
+    def _wave_words(budget: int) -> set[str]:
+        empty = {"format": 1, "waves": [], "strips": {}}
+        plan, _ = pool.build_wave(empty, budget, dict(TestStripPlan.UNIVERSE))
+        return {word for strip in plan["strips"].values() for word in strip["words"]}
+
+    def test_the_floor_plants_what_coverage_would_never_pick(self):
+        # The failure probe, both directions: with the floor the commonest
+        # words reach the plan, and WITHOUT it — same universe, same budget —
+        # they do not. Without both halves this would still pass on a phase A0
+        # deleted down to a no-op. Measured: 98 everyday words against 16.
+        planned = self._wave_words(60)
+        floors = pool.alltag_floors
+        pool.alltag_floors = dict  # type: ignore[assignment]
+        try:
+            bare = self._wave_words(60)
+        finally:
+            pool.alltag_floors = floors
+
+        assert sum(1 for word in ALLTAG_WORDS if word in planned) > 60
+        assert sum(1 for word in ALLTAG_WORDS if word in bare) < 40, "coverage alone already plants them"
+        commonest = ["ich", "ist", "und", "der"]
+        assert not [word for word in commonest if word not in planned]
+        assert not [word for word in commonest if word in bare]
+
+    def test_the_floor_runs_before_the_coverage_phase(self):
+        # Placement is the fix, not an implementation detail: phase A can eat
+        # a whole wave on its own (covering every reachable item takes a few
+        # hundred strips), so a floor queued behind it starves in exactly the
+        # waves that matter. A wave too small for phase A to finish must still
+        # deliver everyday words.
+        small = self._wave_words(12)
+        assert sum(1 for word in ALLTAG_WORDS if word in small) >= 10
+
+    def test_the_floor_pays_the_shortest_debts_first(self):
+        # Equal debt is broken by word length, so an early sheet fills with
+        # `ich · er · sie` rather than `unterwegs`. Ranking by coverage here
+        # would reproduce the very bias the phase exists to undo. Read off the
+        # LEADING strips, which is where the floor's own output lands: the
+        # later ones carry phase A and B words, everyday ones among them.
+        plan, _ = pool.build_wave({"format": 1, "waves": [], "strips": {}}, 12, dict(TestStripPlan.UNIVERSE))
+        opening = [word for sid in ["S0001", "S0002", "S0003"] for word in plan["strips"][sid]["words"]]
+        assert not [word for word in opening if word not in set(ALLTAG_WORDS)]
+        assert max(len(word) for word in opening) <= 5
+
+    def test_an_unpaid_floor_is_reported_not_silent(self):
+        _plan, stats = pool.build_wave({"format": 1, "waves": [], "strips": {}}, 60, dict(TestStripPlan.UNIVERSE))
+        assert stats["alltag_open"] > 0, "a 60-strip wave cannot pay off the whole floor — say so"
+
+    def test_the_floor_leaves_room_for_the_build_out(self):
+        # Bounded on purpose: the standing debt is hundreds of word slots, and
+        # paying it in one wave would buy the everyday words at the price of
+        # the coverage build-out. At most a third of a wave.
+        plan, _ = pool.build_wave({"format": 1, "waves": [], "strips": {}}, 60, dict(TestStripPlan.UNIVERSE))
+        everyday = set(ALLTAG_WORDS)
+        words = [word for strip in plan["strips"].values() for word in strip["words"]]
+        share = sum(1 for word in words if word in everyday) / len(words)
+        assert share < 0.75, f"phase A3 crowded out the build-out: {share:.0%} everyday words"
+
+    def test_the_committed_plan_carries_every_everyday_word(self):
+        plan = plan_mod.load_plan()
+        planned = {word for strip in plan["strips"].values() for word in strip["words"]}
+        missing = [word for word in ALLTAG_WORDS if word not in planned]
+        assert not missing, f"Grundwortschatz words the plan never asks for: {missing}"
+
+    def test_the_committed_queue_starts_writable(self):
+        # The regression guard for the complaint itself. Before the everyday
+        # wave the first five sheets after the pins averaged 7.0 letters per
+        # word with 13 % of them four letters or shorter; the thresholds are
+        # set where a return of the old head would trip them, not at the
+        # measured values.
+        plan = plan_mod.load_plan()
+        pinned = set(plan_mod.pinned_strips(plan))
+        queue = [sid for sid in plan_mod.ordered_strips(plan) if sid not in pinned][:35]
+        words = [word for sid in queue for word in plan["strips"][sid]["words"]]
+        short = sum(1 for word in words if len(word) <= 4) / len(words)
+        average = sum(len(word) for word in words) / len(words)
+        assert short > 0.40, f"only {short:.0%} of the first sheets are short words"
+        assert average < 6.0, f"the first sheets still average {average:.1f} letters per word"
+
+    def test_the_everyday_wave_only_appended_to_the_committed_plan(self):
+        # Selected by WAVE, not by strip number: further waves append beyond
+        # these ids and say nothing about this one.
+        plan = plan_mod.load_plan()
+        waves = [wave for wave in plan["waves"] if wave.get("alltag")]
+        assert len(waves) == 1
+        assert plan["alltag"] == waves[0]["strips"]
+        assert min(int(sid[1:]) for sid in plan["alltag"]) > FROZEN_PREFIX_STRIPS
 
 
 class TestProgressionCli:

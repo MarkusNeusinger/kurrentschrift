@@ -215,6 +215,89 @@
     "S0188"
    ],
    "pin": true
+  },
+  {
+   "wave": 5,
+   "strips": [
+    "S0189",
+    "S0190",
+    "S0191",
+    "S0192",
+    "S0193",
+    "S0194",
+    "S0195",
+    "S0196",
+    "S0197",
+    "S0198",
+    "S0199",
+    "S0200",
+    "S0201",
+    "S0202",
+    "S0203",
+    "S0204",
+    "S0205",
+    "S0206",
+    "S0207",
+    "S0208",
+    "S0209",
+    "S0210",
+    "S0211",
+    "S0212",
+    "S0213",
+    "S0214",
+    "S0215",
+    "S0216",
+    "S0217",
+    "S0218",
+    "S0219",
+    "S0220",
+    "S0221",
+    "S0222",
+    "S0223",
+    "S0224",
+    "S0225",
+    "S0226",
+    "S0227",
+    "S0228",
+    "S0229",
+    "S0230",
+    "S0231",
+    "S0232",
+    "S0233",
+    "S0234",
+    "S0235",
+    "S0236",
+    "S0237",
+    "S0238",
+    "S0239",
+    "S0240",
+    "S0241",
+    "S0242",
+    "S0243",
+    "S0244",
+    "S0245",
+    "S0246",
+    "S0247",
+    "S0248",
+    "S0249",
+    "S0250",
+    "S0251",
+    "S0252",
+    "S0253",
+    "S0254",
+    "S0255",
+    "S0256",
+    "S0257",
+    "S0258",
+    "S0259",
+    "S0260",
+    "S0261",
+    "S0262",
+    "S0263",
+    "S0264",
+    "S0265"
+   ],
+   "alltag": true
   }
  ],
  "strips": {
@@ -1762,6 +1845,698 @@
    "words": [
     "will"
    ]
+  },
+  "S0189": {
+   "wave": 5,
+   "words": [
+    "ich",
+    "er",
+    "sie",
+    "es",
+    "man",
+    "dich"
+   ]
+  },
+  "S0190": {
+   "wave": 5,
+   "words": [
+    "sich",
+    "euch",
+    "mein",
+    "meine",
+    "ein"
+   ]
+  },
+  "S0191": {
+   "wave": 5,
+   "words": [
+    "dein",
+    "deine",
+    "sein",
+    "seine",
+    "der"
+   ]
+  },
+  "S0192": {
+   "wave": 5,
+   "words": [
+    "unsere",
+    "den",
+    "dem",
+    "des",
+    "eine"
+   ]
+  },
+  "S0193": {
+   "wave": 5,
+   "words": [
+    "einen",
+    "einem",
+    "einer",
+    "kein"
+   ]
+  },
+  "S0194": {
+   "wave": 5,
+   "words": [
+    "keine",
+    "keinen",
+    "dieser",
+    "diese"
+   ]
+  },
+  "S0195": {
+   "wave": 5,
+   "words": [
+    "dieses",
+    "alle",
+    "andere",
+    "jeder"
+   ]
+  },
+  "S0196": {
+   "wave": 5,
+   "words": [
+    "viele",
+    "oder",
+    "aber",
+    "denn",
+    "als"
+   ]
+  },
+  "S0197": {
+   "wave": 5,
+   "words": [
+    "wenn",
+    "weil",
+    "dass",
+    "ob",
+    "bis"
+   ]
+  },
+  "S0198": {
+   "wave": 5,
+   "words": [
+    "damit",
+    "sondern",
+    "bevor",
+    "wie"
+   ]
+  },
+  "S0199": {
+   "wave": 5,
+   "words": [
+    "sobald",
+    "wo",
+    "wann",
+    "welche"
+   ]
+  },
+  "S0200": {
+   "wave": 5,
+   "words": [
+    "in",
+    "an",
+    "auf",
+    "aus",
+    "bei",
+    "nach"
+   ]
+  },
+  "S0201": {
+   "wave": 5,
+   "words": [
+    "von",
+    "um",
+    "vor",
+    "für",
+    "ohne"
+   ]
+  },
+  "S0202": {
+   "wave": 5,
+   "words": [
+    "gegen",
+    "zwischen",
+    "am",
+    "ins"
+   ]
+  },
+  "S0203": {
+   "wave": 5,
+   "words": [
+    "beim",
+    "zur",
+    "vom",
+    "nicht",
+    "nie"
+   ]
+  },
+  "S0204": {
+   "wave": 5,
+   "words": [
+    "mehr",
+    "viel",
+    "wenig",
+    "sehr",
+    "ist"
+   ]
+  },
+  "S0205": {
+   "wave": 5,
+   "words": [
+    "fast",
+    "sind",
+    "war",
+    "waren"
+   ]
+  },
+  "S0206": {
+   "wave": 5,
+   "words": [
+    "bin",
+    "bist",
+    "seid",
+    "hat",
+    "habe"
+   ]
+  },
+  "S0207": {
+   "wave": 5,
+   "words": [
+    "hatte",
+    "hatten",
+    "wird",
+    "werden"
+   ]
+  },
+  "S0208": {
+   "wave": 5,
+   "words": [
+    "wurde",
+    "wurden",
+    "worden"
+   ]
+  },
+  "S0209": {
+   "wave": 5,
+   "words": [
+    "kann",
+    "kannst",
+    "könnte",
+    "muss"
+   ]
+  },
+  "S0210": {
+   "wave": 5,
+   "words": [
+    "soll",
+    "sollen",
+    "wollen",
+    "darf"
+   ]
+  },
+  "S0211": {
+   "wave": 5,
+   "words": [
+    "mag",
+    "geht",
+    "ging",
+    "kommen"
+   ]
+  },
+  "S0212": {
+   "wave": 5,
+   "words": [
+    "kam",
+    "gekommen",
+    "machen"
+   ]
+  },
+  "S0213": {
+   "wave": 5,
+   "words": [
+    "macht",
+    "machte",
+    "gemacht"
+   ]
+  },
+  "S0214": {
+   "wave": 5,
+   "words": [
+    "sagen",
+    "sagt",
+    "sagte",
+    "gesagt"
+   ]
+  },
+  "S0215": {
+   "wave": 5,
+   "words": [
+    "sehen",
+    "sieht",
+    "sah",
+    "gesehen"
+   ]
+  },
+  "S0216": {
+   "wave": 5,
+   "words": [
+    "stehen",
+    "stand",
+    "geben",
+    "gab"
+   ]
+  },
+  "S0217": {
+   "wave": 5,
+   "words": [
+    "gegeben",
+    "nehmen",
+    "nimmt"
+   ]
+  },
+  "S0218": {
+   "wave": 5,
+   "words": [
+    "nahm",
+    "finden",
+    "findet",
+    "fand"
+   ]
+  },
+  "S0219": {
+   "wave": 5,
+   "words": [
+    "gefunden",
+    "bleiben",
+    "blieb",
+    "las"
+   ]
+  },
+  "S0220": {
+   "wave": 5,
+   "words": [
+    "geblieben",
+    "schreiben",
+    "schreibt"
+   ]
+  },
+  "S0221": {
+   "wave": 5,
+   "words": [
+    "schrieb",
+    "geschrieben",
+    "liest"
+   ]
+  },
+  "S0222": {
+   "wave": 5,
+   "words": [
+    "gelesen",
+    "denken",
+    "denkt",
+    "hieß"
+   ]
+  },
+  "S0223": {
+   "wave": 5,
+   "words": [
+    "gedacht",
+    "glauben",
+    "glaubt"
+   ]
+  },
+  "S0224": {
+   "wave": 5,
+   "words": [
+    "glaubte",
+    "weiß",
+    "heißen",
+    "hört"
+   ]
+  },
+  "S0225": {
+   "wave": 5,
+   "words": [
+    "fragt",
+    "fragte",
+    "gefragt",
+    "liebt"
+   ]
+  },
+  "S0226": {
+   "wave": 5,
+   "words": [
+    "arbeiten",
+    "arbeitet",
+    "gearbeitet"
+   ]
+  },
+  "S0227": {
+   "wave": 5,
+   "words": [
+    "wohnen",
+    "wohnt",
+    "lieben"
+   ]
+  },
+  "S0228": {
+   "wave": 5,
+   "words": [
+    "geliebt",
+    "braucht",
+    "gebraucht"
+   ]
+  },
+  "S0229": {
+   "wave": 5,
+   "words": [
+    "bekommen",
+    "bekommt",
+    "hielt"
+   ]
+  },
+  "S0230": {
+   "wave": 5,
+   "words": [
+    "bringen",
+    "bringt",
+    "gebracht"
+   ]
+  },
+  "S0231": {
+   "wave": 5,
+   "words": [
+    "halten",
+    "ließ",
+    "fahren",
+    "fuhr"
+   ]
+  },
+  "S0232": {
+   "wave": 5,
+   "words": [
+    "gefahren",
+    "laufen",
+    "läuft",
+    "lief"
+   ]
+  },
+  "S0233": {
+   "wave": 5,
+   "words": [
+    "liegen",
+    "liegt",
+    "lag",
+    "sitzt",
+    "saß"
+   ]
+  },
+  "S0234": {
+   "wave": 5,
+   "words": [
+    "essen",
+    "isst",
+    "gegessen",
+    "trinkt"
+   ]
+  },
+  "S0235": {
+   "wave": 5,
+   "words": [
+    "trank",
+    "schläft",
+    "schlief",
+    "helfen"
+   ]
+  },
+  "S0236": {
+   "wave": 5,
+   "words": [
+    "hilft",
+    "geholfen",
+    "spielen",
+    "lebt"
+   ]
+  },
+  "S0237": {
+   "wave": 5,
+   "words": [
+    "spielt",
+    "gespielt",
+    "lernen",
+    "lernt"
+   ]
+  },
+  "S0238": {
+   "wave": 5,
+   "words": [
+    "gelernt",
+    "leben",
+    "gelebt",
+    "sucht"
+   ]
+  },
+  "S0239": {
+   "wave": 5,
+   "words": [
+    "warten",
+    "wartet",
+    "gewartet"
+   ]
+  },
+  "S0240": {
+   "wave": 5,
+   "words": [
+    "suchen",
+    "gesucht",
+    "zeigen",
+    "ja"
+   ]
+  },
+  "S0241": {
+   "wave": 5,
+   "words": [
+    "zeigt",
+    "gezeigt",
+    "nein",
+    "bitte"
+   ]
+  },
+  "S0242": {
+   "wave": 5,
+   "words": [
+    "danke",
+    "gut",
+    "besser",
+    "gern"
+   ]
+  },
+  "S0243": {
+   "wave": 5,
+   "words": [
+    "gleich",
+    "genau",
+    "richtig",
+    "falsch"
+   ]
+  },
+  "S0244": {
+   "wave": 5,
+   "words": [
+    "oft",
+    "bald",
+    "lange",
+    "weit",
+    "hier"
+   ]
+  },
+  "S0245": {
+   "wave": 5,
+   "words": [
+    "früher",
+    "heute",
+    "gestern",
+    "dort"
+   ]
+  },
+  "S0246": {
+   "wave": 5,
+   "words": [
+    "dann",
+    "eben",
+    "zusammen",
+    "alt"
+   ]
+  },
+  "S0247": {
+   "wave": 5,
+   "words": [
+    "klein",
+    "jung",
+    "warm",
+    "kalt"
+   ]
+  },
+  "S0248": {
+   "wave": 5,
+   "words": [
+    "Brief",
+    "Jahr",
+    "Jahre",
+    "Tag"
+   ]
+  },
+  "S0249": {
+   "wave": 5,
+   "words": [
+    "Tage",
+    "Nacht",
+    "Woche",
+    "Haus"
+   ]
+  },
+  "S0250": {
+   "wave": 5,
+   "words": [
+    "Stunde",
+    "Mann",
+    "Kind",
+    "Geld"
+   ]
+  },
+  "S0251": {
+   "wave": 5,
+   "words": [
+    "Kinder",
+    "Vater",
+    "Mutter"
+   ]
+  },
+  "S0252": {
+   "wave": 5,
+   "words": [
+    "Schwester",
+    "Freund",
+    "Freunde"
+   ]
+  },
+  "S0253": {
+   "wave": 5,
+   "words": [
+    "Arbeit",
+    "Leute",
+    "Welt",
+    "Stadt"
+   ]
+  },
+  "S0254": {
+   "wave": 5,
+   "words": [
+    "Land",
+    "Wort",
+    "Worte",
+    "Hand"
+   ]
+  },
+  "S0255": {
+   "wave": 5,
+   "words": [
+    "Herz",
+    "Weg",
+    "Ort",
+    "Sache"
+   ]
+  },
+  "S0256": {
+   "wave": 5,
+   "words": [
+    "Frage",
+    "Antwort",
+    "Grund"
+   ]
+  },
+  "S0257": {
+   "wave": 5,
+   "words": [
+    "Teil",
+    "Schule",
+    "Kirche",
+    "Leben"
+   ]
+  },
+  "S0258": {
+   "wave": 5,
+   "words": [
+    "Wetter",
+    "Garten",
+    "Mensch"
+   ]
+  },
+  "S0259": {
+   "wave": 5,
+   "words": [
+    "Menschen",
+    "Sonne",
+    "Regen"
+   ]
+  },
+  "S0260": {
+   "wave": 5,
+   "words": [
+    "Ich",
+    "Du",
+    "Er",
+    "Sie",
+    "Es"
+   ]
+  },
+  "S0261": {
+   "wave": 5,
+   "words": [
+    "Wir",
+    "Der",
+    "Die",
+    "Das",
+    "Ein"
+   ]
+  },
+  "S0262": {
+   "wave": 5,
+   "words": [
+    "Eine",
+    "Und",
+    "Aber",
+    "Wenn"
+   ]
+  },
+  "S0263": {
+   "wave": 5,
+   "words": [
+    "Als",
+    "Nun",
+    "So",
+    "Da",
+    "Dann"
+   ]
+  },
+  "S0264": {
+   "wave": 5,
+   "words": [
+    "Heute",
+    "Gestern",
+    "Morgen"
+   ]
+  },
+  "S0265": {
+   "wave": 5,
+   "words": [
+    "Ja",
+    "Nein",
+    "Bitte",
+    "Danke"
+   ]
   }
  },
  "forms": {
@@ -1791,5 +2566,84 @@
   "S0186",
   "S0187",
   "S0188"
+ ],
+ "alltag": [
+  "S0189",
+  "S0190",
+  "S0191",
+  "S0192",
+  "S0193",
+  "S0194",
+  "S0195",
+  "S0196",
+  "S0197",
+  "S0198",
+  "S0199",
+  "S0200",
+  "S0201",
+  "S0202",
+  "S0203",
+  "S0204",
+  "S0205",
+  "S0206",
+  "S0207",
+  "S0208",
+  "S0209",
+  "S0210",
+  "S0211",
+  "S0212",
+  "S0213",
+  "S0214",
+  "S0215",
+  "S0216",
+  "S0217",
+  "S0218",
+  "S0219",
+  "S0220",
+  "S0221",
+  "S0222",
+  "S0223",
+  "S0224",
+  "S0225",
+  "S0226",
+  "S0227",
+  "S0228",
+  "S0229",
+  "S0230",
+  "S0231",
+  "S0232",
+  "S0233",
+  "S0234",
+  "S0235",
+  "S0236",
+  "S0237",
+  "S0238",
+  "S0239",
+  "S0240",
+  "S0241",
+  "S0242",
+  "S0243",
+  "S0244",
+  "S0245",
+  "S0246",
+  "S0247",
+  "S0248",
+  "S0249",
+  "S0250",
+  "S0251",
+  "S0252",
+  "S0253",
+  "S0254",
+  "S0255",
+  "S0256",
+  "S0257",
+  "S0258",
+  "S0259",
+  "S0260",
+  "S0261",
+  "S0262",
+  "S0263",
+  "S0264",
+  "S0265"
  ]
 }
