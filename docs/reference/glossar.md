@@ -57,13 +57,13 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Span-Herkunft) §5
+- **A** — `add_header`-Vererbungsfalle §2 · Alltagswelle (Eigenhand) §5 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Span-Herkunft) §5
 - **B** — Bahn §5 · Bahn-Archivkette §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Bahn-Marke §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Ebenen-Token §5 · Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fokusring (`focusRing`) §5 · Fixture-Wurzel §4 · Folger-Schalter der Ernte (`--follower`) §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Freigabe-Maschine (geplant) §5 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
-- **G** — Gate-Status (geplant) §5 · Gauß-Verschiebung §3 · G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grauwert-Stopp (→ Strang-Dekodierung) §3 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
+- **G** — Gate-Status (geplant) §5 · Gauß-Verschiebung §3 · G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grauwert-Stopp (→ Strang-Dekodierung) §3 · Grundstrich/Haarstrich §1 · Grundtafel §7 · Grundwortschatz (Eigenhand) §5 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Haken-Spitze (→ Strang-Dekodierung) §3 · Hand §2 · Hand-Stil-Kopplung §5 · Hand-Überschuss §4 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
@@ -4034,9 +4034,35 @@ Fassungen in der Streifenkartei → Bestandsbericht → nächster Bogen.
 **Wortvorrat** — der committete, kuratierte, in Wellen wachsende Bestand
 ECHTER Wörter der Eigenhand-Erfassung (alt und modern, hauptsächlich
 Deutsch, Englisch getaggt); Kurationsschichten per Tag (`mvp9` ·
-`bench-abb19` · `quizbank` · `rare-join` · `haeufig` · `english`).
+`bench-abb19` · `quizbank` · `rare-join` · `haeufig` · `everyday` ·
+`english` · `zeichen` · `pin`).
 Trainingsdaten, kein Mess-Satz — keine Bench-Kopfzahl liest daraus.
 *Technisch:* `tools/eigenhand/corpus.py::pool_entries`.
+→ proposals/eigenhand-erfassung.md §4
+
+**Grundwortschatz (Eigenhand)** — die Kurationsschicht `everyday`: die
+Wörter, aus denen Alltagstext tatsächlich besteht (`ich`, `ist`, `nicht`,
+`in`, `auf`), nach Wortart gruppiert und je Gruppe mit einem **Boden** —
+einer Mindestzahl an Einplanungen, die der Plan ihnen schuldet. Nötig
+geworden, weil die Auswahl ein Wort an den Übergängen misst, die es
+bringt, und Übergänge mit der Wortlänge wachsen: `Schwindsucht` schlägt
+`ist` in jeder Runde, und die häufigsten Wörter der Sprache blieben
+durch 188 Streifen ungeplant. Der Boden läuft als Phase A0 ZUERST (hinter
+der Deckung verhungerte er) und ist auf einen Anteil der Welle gedeckelt.
+Nicht zu verwechseln mit `haeufig`, das Übergangs-LÜCKEN jagte.
+*Technisch:* `tools/eigenhand/corpus.py::EVERYDAY_WORDS` +
+`everyday_floors`, `tools/eigenhand/pool.py::EVERYDAY_WAVE_SHARE`.
+→ proposals/eigenhand-erfassung.md §4
+
+**Alltagswelle** — die angehängte Welle, die den Grundwortschatz auf
+Streifen bringt, und der Planblock `everyday`, in den sie sich einträgt.
+Anders als eine Anheftung wird sie GEPACKT (vier bis sechs kurze Wörter
+je Zeile, statt ein Wort je Streifen) und sie führt die Planreihenfolge
+NICHT an, sondern **verschränkt** sich mit den eingefrorenen Streifen:
+fünf Alltagszeilen, zwei eingefrorene, sodass jeder Bogen beides trägt
+(Autor-Entscheid 2026-09-21). Additiv wie `pins` — das Plan-Format bleibt
+2. *Technisch:* `python -m tools.eigenhand.pool everyday`,
+`core/eigenhand/plan.py::EVERYDAY_PATTERN` + `ordered_strips`.
 → proposals/eigenhand-erfassung.md §4
 
 **Streifen (Eigenhand)** — die stabile Inhaltseinheit der
@@ -4047,8 +4073,9 @@ Fassungen. *Technisch:* IDs `S0037`; Wächter
 → proposals/eigenhand-erfassung.md §4
 
 **Streifenplan** — das committete, append-only Verzeichnis
-Streifen → Wörter, deterministisch gebaut (Phase A gewichtetes
-Set-Cover für die Startdeckung, Phase B defizitgetriebener Ausbau mit
+Streifen → Wörter, deterministisch gebaut (Phase A0 Grundwortschatz-Boden
+vorweg, Phase A gewichtetes Set-Cover für die Startdeckung, Phase B
+defizitgetriebener Ausbau mit
 Wiederholungs-Dämpfung `REPEAT_DAMPING`). Seit Format 2 trägt er neben
 den Streifen die Tabelle `forms` (Wort → Fugen-Form), damit auch ein
 Leser ohne die Kurationsquelle richtig formen kann — der Server tut

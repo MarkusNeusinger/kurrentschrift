@@ -1,6 +1,6 @@
 # Eigenhand-Erfassung: Wortvorrat, Streifen, Bögen
 
-> **Status (2026-09-20): teil-umgesetzt.** Seit dem Autor-Entscheid vom
+> **Status (2026-09-21): teil-umgesetzt.** Seit dem Autor-Entscheid vom
 > 2026-09-07 ist der Bestand nicht mehr nur Datenquelle: die Eigenhand
 > **wird die ausgelieferte Schreibhand der Seite**, sobald sie Alphabet und
 > Übergänge deckt (§2; die bindende Rollenteilung Tafel · Platte ·
@@ -21,7 +21,16 @@
 > Zeichen, Mindestbelegung ≥3 je Glyphe), dazu seit 2026-09-06 die erste
 > Anheftung (`S0181` = „Kurrentschrift", §4) und seit 2026-09-19 die
 > Referenzwörter (`S0182`–`S0188`: §9-Wörter + Entwicklungssatz dev-19,
-> Autor-Entscheid Q17; 188 Streifen, 560 distinkte Wörter).
+> Autor-Entscheid Q17). **Seit 2026-09-21 der Grundwortschatz** (§4): der
+> Autor bemerkte beim Schreiben der ersten Bögen, dass der Plan fast nur
+> lange, schwere Wörter verlangt — nachgemessen stand genau EINES der 50
+> häufigsten deutschen Wörter in den ersten 40 Streifen, weil die Auswahl
+> ein Wort an seinen Übergängen misst und die mit der Wortlänge wachsen.
+> Repariert in drei Teilen: Kurationsschicht `everyday`, die Alltagswelle
+> `S0189`–`S0265` und ein Boden als Phase A0 vor der Deckung; die
+> Alltagsstreifen führen die Reihenfolge nicht an, sondern verschränken
+> sich mit den eingefrorenen (fünf zu zwei, Autor-Entscheid). 265 Streifen,
+> 867 distinkte Wörter.
 > **Der erste echte Bogen
 > `B0001` ist gedruckt, geschrieben und eingelesen** (2026-09-07: drei
 > Fassungen mit Befund und Fleckenmaske §7.4 in der DB, erster
@@ -172,7 +181,8 @@ es stellt seine Leseaufgaben vorerst weiter in den Formen von 1922
 ## 3 Begriffe
 
 Neu geprägt und im Glossar verankert (glossar.md, Abschnitt „Eigenhand“):
-**Wortvorrat** · **Streifen** · **Streifenplan** · **Fassung** ·
+**Wortvorrat** (mit dem **Grundwortschatz** und seiner **Alltagswelle**,
+§4) · **Streifen** · **Streifenplan** · **Fassung** ·
 **Bogen** · **Passmarken** · **Siebung** · **Streifenkartei** ·
 **Übergangsraum** · **Bestandsbericht** (mit **Erstbeleg-Quote** und
 **Ausbau-Quote**) · **Beleg** · seit 2026-09-07 **Streifen-Befund** (mit
@@ -183,14 +193,14 @@ automatischen Messlauf).
 
 ## 4 Wortvorrat und Übergangsraum
 
-**Nur echte Wörter, keine Fantasiekombinationen.** Vier Kurations-Schichten
+**Nur echte Wörter, keine Fantasiekombinationen.** Kurations-Schichten
 in `tools/eigenhand/corpus.py`, per Tag nachvollziehbar: die §9-MVP-Wörter
 (`mvp9`), die 63 Abb.-19-Benchwörter (`bench-abb19`, zugleich spätere
 H5-Brücke zur historischen Hand), die komplette Quiz-Wortbank (`quizbank`,
 mechanisch übernommen samt era/fugen/Glossen) und gezielt gejagte
 Selten-Join-Wörter (`rare-join`: Komposita, Lehnwörter, Englisch) plus
 zwei Nachschichten aus dem ersten `gaps`-Lauf (`haeufig`:
-Hochfrequenz-Funktionswörter, die eine Lese-Quiz-Kuration systematisch
+Funktionswörter, die eine Lese-Quiz-Kuration systematisch
 auslässt — du, jetzt, schon, über, hätte, wäre, müssen …; `english`:
 Alltags-Englisch für das Zeitungs-Ziel, alles `lang: en` und filterbar;
 `zeichen`: Ziffern und Interpunktion im echten Textgebrauch —
@@ -344,6 +354,68 @@ Kleinschreibung sind im Wortvorrat absichtlich verschiedene Wörter, weil
 der Großbuchstabe anders formt. Und weil es jetzt mehr Pins gibt, als
 ein Bogen Zeilen hat, füllen sie den ersten Bogen und laufen auf dem
 nächsten weiter — zugesagt ist die Reihenfolge, nicht ein Bogen.
+
+**Der Grundwortschatz** (Autor-Befund, 2026-09-21). Beim Schreiben der
+ersten Bögen fiel auf, dass der Plan fast nur lange, schwere Wörter
+verlangt. Nachgemessen war es schlimmer als der Eindruck: von den 50
+häufigsten deutschen Wörtern standen 28 im Vorrat, 13 waren überhaupt
+eingeplant und **genau eines** stand in den ersten 40 Streifen; von den
+300 häufigsten fehlten 169 ganz — `ich`, `ist`, `nicht`, `es`, `in`,
+`auf`, `war`, `für` —, und 78 weitere lagen im Vorrat, ohne dass 188
+Streifen je nach ihnen gefragt hätten. Der erste Streifen ist
+`Galoppieren · Schwindsucht`.
+
+**Die Ursache liegt im Bauer, nicht nur in der Kuration.** Phase A misst
+ein Wort an den Items, die es neu bringt, und Items wachsen mit der
+Wortlänge: `Schwindsucht` trägt elf Übergänge, `ist` trägt zwei. Also
+gewinnen systematisch die langen. Phase B rechnet in derselben Form
+weiter, deshalb kommt `und` auch später nie dran — seine Übergänge sind
+längst gesättigt, sein Nutzen ist null. Die Schicht `haeufig` konnte das
+nicht auffangen, weil sie aus einem **Lücken**-Lauf stammt: sie jagte
+Übergänge, und ein kurzes häufiges Wort trägt nichts Seltenes.
+
+Drei Teile, die zusammen greifen:
+
+* **Die Schicht `everyday`** — ein Grundwortschatz nach Wortart gruppiert
+  (geschlossene Klassen und Hilfsverben · die alltäglichen Vollverben,
+  je Verb die Formen, die ein Brief wirklich schreibt, und deshalb
+  unterschiedlich viele — kein Paradigma, das wäre der Konjugationsdrill,
+  den §10 ausschließt · Alltagsnomen, Adjektive,
+  Adverbien · die Satzanfänge mit ihrem Großbuchstaben, weil `Ich` und
+  `ich` verschiedene Glyphenfolgen sind). Eigene Kuration, keine
+  übernommene Liste: das Konsultationskorpus ist untertitelstämmig, sein
+  Kopf voller `okay`, `hey` und Flüchen, und was ein Brief braucht —
+  `Brief`, `Woche`, `Grund`, `Antwort` — untergewichtet es. Frequenzlisten
+  bleiben uncommittet (quiz-wortbank.md §4), hier steht eigener Ausdruck.
+* **Die Alltagswelle** — `pool everyday` hängt die noch ungeplanten Wörter
+  als **gepackte** Welle an (nicht ein Wort je Streifen wie eine
+  Anheftung: ein Alltagswort verdient seinen Platz dadurch, dass es
+  gewöhnlich ist, und vier bis sechs passen in eine Zeile). Sie trägt
+  sich in den Planblock `everyday` ein.
+* **Der Grundwortschatz-Boden** — jede Wortklasse schuldet dem Plan eine
+  Mindestzahl an Einplanungen (`corpus.everyday_floors`), dieselbe Bauform
+  wie die Mindestbelegung bei Glyphen. Er läuft als **Phase A0 ZUERST**,
+  vor der Deckung: Phase A kann eine ganze Welle allein aufbrauchen, ein
+  Boden dahinter verhungerte genau in den Wellen, auf die es ankommt. Und
+  er ist gedeckelt (`EVERYDAY_WAVE_SHARE`, ein Drittel der Welle), damit die
+  stehende Schuld über mehrere Wellen abgetragen wird, statt den
+  gleichmäßigen Ausbau zu verdrängen. Gleiche Schuld entscheidet die
+  Wortlänge — der kürzere Rest zuerst.
+
+**Verschränkt, nicht vorangestellt** (Autor-Entscheid, 2026-09-21). Die
+Alltagsstreifen führen die Reihenfolge NICHT an, sie wechseln sich mit
+den eingefrorenen ab: fünf Alltagszeilen, zwei eingefrorene
+(`plan.EVERYDAY_PATTERN`, beide Zahlen müssen positiv sein). Ein Block
+vorn hätte die Wand aus Komposita nur
+verschoben; so trägt jeder Bogen beides, und die 77 Alltagsstreifen
+strecken sich über rund 15 Bögen. Der Block ist additiv wie `pins`, das
+Plan-Format bleibt 2. Gemessen am Kopf der Warteschlange (fünf Bögen nach
+den Anheftungen): 7,0 → 5,0 Zeichen je Wort, Wörter mit höchstens vier
+Buchstaben 13 % → 51 %, Wörter ab acht Buchstaben 38 % → 12 %. Welle 5
+(`S0189`–`S0265`, 2026-09-21) bringt 307 Wörter; `S0001`–`S0188` bleiben
+Byte für Byte, was sie waren. Das Soll-Universum wächst dabei nur um vier
+Items — kurze häufige Wörter tragen fast nichts Neues, und genau deshalb
+hat der Deckungs-Bauer sie nie gewollt.
 
 **Trainingsdaten, kein Mess-Satz.** Der Wortvorrat und der Streifenplan
 wachsen; KEINE Bench-Kopfzahl liest je aus ihnen. Sollte je eine Messung
@@ -1749,7 +1821,7 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
 
 | Phase | Inhalt | Stand 2026-08-27 |
 |---|---|---|
-| 1 | Wortvorrat, Übergangsraum, Streifenplan (`corpus` · `coverage` · `universe` · `gaps` · `pool`) | umgesetzt; Wave 0–2 committet (Welle 2 aus dem mit der Quiz-Bank abgeglichenen Vorrat, 2026-08-29), Plan-Format 2 |
+| 1 | Wortvorrat, Übergangsraum, Streifenplan (`corpus` · `coverage` · `universe` · `gaps` · `pool`) | umgesetzt; Wave 0–2 committet (Welle 2 aus dem mit der Quiz-Bank abgeglichenen Vorrat, 2026-08-29), Plan-Format 2; Alltagswelle + Grundwortschatz-Boden 2026-09-21 (§4) |
 | 2 | Blattgenerator (`geometry` · `pdfgen` · `bogen` · `sheet` · `rasterize`) | umgesetzt; Beispiel-Bogen erzeugt |
 | 3 | Einlesen + Siebung (`fiducial` · `ingest` · `page` · `apply` · `kartei`) | umgesetzt; synthetischer E2E-Rauchtest grün |
 | 4 | Bericht, Redo, Archiv (`report` · `redo` · `snapshot`) + Ablage-Skelett | umgesetzt |

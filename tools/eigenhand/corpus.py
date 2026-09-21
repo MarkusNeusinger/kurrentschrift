@@ -2,7 +2,7 @@
 
 Real words only, no drill syllables: the goal is writing real text, old and
 modern, mainly German with a tagged English share (owner decisions,
-docs/proposals/eigenhand-erfassung.md). Four curation layers, merged by
+docs/proposals/eigenhand-erfassung.md). Curation layers, merged by
 ``pool_entries()`` with their provenance tags:
 
 * ``mvp9``        — the architektur.md §9 MVP word set (incl. ``denen``)
@@ -15,9 +15,14 @@ docs/proposals/eigenhand-erfassung.md). Four curation layers, merged by
                     misses (compounds incl. Fugen words, loanwords, English);
                     candidates come from ``python -m tools.eigenhand.gaps``,
                     the selection stays a human act
-* ``haeufig``     — high-frequency German function/short words the quiz bank
-                    (a reading-quiz curation) deliberately skips but everyday
-                    writing needs constantly (du, jetzt, schon, über …)
+* ``haeufig``     — German function/short words the quiz bank (a reading-quiz
+                    curation) skips, found by hunting JOIN gaps: du, jetzt,
+                    schon, über …
+* ``everyday``    — the Grundwortschatz the join hunt could not find, because
+                    a short frequent word carries nothing rare: ich, ist,
+                    nicht, in, auf and the rest of what every sentence is made
+                    of. Grouped by word class, each group with a floor the
+                    builder owes it (``everyday_floors``)
 * ``english``     — a common-English layer beyond the rare-join hunting, so
                     modern mixed-language text stays writable (owner goal);
                     all ``lang: en``, filterable
@@ -370,6 +375,442 @@ _COMMON_DE_WORDS = [
     "Camping",
 ]
 
+# --- Grundwortschatz: the words everyday writing is actually made of --------
+# Why a second German layer beside `haeufig`: that one came out of a `gaps`
+# run and hunted JOINS, so it caught `du, jetzt, schon, über` and missed
+# `ich, ist, nicht, in, auf` — a gap the author found the only way it can be
+# found, by writing the first sheets and noticing they are all long compounds
+# (2026-09-21). Measured before the repair: of the 50 most frequent German
+# words 28 were in the pool, 13 were planned at all, and exactly ONE stood in
+# the first 40 strips.
+#
+# Own curation, not a copied list (quiz-wortbank.md §4 — frequency lists are
+# never committed): the consulted corpus is OpenSubtitles-derived and skews
+# to spoken dialogue, so its top is full of `okay`, `hey`, `sir` and swearing
+# that a Kurrent training sheet has no use for. What stands here is grouped by
+# word class, filtered by hand, and topped up with what letters need and a
+# film corpus undercounts (`Brief`, `Woche`, `Grund`, `Antwort`). Each group
+# carries its own floor: how often the plan must have asked for the word
+# before the builder stops owing it (`everyday_floors`).
+
+# The closed classes and the auxiliaries — the words that recur in every
+# single sentence, and therefore the ones worth the highest floor.
+_EVERYDAY_FUNCTION_WORDS = [
+    # personal and possessive pronouns
+    "ich",
+    "du",
+    "er",
+    "sie",
+    "es",
+    "wir",
+    "man",
+    "mich",
+    "dich",
+    "sich",
+    "euch",
+    "ihm",
+    "ihn",
+    "mir",
+    "mein",
+    "meine",
+    "dein",
+    "deine",
+    "sein",
+    "seine",
+    "unsere",
+    # articles and determiners
+    "der",
+    "die",
+    "das",
+    "den",
+    "dem",
+    "des",
+    "ein",
+    "eine",
+    "einen",
+    "einem",
+    "einer",
+    "kein",
+    "keine",
+    "keinen",
+    "dieser",
+    "diese",
+    "dieses",
+    "alle",
+    "andere",
+    "jeder",
+    "viele",
+    # conjunctions and subjunctions
+    "und",
+    "oder",
+    "aber",
+    "denn",
+    "wenn",
+    "weil",
+    "dass",
+    "als",
+    "ob",
+    "damit",
+    "obwohl",
+    "sondern",
+    "bevor",
+    "bis",
+    "sobald",
+    # question words
+    "wie",
+    "wo",
+    "wann",
+    "welche",
+    # prepositions, including the contracted forms that carry their own joins
+    "in",
+    "an",
+    "auf",
+    "aus",
+    "bei",
+    "mit",
+    "nach",
+    "von",
+    "zu",
+    "um",
+    "vor",
+    "unter",
+    "für",
+    "ohne",
+    "gegen",
+    "zwischen",
+    "am",
+    "im",
+    "ins",
+    "beim",
+    "zum",
+    "zur",
+    "vom",
+    # negation, degree, quantity
+    "nicht",
+    "nie",
+    "mehr",
+    "viel",
+    "wenig",
+    "sehr",
+    "fast",
+    "immer",
+    # sein · haben · werden
+    "ist",
+    "sind",
+    "war",
+    "waren",
+    "bin",
+    "bist",
+    "seid",
+    "hat",
+    "habe",
+    "hast",
+    "hatte",
+    "hatten",
+    "wird",
+    "werden",
+    "wurde",
+    "wurden",
+    "worden",
+    # the modals, in the forms a letter uses
+    "kann",
+    "kannst",
+    "könnte",
+    "muss",
+    "soll",
+    "sollen",
+    "will",
+    "wollen",
+    "darf",
+    "dürfen",
+    "mag",
+    "möchte",
+]
+
+# The everyday full verbs. NOT a paradigm — per verb the forms a letter
+# actually writes, drawn from infinitive, third person, past and the
+# participle where that is the common one. The count therefore varies on
+# purpose (`machen` has four, `stehen` two), and a form an earlier layer
+# already carries can be left out without being lost: `lesen` is a pinned
+# reference word, `steht` came in with `haeufig`, and `pool_entries` unions
+# the tags. Three forms per verb would be a conjugation drill, which §10 of
+# the proposal rules out.
+_EVERYDAY_VERB_FORMS = [
+    "gehen",
+    "geht",
+    "ging",
+    "kommen",
+    "kam",
+    "gekommen",
+    "machen",
+    "macht",
+    "machte",
+    "gemacht",
+    "sagen",
+    "sagt",
+    "sagte",
+    "gesagt",
+    "sehen",
+    "sieht",
+    "sah",
+    "gesehen",
+    "stehen",
+    "stand",
+    "geben",
+    "gab",
+    "gegeben",
+    "nehmen",
+    "nimmt",
+    "nahm",
+    "finden",
+    "findet",
+    "fand",
+    "gefunden",
+    "bleiben",
+    "blieb",
+    "geblieben",
+    "schreiben",
+    "schreibt",
+    "schrieb",
+    "geschrieben",
+    "liest",
+    "las",
+    "gelesen",
+    "denken",
+    "denkt",
+    "gedacht",
+    "glauben",
+    "glaubt",
+    "glaubte",
+    "wissen",
+    "weiß",
+    "heißen",
+    "hieß",
+    "fragen",
+    "fragt",
+    "fragte",
+    "gefragt",
+    "hören",
+    "hört",
+    "arbeiten",
+    "arbeitet",
+    "gearbeitet",
+    "wohnen",
+    "wohnt",
+    "lieben",
+    "liebt",
+    "geliebt",
+    "brauchen",
+    "braucht",
+    "gebraucht",
+    "bekommen",
+    "bekommt",
+    "bringen",
+    "bringt",
+    "gebracht",
+    "halten",
+    "hielt",
+    "ließ",
+    "fahren",
+    "fuhr",
+    "gefahren",
+    "laufen",
+    "läuft",
+    "lief",
+    "liegen",
+    "liegt",
+    "lag",
+    "sitzen",
+    "sitzt",
+    "saß",
+    "essen",
+    "isst",
+    "gegessen",
+    "trinken",
+    "trinkt",
+    "trank",
+    "schläft",
+    "schlief",
+    "helfen",
+    "hilft",
+    "geholfen",
+    "spielen",
+    "spielt",
+    "gespielt",
+    "lernen",
+    "lernt",
+    "gelernt",
+    "leben",
+    "lebt",
+    "gelebt",
+    "warten",
+    "wartet",
+    "gewartet",
+    "suchen",
+    "sucht",
+    "gesucht",
+    "zeigen",
+    "zeigt",
+    "gezeigt",
+]
+
+# The everyday nouns, adjectives and adverbs a letter is written out of. The
+# nouns carry their capital because German spells them that way — unlike the
+# sentence openers below, which are the same word twice, cased two ways, and
+# are deliberately two pool entries (see `pool_entries`).
+_EVERYDAY_CONTENT_WORDS = [
+    "ja",
+    "nein",
+    "bitte",
+    "danke",
+    "gut",
+    "besser",
+    "gern",
+    "gleich",
+    "genau",
+    "richtig",
+    "falsch",
+    "wieder",
+    "oft",
+    "bald",
+    "lange",
+    "kurz",
+    "weit",
+    "spät",
+    "früher",
+    "heute",
+    "gestern",
+    "hier",
+    "dort",
+    "dann",
+    "eben",
+    "zusammen",
+    "groß",
+    "klein",
+    "alt",
+    "neu",
+    "jung",
+    "schön",
+    "warm",
+    "kalt",
+    "Brief",
+    "Jahr",
+    "Jahre",
+    "Zeit",
+    "Tag",
+    "Tage",
+    "Nacht",
+    "Abend",
+    "Woche",
+    "Stunde",
+    "Haus",
+    "Mann",
+    "Frau",
+    "Kind",
+    "Kinder",
+    "Vater",
+    "Mutter",
+    "Bruder",
+    "Schwester",
+    "Freund",
+    "Freunde",
+    "Arbeit",
+    "Geld",
+    "Leute",
+    "Welt",
+    "Stadt",
+    "Land",
+    "Dorf",
+    "Wort",
+    "Worte",
+    "Name",
+    "Hand",
+    "Herz",
+    "Weg",
+    "Ort",
+    "Sache",
+    "Frage",
+    "Antwort",
+    "Grund",
+    "Teil",
+    "Buch",
+    "Schule",
+    "Kirche",
+    "Wetter",
+    "Garten",
+    "Mensch",
+    "Menschen",
+    "Leben",
+    "Sonne",
+    "Regen",
+]
+
+# Sentence openers: the same function words with the capital they get at the
+# start of a sentence. Case-distinct pool entries on purpose — `Ich` and `ich`
+# shape to different glyph sequences, and a letter begins with the capital one
+# in every second line.
+_EVERYDAY_SENTENCE_OPENERS = [
+    "Ich",
+    "Du",
+    "Er",
+    "Sie",
+    "Es",
+    "Wir",
+    "Der",
+    "Die",
+    "Das",
+    "Ein",
+    "Eine",
+    "Und",
+    "Aber",
+    "Wenn",
+    "Als",
+    "Nun",
+    "So",
+    "Da",
+    "Dann",
+    "Heute",
+    "Gestern",
+    "Morgen",
+    "Ja",
+    "Nein",
+    "Bitte",
+    "Danke",
+]
+
+# word → how often the whole plan must have asked for it. Same shape as the
+# per-glyph floor `GLYPH_MIN_PLANNED` (owner, 2026-08-23: "a q only once is
+# unacceptable") and the same kind of promise: a guarantee, not a preference.
+# The Kern words get more because they come back in every sentence and their
+# joins are what fluent writing is made of; the builder spends only a bounded
+# share of each wave on them (`pool.EVERYDAY_WAVE_SHARE`), so the floor fills
+# over several waves instead of starving the even build-out.
+_EVERYDAY_GROUPS: list[tuple[list[str], int]] = [
+    (_EVERYDAY_FUNCTION_WORDS, 3),
+    (_EVERYDAY_VERB_FORMS, 2),
+    (_EVERYDAY_CONTENT_WORDS, 2),
+    (_EVERYDAY_SENTENCE_OPENERS, 2),
+]
+
+# Curation order, deduplicated: the everyday wave writes them in this order,
+# so a Bogen's row stays a run of related words rather than a random mix.
+EVERYDAY_WORDS: list[str] = list(dict.fromkeys(word for words, _ in _EVERYDAY_GROUPS for word in words))
+
+
+def everyday_floors() -> dict[str, int]:
+    """Grundwortschatz word → the minimum number of planned uses it is owed.
+
+    A word listed in two groups keeps the HIGHER floor: the groups say what a
+    word is for, and being needed twice over is not a reason to ask for it
+    less often.
+    """
+    floors: dict[str, int] = {}
+    for words, floor in _EVERYDAY_GROUPS:
+        for word in words:
+            floors[word] = max(floors.get(word, 0), floor)
+    return floors
+
+
 # --- common English beyond the rare-join hunting (lang: en, filterable) ------
 _COMMON_EN_WORDS = [
     "what",
@@ -659,6 +1100,8 @@ def pool_entries() -> list[PoolEntry]:
         add(entry["word"], "rare-join", entry)
     for word in _COMMON_DE_WORDS:
         add(word, "haeufig")
+    for word in EVERYDAY_WORDS:
+        add(word, "everyday")
     for word in _COMMON_EN_WORDS:
         add(word, "english", {"lang": "en"})
     for entry in _ZEICHEN_ENTRIES:

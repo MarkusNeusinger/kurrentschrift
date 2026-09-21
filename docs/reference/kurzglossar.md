@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
-> **Status (2026-09-20): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **113
+> **Status (2026-09-21): lebend.** Die Kurzfassung von
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **119
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -647,6 +647,21 @@ angenommenen Fassungen einer Hand; die Zähleinheit des Bestandsberichts.
 Nie ein Zähler für Bahnen — ein Wort kann mehrere Bahnen tragen, ohne ein
 Beleg zu sein.
 → [§5](glossar.md#5-werkbank-und-prozess)
+
+**Grundwortschatz (Eigenhand)** — die Kurationsschicht `everyday`: die Wörter,
+aus denen Alltagstext besteht (`ich`, `ist`, `nicht`), je Wortart mit einem
+**Boden** an Mindest-Einplanungen. Nötig, weil die Auswahl ein Wort an seinen
+Übergängen misst und die mit der Wortlänge wachsen — `Schwindsucht` schlug
+`ist` in jeder Runde. Der Boden läuft als Phase A0 ZUERST und ist gedeckelt.
+`tools/eigenhand/corpus.py::EVERYDAY_WORDS`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §4
+
+**Alltagswelle** — die angehängte Welle, die den Grundwortschatz auf Streifen
+bringt, und ihr Planblock `everyday`. Gepackt statt ein Wort je Streifen, und
+sie führt die Planreihenfolge nicht an, sondern **verschränkt** sich: fünf
+Alltagszeilen, zwei eingefrorene, damit jeder Bogen beides trägt.
+`core/eigenhand/plan.py::EVERYDAY_PATTERN`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §4
 
 **Streifen-Befund** — was eine geschriebene Fassung über sich sagt: Feder,
 Unstetigkeit, Kringel, Duktus, Deckung, Lesbarkeit — plus ein **Vorschlag**
