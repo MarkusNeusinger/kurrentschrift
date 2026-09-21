@@ -4034,13 +4034,13 @@ Fassungen in der Streifenkartei → Bestandsbericht → nächster Bogen.
 **Wortvorrat** — der committete, kuratierte, in Wellen wachsende Bestand
 ECHTER Wörter der Eigenhand-Erfassung (alt und modern, hauptsächlich
 Deutsch, Englisch getaggt); Kurationsschichten per Tag (`mvp9` ·
-`bench-abb19` · `quizbank` · `rare-join` · `haeufig` · `alltag` ·
+`bench-abb19` · `quizbank` · `rare-join` · `haeufig` · `everyday` ·
 `english` · `zeichen` · `pin`).
 Trainingsdaten, kein Mess-Satz — keine Bench-Kopfzahl liest daraus.
 *Technisch:* `tools/eigenhand/corpus.py::pool_entries`.
 → proposals/eigenhand-erfassung.md §4
 
-**Grundwortschatz (Eigenhand)** — die Kurationsschicht `alltag`: die
+**Grundwortschatz (Eigenhand)** — die Kurationsschicht `everyday`: die
 Wörter, aus denen Alltagstext tatsächlich besteht (`ich`, `ist`, `nicht`,
 `in`, `auf`), nach Wortart gruppiert und je Gruppe mit einem **Boden** —
 einer Mindestzahl an Einplanungen, die der Plan ihnen schuldet. Nötig
@@ -4050,19 +4050,19 @@ bringt, und Übergänge mit der Wortlänge wachsen: `Schwindsucht` schlägt
 durch 188 Streifen ungeplant. Der Boden läuft als Phase A0 ZUERST (hinter
 der Deckung verhungerte er) und ist auf einen Anteil der Welle gedeckelt.
 Nicht zu verwechseln mit `haeufig`, das Übergangs-LÜCKEN jagte.
-*Technisch:* `tools/eigenhand/corpus.py::ALLTAG_WORDS` +
-`alltag_floors`, `tools/eigenhand/pool.py::ALLTAG_WAVE_SHARE`.
+*Technisch:* `tools/eigenhand/corpus.py::EVERYDAY_WORDS` +
+`everyday_floors`, `tools/eigenhand/pool.py::EVERYDAY_WAVE_SHARE`.
 → proposals/eigenhand-erfassung.md §4
 
 **Alltagswelle** — die angehängte Welle, die den Grundwortschatz auf
-Streifen bringt, und der Planblock `alltag`, in den sie sich einträgt.
+Streifen bringt, und der Planblock `everyday`, in den sie sich einträgt.
 Anders als eine Anheftung wird sie GEPACKT (vier bis sechs kurze Wörter
 je Zeile, statt ein Wort je Streifen) und sie führt die Planreihenfolge
 NICHT an, sondern **verschränkt** sich mit den eingefrorenen Streifen:
 fünf Alltagszeilen, zwei eingefrorene, sodass jeder Bogen beides trägt
 (Autor-Entscheid 2026-09-21). Additiv wie `pins` — das Plan-Format bleibt
-2. *Technisch:* `python -m tools.eigenhand.pool alltag`,
-`core/eigenhand/plan.py::ALLTAG_PATTERN` + `ordered_strips`.
+2. *Technisch:* `python -m tools.eigenhand.pool everyday`,
+`core/eigenhand/plan.py::EVERYDAY_PATTERN` + `ordered_strips`.
 → proposals/eigenhand-erfassung.md §4
 
 **Streifen (Eigenhand)** — die stabile Inhaltseinheit der

@@ -297,7 +297,7 @@
     "S0264",
     "S0265"
    ],
-   "alltag": true
+   "everyday": true
   }
  ],
  "strips": {
@@ -2567,7 +2567,7 @@
   "S0187",
   "S0188"
  ],
- "alltag": [
+ "everyday": [
   "S0189",
   "S0190",
   "S0191",

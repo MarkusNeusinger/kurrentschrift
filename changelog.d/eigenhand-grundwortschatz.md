@@ -1,30 +1,30 @@
 ### Added
 
-- **Der Grundwortschatz im Wortvorrat.** Neue Kurationsschicht `alltag`:
-  die Wörter, aus denen Alltagstext tatsächlich besteht, nach Wortart
-  gruppiert (geschlossene Klassen und Hilfsverben · die alltäglichen
-  Vollverben · Alltagsnomen und Adverbien · die Satzanfänge mit ihrem
-  Großbuchstaben). Eigene Kuration statt übernommener Liste: das
-  Konsultationskorpus ist untertitelstämmig und untergewichtet genau das,
-  was ein Brief braucht.
-- **Die Alltagswelle und der Planblock `alltag`.** `pool alltag` hängt die
-  noch ungeplanten Wörter als GEPACKTE Welle an — vier bis sechs kurze
-  Wörter je Zeile, anders als eine Anheftung, die ihrem Wort die ganze
-  Zeile gibt. In der Planreihenfolge führt der Block nicht, sondern
-  verschränkt sich mit den eingefrorenen Streifen: fünf Alltagszeilen,
-  zwei eingefrorene, damit jeder Bogen beides trägt. Additiv wie `pins`,
-  Plan-Format bleibt 2.
+- **Der Grundwortschatz — the words everyday writing is actually made of.**
+  A new curation layer `everyday` in the Wortvorrat, grouped by word class:
+  the closed classes and auxiliaries, the everyday full verbs in the forms a
+  letter really writes, everyday nouns and adverbs, and the sentence openers
+  with their capital (`Ich` and `ich` shape to different glyph sequences and
+  are two pool entries on purpose). Own curation rather than a copied list:
+  the consulted corpus is subtitle-derived and undercounts exactly what a
+  letter needs.
+- **The Alltagswelle and the plan block `everyday`.** `pool everyday`
+  appends the still-unplanned words as a PACKED wave — four to six short
+  words per row, unlike a pin, which gives its one word the whole row. In
+  plan order the block does not lead but INTERLEAVES with the frozen strips:
+  five everyday rows, two frozen ones, so every Bogen carries both. Additive
+  like `pins`, so the plan format stays 2.
 
 ### Fixed
 
-- **Die häufigsten Wörter der Sprache standen nicht im Plan.** Von den 50
-  häufigsten deutschen Wörtern waren 28 im Vorrat, 13 eingeplant und genau
-  eines in den ersten 40 Streifen; von den 300 häufigsten fehlten 169 ganz.
-  Ursache war der Bauer: beide Phasen messen ein Wort an den Übergängen,
-  die es bringt, und die wachsen mit der Wortlänge — `Schwindsucht` schlug
-  `ist` in jeder Runde. Neue Phase A0 zieht jede Wortklasse auf einen
-  geschuldeten Boden, und sie läuft ZUERST, weil Phase A eine ganze Welle
-  allein aufbrauchen kann und ein Boden dahinter genau in den Wellen
-  verhungert, auf die es ankommt; gedeckelt auf ein Drittel der Welle,
-  damit der gleichmäßige Ausbau bleibt. Der Kopf der Warteschlange fällt
-  damit von 7,0 auf 5,0 Zeichen je Wort.
+- **The commonest words of the language were missing from the strip plan.**
+  Of the 50 most frequent German words, 28 were in the Wortvorrat, 13 were
+  planned at all, and exactly one stood in the first 40 strips; of the 300
+  most frequent, 169 were missing from the pool entirely. The cause was the
+  builder: both phases measure a word by the joins it carries, and joins grow
+  with word length, so `Schwindsucht` beat `ist` every round. A new phase A0
+  lifts every word class to a floor it is owed, and it runs FIRST — phase A
+  can consume a whole wave by itself, so a floor queued behind it starves in
+  exactly the waves that matter — bounded to a third of a wave so the even
+  build-out survives. The head of the print queue drops from 7.0 to 5.0
+  letters per word.

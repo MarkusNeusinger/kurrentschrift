@@ -179,10 +179,10 @@ uv run python -m tools.eigenhand.redo --hand mn-suetterlin S0037 S0055 --reason 
   pin` der Weg: es bekommt einen eigenen angehängten Streifen, der die
   Warteschlange anführt (Anheftung, Proposal §4).
 - **Jeder Bogen trägt leichte und schwere Zeilen.** Seit der Alltagswelle
-  (`tools.eigenhand.pool alltag`, 2026-09-21) wechseln sich fünf Zeilen
+  (`tools.eigenhand.pool everyday`, 2026-09-21) wechseln sich fünf Zeilen
   Grundwortschatz mit zwei Zeilen aus dem eingefrorenen Deckungsplan ab —
   ein Bogen ist also weder ein Block Funktionswörter noch eine Wand aus
-  Komposita. Wer das ändern will, ändert `plan.ALLTAG_PATTERN`, nicht die
+  Komposita. Wer das ändern will, ändert `plan.EVERYDAY_PATTERN`, nicht die
   Streifen.
 
 ## Ablage-Struktur

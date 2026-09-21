@@ -5,13 +5,13 @@ row) so that the FIRST strips carry maximum coverage velocity and later
 strips grow frequent AND rare items evenly:
 
 * **Phase A0 — Grundwortschatz-Boden.** Tops every everyday word up toward
-  the floor its word class is owed (``corpus.alltag_floors``). Phases A and B
+  the floor its word class is owed (``corpus.everyday_floors``). Phases A and B
   both measure a word by the items it carries, and items grow with length, so
   `Schwindsucht` beats `ist` in every round and the commonest words of the
   language went unplanned through 188 strips. This phase is the correction. It
   runs FIRST, because phase A can consume a whole wave by itself and a floor
   queued behind it would starve in exactly the waves that matter; and it is
-  bounded to ``ALLTAG_WAVE_SHARE`` of the wave, so the standing debt is paid
+  bounded to ``EVERYDAY_WAVE_SHARE`` of the wave, so the standing debt is paid
   off across waves instead of buying the everyday words at the price of the
   coverage build-out.
 * **Phase A — Startdeckung.** Greedy weighted set cover: repeatedly pick the
@@ -38,15 +38,16 @@ plan order. Nothing existing moves; only what comes first changes. A pinned
 strip leaves the front of the queue the ordinary way, by being written
 (``belegt``).
 
-``alltag`` uses the same door for a different repair. The everyday words
-(``corpus.ALLTAG_WORDS``) cannot be written into the frozen strips either, so
-they are appended as a packed wave and registered in ``plan["alltag"]``; plan
-order then ALTERNATES them with the frozen strips rather than putting them in
-front, so every Bogen carries both (owner decision 2026-09-21).
+``everyday`` uses the same door for a different repair. The Grundwortschatz
+(``corpus.EVERYDAY_WORDS``) cannot be written into the frozen strips either,
+so it is appended as a packed wave and registered in ``plan["everyday"]``;
+plan order then ALTERNATES those strips with the frozen ones rather than
+putting them in front, so every Bogen carries both (owner decision
+2026-09-21).
 
     uv run python -m tools.eigenhand.pool build --strips 60
     uv run python -m tools.eigenhand.pool pin
-    uv run python -m tools.eigenhand.pool alltag
+    uv run python -m tools.eigenhand.pool everyday
 """
 
 from __future__ import annotations
@@ -59,7 +60,7 @@ from pathlib import Path
 from core.eigenhand import coverage
 from core.eigenhand.geometry import PRESETS, pack_words_into_rows
 from core.eigenhand.plan import STREIFEN_JSON, dump_plan, empty_plan, load_plan, strip_id
-from tools.eigenhand.corpus import ALLTAG_WORDS, PINNED_FIRST, alltag_floors, pool_entries, shaping_form
+from tools.eigenhand.corpus import EVERYDAY_WORDS, PINNED_FIRST, everyday_floors, pool_entries, shaping_form
 from tools.eigenhand.universe import load_universe
 
 
@@ -80,12 +81,12 @@ REPEAT_DAMPING = 0.3
 # damping does not apply here; only MAX_REPEAT_PER_WAVE and the wave
 # capacity bound it, and unmet leftovers are reported, never silent.
 GLYPH_MIN_PLANNED = 3
-# The share of a wave phase A0 may spend on the Grundwortschatz floor. The
+# The share of a wave that phase A0 may spend on the Grundwortschatz floor. The
 # floor is a large standing debt (a few hundred word slots), and paying it in
 # one wave would buy the everyday words at the price of the whole coverage
 # build-out. A third per wave pays it off over a handful of waves while every
 # wave still grows the Übergangsraum.
-ALLTAG_WAVE_SHARE = 1 / 3
+EVERYDAY_WAVE_SHARE = 1 / 3
 
 
 def _planned_word_uses(plan: dict) -> Counter[str]:
@@ -162,9 +163,9 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
     #
     # Ranked by what a word is still OWED, not by what it would cover:
     # covering is the measure that lost these words in the first place.
-    floors = {word: floor for word, floor in alltag_floors().items() if word in word_items}
-    alltag_budget = max(1, round(target_strips * ALLTAG_WAVE_SHARE))
-    while packed_rows() < alltag_budget:
+    floors = {word: floor for word, floor in everyday_floors().items() if word in word_items}
+    everyday_budget = max(1, round(target_strips * EVERYDAY_WAVE_SHARE))
+    while packed_rows() < everyday_budget:
         owed = {word: floor - word_uses[word] for word, floor in floors.items() if word_uses[word] < floor}
         if not owed:
             break
@@ -294,7 +295,7 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
         # phase is budgeted on purpose — so this is a progress figure, not a
         # warning: it has to fall wave by wave, and standing still means the
         # budget never bought anything.
-        "alltag_open": sum(max(0, floor - word_uses[word]) for word, floor in floors.items()),
+        "everyday_open": sum(max(0, floor - word_uses[word]) for word, floor in floors.items()),
     }
     return plan, stats
 
@@ -345,7 +346,7 @@ def pin_words(plan: dict, words: list[str]) -> tuple[dict, dict]:
     return plan, {"strips": ids, "pinned": fresh, "skipped": [w for w in words if w not in fresh]}
 
 
-def alltag_wave(plan: dict, words: list[str]) -> tuple[dict, dict]:
+def everyday_wave(plan: dict, words: list[str]) -> tuple[dict, dict]:
     """Append the Grundwortschatz as a packed wave that interleaves (pure).
 
     Unlike ``pin_words`` this PACKS: an everyday word earns its place by being
@@ -353,9 +354,9 @@ def alltag_wave(plan: dict, words: list[str]) -> tuple[dict, dict]:
     a row — a row of its own would waste most of a sheet. Words the plan
     already carries are skipped for the same reason a pin skips them: the wave
     exists to put the missing ones on paper, and the standing floor
-    (``alltag_floors``, phase A0) is what brings them back.
+    (``everyday_floors``, phase A0) is what brings them back.
 
-    The wave's strips land in ``plan["alltag"]``, and ``plan.ordered_strips``
+    The wave's strips land in ``plan["everyday"]``, and ``plan.ordered_strips``
     alternates that block with the frozen strips.
     """
     entries = pool_entries()
@@ -375,8 +376,8 @@ def alltag_wave(plan: dict, words: list[str]) -> tuple[dict, dict]:
             next_number += 1
             plan["strips"][sid] = {"wave": wave_no, "words": row}
             ids.append(sid)
-        plan["waves"].append({"wave": wave_no, "strips": ids, "alltag": True})
-        plan["alltag"] = list(plan.get("alltag", [])) + ids
+        plan["waves"].append({"wave": wave_no, "strips": ids, "everyday": True})
+        plan["everyday"] = list(plan.get("everyday", [])) + ids
         frozen_forms = dict(plan.get("forms", {}))
         for word in fresh:
             if forms[word] != word:
@@ -402,8 +403,8 @@ def main(argv: list[str] | None = None) -> int:
     pin = sub.add_parser("pin", help="append the pinned words as leading strips")
     pin.add_argument("--word", action="append", default=None, help="pin this word (default: corpus.PINNED_FIRST)")
     pin.add_argument("--out", type=Path, default=STREIFEN_JSON, help="plan path (default: %(default)s)")
-    alltag = sub.add_parser("alltag", help="append the Grundwortschatz as an interleaving wave")
-    alltag.add_argument("--out", type=Path, default=STREIFEN_JSON, help="plan path (default: %(default)s)")
+    everyday = sub.add_parser("everyday", help="append the Grundwortschatz as an interleaving wave")
+    everyday.add_argument("--out", type=Path, default=STREIFEN_JSON, help="plan path (default: %(default)s)")
     args = ap.parse_args(argv)
 
     plan = load_plan(args.out) if args.out.exists() else empty_plan()
@@ -419,8 +420,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"already planned, not pinned again: {', '.join(pinned['skipped'])}")
         return 0
 
-    if args.cmd == "alltag":
-        plan, wave = alltag_wave(plan, ALLTAG_WORDS)
+    if args.cmd == "everyday":
+        plan, wave = everyday_wave(plan, EVERYDAY_WORDS)
         verify_immutable(before, plan)
         args.out.write_text(dump_plan(plan), encoding="utf-8")
         print(
@@ -440,7 +441,7 @@ def main(argv: list[str] | None = None) -> int:
         f"wrote {args.out}: wave {stats['wave']} with {stats['strips']} strips, "
         f"{stats['words']} words ({stats['distinct_words']} distinct); "
         f"coverage {stats['items_covered']}/{stats['items_total']} items; "
-        f"Grundwortschatz floor still owes {stats['alltag_open']} word slots"
+        f"Grundwortschatz floor still owes {stats['everyday_open']} word slots"
     )
     if stats["floor_unmet"]:
         print(

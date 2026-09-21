@@ -648,19 +648,19 @@ Nie ein Zähler für Bahnen — ein Wort kann mehrere Bahnen tragen, ohne ein
 Beleg zu sein.
 → [§5](glossar.md#5-werkbank-und-prozess)
 
-**Grundwortschatz (Eigenhand)** — die Kurationsschicht `alltag`: die Wörter,
+**Grundwortschatz (Eigenhand)** — die Kurationsschicht `everyday`: die Wörter,
 aus denen Alltagstext besteht (`ich`, `ist`, `nicht`), je Wortart mit einem
 **Boden** an Mindest-Einplanungen. Nötig, weil die Auswahl ein Wort an seinen
 Übergängen misst und die mit der Wortlänge wachsen — `Schwindsucht` schlug
 `ist` in jeder Runde. Der Boden läuft als Phase A0 ZUERST und ist gedeckelt.
-`tools/eigenhand/corpus.py::ALLTAG_WORDS`.
+`tools/eigenhand/corpus.py::EVERYDAY_WORDS`.
 → [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §4
 
 **Alltagswelle** — die angehängte Welle, die den Grundwortschatz auf Streifen
-bringt, und ihr Planblock `alltag`. Gepackt statt ein Wort je Streifen, und
+bringt, und ihr Planblock `everyday`. Gepackt statt ein Wort je Streifen, und
 sie führt die Planreihenfolge nicht an, sondern **verschränkt** sich: fünf
 Alltagszeilen, zwei eingefrorene, damit jeder Bogen beides trägt.
-`core/eigenhand/plan.py::ALLTAG_PATTERN`.
+`core/eigenhand/plan.py::EVERYDAY_PATTERN`.
 → [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §4
 
 **Streifen-Befund** — was eine geschriebene Fassung über sich sagt: Feder,

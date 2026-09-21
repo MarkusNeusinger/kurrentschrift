@@ -18,11 +18,11 @@ docs/proposals/eigenhand-erfassung.md). Curation layers, merged by
 * ``haeufig``     — German function/short words the quiz bank (a reading-quiz
                     curation) skips, found by hunting JOIN gaps: du, jetzt,
                     schon, über …
-* ``alltag``      — the Grundwortschatz the join hunt could not find, because
+* ``everyday``    — the Grundwortschatz the join hunt could not find, because
                     a short frequent word carries nothing rare: ich, ist,
                     nicht, in, auf and the rest of what every sentence is made
                     of. Grouped by word class, each group with a floor the
-                    builder owes it (``alltag_floors``)
+                    builder owes it (``everyday_floors``)
 * ``english``     — a common-English layer beyond the rare-join hunting, so
                     modern mixed-language text stays writable (owner goal);
                     all ``lang: en``, filterable
@@ -391,11 +391,11 @@ _COMMON_DE_WORDS = [
 # word class, filtered by hand, and topped up with what letters need and a
 # film corpus undercounts (`Brief`, `Woche`, `Grund`, `Antwort`). Each group
 # carries its own floor: how often the plan must have asked for the word
-# before the builder stops owing it (`ALLTAG_FLOORS`).
+# before the builder stops owing it (`everyday_floors`).
 
 # The closed classes and the auxiliaries — the words that recur in every
 # single sentence, and therefore the ones worth the highest floor.
-_ALLTAG_KERN = [
+_EVERYDAY_FUNCTION_WORDS = [
     # personal and possessive pronouns
     "ich",
     "du",
@@ -527,10 +527,15 @@ _ALLTAG_KERN = [
     "möchte",
 ]
 
-# The everyday full verbs. Infinitive, third person, past — three forms per
-# verb is what makes the joins vary without turning the layer into a
-# conjugation drill (§10: no drill syllables, and this stays real words).
-_ALLTAG_FORMEN = [
+# The everyday full verbs. NOT a paradigm — per verb the forms a letter
+# actually writes, drawn from infinitive, third person, past and the
+# participle where that is the common one. The count therefore varies on
+# purpose (`machen` has four, `stehen` two), and a form an earlier layer
+# already carries can be left out without being lost: `lesen` is a pinned
+# reference word, `steht` came in with `haeufig`, and `pool_entries` unions
+# the tags. Three forms per verb would be a conjugation drill, which §10 of
+# the proposal rules out.
+_EVERYDAY_VERB_FORMS = [
     "gehen",
     "geht",
     "ging",
@@ -653,7 +658,7 @@ _ALLTAG_FORMEN = [
 # nouns carry their capital because German spells them that way — unlike the
 # sentence openers below, which are the same word twice, cased two ways, and
 # are deliberately two pool entries (see `pool_entries`).
-_ALLTAG_SACHEN = [
+_EVERYDAY_CONTENT_WORDS = [
     "ja",
     "nein",
     "bitte",
@@ -744,7 +749,7 @@ _ALLTAG_SACHEN = [
 # start of a sentence. Case-distinct pool entries on purpose — `Ich` and `ich`
 # shape to different glyph sequences, and a letter begins with the capital one
 # in every second line.
-_ALLTAG_SATZANFANG = [
+_EVERYDAY_SENTENCE_OPENERS = [
     "Ich",
     "Du",
     "Er",
@@ -778,21 +783,21 @@ _ALLTAG_SATZANFANG = [
 # unacceptable") and the same kind of promise: a guarantee, not a preference.
 # The Kern words get more because they come back in every sentence and their
 # joins are what fluent writing is made of; the builder spends only a bounded
-# share of each wave on them (`pool.ALLTAG_WAVE_SHARE`), so the floor fills
+# share of each wave on them (`pool.EVERYDAY_WAVE_SHARE`), so the floor fills
 # over several waves instead of starving the even build-out.
-_ALLTAG_GROUPS: list[tuple[list[str], int]] = [
-    (_ALLTAG_KERN, 3),
-    (_ALLTAG_FORMEN, 2),
-    (_ALLTAG_SACHEN, 2),
-    (_ALLTAG_SATZANFANG, 2),
+_EVERYDAY_GROUPS: list[tuple[list[str], int]] = [
+    (_EVERYDAY_FUNCTION_WORDS, 3),
+    (_EVERYDAY_VERB_FORMS, 2),
+    (_EVERYDAY_CONTENT_WORDS, 2),
+    (_EVERYDAY_SENTENCE_OPENERS, 2),
 ]
 
 # Curation order, deduplicated: the everyday wave writes them in this order,
 # so a Bogen's row stays a run of related words rather than a random mix.
-ALLTAG_WORDS: list[str] = list(dict.fromkeys(word for words, _ in _ALLTAG_GROUPS for word in words))
+EVERYDAY_WORDS: list[str] = list(dict.fromkeys(word for words, _ in _EVERYDAY_GROUPS for word in words))
 
 
-def alltag_floors() -> dict[str, int]:
+def everyday_floors() -> dict[str, int]:
     """Grundwortschatz word → the minimum number of planned uses it is owed.
 
     A word listed in two groups keeps the HIGHER floor: the groups say what a
@@ -800,7 +805,7 @@ def alltag_floors() -> dict[str, int]:
     less often.
     """
     floors: dict[str, int] = {}
-    for words, floor in _ALLTAG_GROUPS:
+    for words, floor in _EVERYDAY_GROUPS:
         for word in words:
             floors[word] = max(floors.get(word, 0), floor)
     return floors
@@ -1095,8 +1100,8 @@ def pool_entries() -> list[PoolEntry]:
         add(entry["word"], "rare-join", entry)
     for word in _COMMON_DE_WORDS:
         add(word, "haeufig")
-    for word in ALLTAG_WORDS:
-        add(word, "alltag")
+    for word in EVERYDAY_WORDS:
+        add(word, "everyday")
     for word in _COMMON_EN_WORDS:
         add(word, "english", {"lang": "en"})
     for entry in _ZEICHEN_ENTRIES:

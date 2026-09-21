@@ -26,7 +26,7 @@
 > lange, schwere Wörter verlangt — nachgemessen stand genau EINES der 50
 > häufigsten deutschen Wörter in den ersten 40 Streifen, weil die Auswahl
 > ein Wort an seinen Übergängen misst und die mit der Wortlänge wachsen.
-> Repariert in drei Teilen: Kurationsschicht `alltag`, die Alltagswelle
+> Repariert in drei Teilen: Kurationsschicht `everyday`, die Alltagswelle
 > `S0189`–`S0265` und ein Boden als Phase A0 vor der Deckung; die
 > Alltagsstreifen führen die Reihenfolge nicht an, sondern verschränken
 > sich mit den eingefrorenen (fünf zu zwei, Autor-Entscheid). 265 Streifen,
@@ -376,26 +376,28 @@ nicht auffangen, weil sie aus einem **Lücken**-Lauf stammt: sie jagte
 
 Drei Teile, die zusammen greifen:
 
-* **Die Schicht `alltag`** — ein Grundwortschatz nach Wortart gruppiert
-  (geschlossene Klassen und Hilfsverben · die alltäglichen Vollverben in
-  Infinitiv, dritter Person und Präteritum · Alltagsnomen, Adjektive,
+* **Die Schicht `everyday`** — ein Grundwortschatz nach Wortart gruppiert
+  (geschlossene Klassen und Hilfsverben · die alltäglichen Vollverben,
+  je Verb die Formen, die ein Brief wirklich schreibt, und deshalb
+  unterschiedlich viele — kein Paradigma, das wäre der Konjugationsdrill,
+  den §10 ausschließt · Alltagsnomen, Adjektive,
   Adverbien · die Satzanfänge mit ihrem Großbuchstaben, weil `Ich` und
   `ich` verschiedene Glyphenfolgen sind). Eigene Kuration, keine
   übernommene Liste: das Konsultationskorpus ist untertitelstämmig, sein
   Kopf voller `okay`, `hey` und Flüchen, und was ein Brief braucht —
   `Brief`, `Woche`, `Grund`, `Antwort` — untergewichtet es. Frequenzlisten
   bleiben uncommittet (quiz-wortbank.md §4), hier steht eigener Ausdruck.
-* **Die Alltagswelle** — `pool alltag` hängt die noch ungeplanten Wörter
+* **Die Alltagswelle** — `pool everyday` hängt die noch ungeplanten Wörter
   als **gepackte** Welle an (nicht ein Wort je Streifen wie eine
   Anheftung: ein Alltagswort verdient seinen Platz dadurch, dass es
   gewöhnlich ist, und vier bis sechs passen in eine Zeile). Sie trägt
-  sich in den Planblock `alltag` ein.
+  sich in den Planblock `everyday` ein.
 * **Der Grundwortschatz-Boden** — jede Wortklasse schuldet dem Plan eine
-  Mindestzahl an Einplanungen (`corpus.alltag_floors`), dieselbe Bauform
+  Mindestzahl an Einplanungen (`corpus.everyday_floors`), dieselbe Bauform
   wie die Mindestbelegung bei Glyphen. Er läuft als **Phase A0 ZUERST**,
   vor der Deckung: Phase A kann eine ganze Welle allein aufbrauchen, ein
   Boden dahinter verhungerte genau in den Wellen, auf die es ankommt. Und
-  er ist gedeckelt (`ALLTAG_WAVE_SHARE`, ein Drittel der Welle), damit die
+  er ist gedeckelt (`EVERYDAY_WAVE_SHARE`, ein Drittel der Welle), damit die
   stehende Schuld über mehrere Wellen abgetragen wird, statt den
   gleichmäßigen Ausbau zu verdrängen. Gleiche Schuld entscheidet die
   Wortlänge — der kürzere Rest zuerst.
@@ -403,7 +405,8 @@ Drei Teile, die zusammen greifen:
 **Verschränkt, nicht vorangestellt** (Autor-Entscheid, 2026-09-21). Die
 Alltagsstreifen führen die Reihenfolge NICHT an, sie wechseln sich mit
 den eingefrorenen ab: fünf Alltagszeilen, zwei eingefrorene
-(`plan.ALLTAG_PATTERN`). Ein Block vorn hätte die Wand aus Komposita nur
+(`plan.EVERYDAY_PATTERN`, beide Zahlen müssen positiv sein). Ein Block
+vorn hätte die Wand aus Komposita nur
 verschoben; so trägt jeder Bogen beides, und die 77 Alltagsstreifen
 strecken sich über rund 15 Bögen. Der Block ist additiv wie `pins`, das
 Plan-Format bleibt 2. Gemessen am Kopf der Warteschlange (fünf Bögen nach

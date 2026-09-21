@@ -13,10 +13,10 @@ from core.eigenhand import plan as plan_mod
 from core.eigenhand.plan import STREIFEN_JSON
 from tools.eigenhand import pool, progression, universe
 from tools.eigenhand.corpus import (
-    ALLTAG_WORDS,
+    EVERYDAY_WORDS,
     PINNED_FIRST,
     REFERENCE_WORDS,
-    alltag_floors,
+    everyday_floors,
     pool_entries,
     shaping_form,
 )
@@ -388,18 +388,18 @@ class TestGrundwortschatz:
     """
 
     def test_a_word_class_listed_twice_keeps_the_higher_floor(self):
-        floors = alltag_floors()
+        floors = everyday_floors()
         # `sein` is both a possessive pronoun (Kern) and a verb — being needed
         # twice over is not a reason to ask for it less often.
         assert floors["sein"] == max(floors["ist"], floors["gehen"])
-        assert set(floors) == set(ALLTAG_WORDS)
+        assert set(floors) == set(EVERYDAY_WORDS)
 
     def test_the_everyday_wave_packs_where_a_pin_does_not(self):
         # A pin gives its word the whole row because the word is singled out;
         # an everyday word earns its place by being ordinary, and four to six
         # of them fit a row — a row each would waste most of a sheet.
-        empty = {"format": 2, "waves": [], "strips": {}, "forms": {}, "pins": [], "alltag": []}
-        plan, wave = pool.alltag_wave(json.loads(json.dumps(empty)), ["ich", "du", "er", "sie", "es"])
+        empty = {"format": 2, "waves": [], "strips": {}, "forms": {}, "pins": [], "everyday": []}
+        plan, wave = pool.everyday_wave(json.loads(json.dumps(empty)), ["ich", "du", "er", "sie", "es"])
         assert len(wave["strips"]) == 1
         assert plan["strips"][wave["strips"][0]]["words"] == ["ich", "du", "er", "sie", "es"]
         pinned, _ = pool.pin_words(json.loads(json.dumps(empty)), ["das", "lesen"])
@@ -412,13 +412,13 @@ class TestGrundwortschatz:
             "strips": {"S0001": {"wave": 0, "words": ["Galoppieren"]}},
             "forms": {},
             "pins": [],
-            "alltag": [],
+            "everyday": [],
         }
         frozen = json.loads(json.dumps(plan["strips"]))
-        plan, wave = pool.alltag_wave(plan, ["ich", "du"])
+        plan, wave = pool.everyday_wave(plan, ["ich", "du"])
         pool.verify_immutable({"strips": frozen}, plan)
         assert plan["strips"]["S0001"] == frozen["S0001"]
-        assert plan["alltag"] == wave["strips"]
+        assert plan["everyday"] == wave["strips"]
 
     def test_an_already_planned_word_is_not_planted_again(self):
         plan = {
@@ -427,9 +427,9 @@ class TestGrundwortschatz:
             "strips": {"S0001": {"wave": 0, "words": ["ich"]}},
             "forms": {},
             "pins": [],
-            "alltag": [],
+            "everyday": [],
         }
-        plan, wave = pool.alltag_wave(plan, ["ich", "du"])
+        plan, wave = pool.everyday_wave(plan, ["ich", "du"])
         assert wave["planted"] == ["du"] and wave["skipped"] == ["ich"]
 
     def test_the_everyday_strips_interleave_rather_than_lead(self):
@@ -443,9 +443,9 @@ class TestGrundwortschatz:
             "strips": {f"S{n:04d}": {"wave": 0, "words": ["x"]} for n in range(1, 13)},
             "forms": {},
             "pins": ["S0001"],
-            "alltag": [f"S{n:04d}" for n in range(2, 10)],
+            "everyday": [f"S{n:04d}" for n in range(2, 10)],
         }
-        assert plan_mod.ALLTAG_PATTERN == (5, 2)
+        assert plan_mod.EVERYDAY_PATTERN == (5, 2)
         assert plan_mod.ordered_strips(plan) == [
             "S0001",  # the pin still leads, whatever else is ordered
             "S0002", "S0003", "S0004", "S0005", "S0006",  # five everyday
@@ -453,6 +453,15 @@ class TestGrundwortschatz:
             "S0007", "S0008", "S0009",  # the everyday block runs out
             "S0012",  # and the rest simply streams on
         ]  # fmt: skip
+
+    def test_a_zero_chunk_is_refused_before_it_hangs(self):
+        # Copilot, PR #651: a zero freezes that list's cursor, so once the
+        # OTHER list is exhausted the loop condition stays true and nothing
+        # advances — a hang, not a wrong order, and the constant is meant to
+        # be adjustable. Refuse it where it is read, not where it spins.
+        for pattern in [(5, 0), (0, 2), (0, 0), (-1, 2)]:
+            with pytest.raises(ValueError, match="positive chunk sizes"):
+                plan_mod._interleave(["a"], ["b"], pattern)
 
     def test_a_plan_without_the_block_orders_exactly_as_before(self):
         # Additive, like `pins` — which is why the plan format stays 2.
@@ -470,7 +479,7 @@ class TestGrundwortschatz:
             "waves": [],
             "strips": {f"S{n:04d}": {"wave": 0, "words": ["x"]} for n in range(1, 4)},
             "pins": ["S0001"],
-            "alltag": ["S0001", "S0002"],
+            "everyday": ["S0001", "S0002"],
         }
         ordered = plan_mod.ordered_strips(plan)
         assert ordered == ["S0001", "S0002", "S0003"]
@@ -488,15 +497,15 @@ class TestGrundwortschatz:
         # they do not. Without both halves this would still pass on a phase A0
         # deleted down to a no-op. Measured: 98 everyday words against 16.
         planned = self._wave_words(60)
-        floors = pool.alltag_floors
-        pool.alltag_floors = dict  # type: ignore[assignment]
+        floors = pool.everyday_floors
+        pool.everyday_floors = dict  # type: ignore[assignment]
         try:
             bare = self._wave_words(60)
         finally:
-            pool.alltag_floors = floors
+            pool.everyday_floors = floors
 
-        assert sum(1 for word in ALLTAG_WORDS if word in planned) > 60
-        assert sum(1 for word in ALLTAG_WORDS if word in bare) < 40, "coverage alone already plants them"
+        assert sum(1 for word in EVERYDAY_WORDS if word in planned) > 60
+        assert sum(1 for word in EVERYDAY_WORDS if word in bare) < 40, "coverage alone already plants them"
         commonest = ["ich", "ist", "und", "der"]
         assert not [word for word in commonest if word not in planned]
         assert not [word for word in commonest if word in bare]
@@ -508,7 +517,7 @@ class TestGrundwortschatz:
         # waves that matter. A wave too small for phase A to finish must still
         # deliver everyday words.
         small = self._wave_words(12)
-        assert sum(1 for word in ALLTAG_WORDS if word in small) >= 10
+        assert sum(1 for word in EVERYDAY_WORDS if word in small) >= 10
 
     def test_the_floor_pays_the_shortest_debts_first(self):
         # Equal debt is broken by word length, so an early sheet fills with
@@ -518,19 +527,19 @@ class TestGrundwortschatz:
         # later ones carry phase A and B words, everyday ones among them.
         plan, _ = pool.build_wave({"format": 1, "waves": [], "strips": {}}, 12, dict(TestStripPlan.UNIVERSE))
         opening = [word for sid in ["S0001", "S0002", "S0003"] for word in plan["strips"][sid]["words"]]
-        assert not [word for word in opening if word not in set(ALLTAG_WORDS)]
+        assert not [word for word in opening if word not in set(EVERYDAY_WORDS)]
         assert max(len(word) for word in opening) <= 5
 
     def test_an_unpaid_floor_is_reported_not_silent(self):
         _plan, stats = pool.build_wave({"format": 1, "waves": [], "strips": {}}, 60, dict(TestStripPlan.UNIVERSE))
-        assert stats["alltag_open"] > 0, "a 60-strip wave cannot pay off the whole floor — say so"
+        assert stats["everyday_open"] > 0, "a 60-strip wave cannot pay off the whole floor — say so"
 
     def test_the_floor_leaves_room_for_the_build_out(self):
         # Bounded on purpose: the standing debt is hundreds of word slots, and
         # paying it in one wave would buy the everyday words at the price of
         # the coverage build-out. At most a third of a wave.
         plan, _ = pool.build_wave({"format": 1, "waves": [], "strips": {}}, 60, dict(TestStripPlan.UNIVERSE))
-        everyday = set(ALLTAG_WORDS)
+        everyday = set(EVERYDAY_WORDS)
         words = [word for strip in plan["strips"].values() for word in strip["words"]]
         share = sum(1 for word in words if word in everyday) / len(words)
         assert share < 0.75, f"phase A3 crowded out the build-out: {share:.0%} everyday words"
@@ -538,7 +547,7 @@ class TestGrundwortschatz:
     def test_the_committed_plan_carries_every_everyday_word(self):
         plan = plan_mod.load_plan()
         planned = {word for strip in plan["strips"].values() for word in strip["words"]}
-        missing = [word for word in ALLTAG_WORDS if word not in planned]
+        missing = [word for word in EVERYDAY_WORDS if word not in planned]
         assert not missing, f"Grundwortschatz words the plan never asks for: {missing}"
 
     def test_the_committed_queue_starts_writable(self):
@@ -560,10 +569,10 @@ class TestGrundwortschatz:
         # Selected by WAVE, not by strip number: further waves append beyond
         # these ids and say nothing about this one.
         plan = plan_mod.load_plan()
-        waves = [wave for wave in plan["waves"] if wave.get("alltag")]
+        waves = [wave for wave in plan["waves"] if wave.get("everyday")]
         assert len(waves) == 1
-        assert plan["alltag"] == waves[0]["strips"]
-        assert min(int(sid[1:]) for sid in plan["alltag"]) > FROZEN_PREFIX_STRIPS
+        assert plan["everyday"] == waves[0]["strips"]
+        assert min(int(sid[1:]) for sid in plan["everyday"]) > FROZEN_PREFIX_STRIPS
 
 
 class TestProgressionCli:

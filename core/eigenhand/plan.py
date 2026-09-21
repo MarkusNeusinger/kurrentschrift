@@ -21,7 +21,7 @@ leads (``tools.eigenhand.pool pin``, proposal §4). An optional, additive
 block: a plan without it reads exactly as before, which is why the format
 number stays 2.
 
-``alltag`` names the Grundwortschatz strips, and they do not lead — they
+``everyday`` names the Grundwortschatz strips, and they do not lead — they
 INTERLEAVE. The coverage builder rewards long words (a word's benefit grows
 with the joins it carries), so the frozen head of the plan is compounds and
 loanwords while ``ich``, ``ist`` and ``und`` went unplanned; the everyday
@@ -47,8 +47,10 @@ STREIFEN_JSON = Path(__file__).resolve().parent / "streifen.json"
 # (owner decision 2026-09-21: "gemischt, feste Quote je Bogen"). A Bogen holds
 # seven rows, so 5 + 2 means every sheet is mostly easy and still moves the
 # coverage work along — and the 77 Grundwortschatz strips stretch across
-# about 15 sheets instead of filling eleven with nothing else.
-ALLTAG_PATTERN = (5, 2)
+# about 15 sheets instead of filling eleven with nothing else. Both numbers
+# must be positive: a zero would stall one of the two cursors in
+# `_interleave` and the other list could never run the loop out.
+EVERYDAY_PATTERN = (5, 2)
 
 
 def load_plan(path: Path | None = None) -> dict:
@@ -64,7 +66,7 @@ def dump_plan(plan: dict) -> str:
 
 
 def empty_plan() -> dict:
-    return {"format": PLAN_FORMAT, "waves": [], "strips": {}, "forms": {}, "pins": [], "alltag": []}
+    return {"format": PLAN_FORMAT, "waves": [], "strips": {}, "forms": {}, "pins": [], "everyday": []}
 
 
 def strip_id(number: int) -> str:
@@ -76,10 +78,10 @@ def pinned_strips(plan: dict) -> list[str]:
     return [sid for sid in plan.get("pins", []) if sid in plan["strips"]]
 
 
-def alltag_strips(plan: dict) -> list[str]:
+def everyday_strips(plan: dict) -> list[str]:
     """The Grundwortschatz strips, in the order the everyday wave built them."""
     pinned = set(plan.get("pins", []))
-    return [sid for sid in plan.get("alltag", []) if sid in plan["strips"] and sid not in pinned]
+    return [sid for sid in plan.get("everyday", []) if sid in plan["strips"] and sid not in pinned]
 
 
 def _interleave(lead: list[str], rest: list[str], pattern: tuple[int, int]) -> list[str]:
@@ -87,10 +89,14 @@ def _interleave(lead: list[str], rest: list[str], pattern: tuple[int, int]) -> l
 
     Whichever list runs out first simply stops contributing; the other streams
     on in its own chunks, which is the same sequence it would have had alone.
+
+    BOTH chunk sizes must be positive. A zero freezes that list's cursor, and
+    once the other list is exhausted the loop condition stays true forever —
+    the frozen side never advances past its own length.
     """
     take_lead, take_rest = pattern
-    if take_lead + take_rest <= 0:
-        raise ValueError(f"ALLTAG_PATTERN must take something: {pattern!r}")
+    if take_lead < 1 or take_rest < 1:
+        raise ValueError(f"EVERYDAY_PATTERN needs two positive chunk sizes: {pattern!r}")
     out: list[str] = []
     i = j = 0
     while i < len(lead) or j < len(rest):
@@ -105,7 +111,7 @@ def ordered_strips(plan: dict) -> list[str]:
     """Strip ids in plan order — the order the print queue and the progression use.
 
     Pinned strips first (in pin order), then the Grundwortschatz strips and the
-    remaining ones alternating in ``ALLTAG_PATTERN`` chunks. Ordering is
+    remaining ones alternating in ``EVERYDAY_PATTERN`` chunks. Ordering is
     expressed HERE rather than in the print queue so that every reader of the
     plan agrees on what comes first: the queue, the coverage progression and
     the Bestand all walk this one order.
@@ -117,10 +123,10 @@ def ordered_strips(plan: dict) -> list[str]:
     """
     pinned = pinned_strips(plan)
     led = set(pinned)
-    alltag = [sid for sid in alltag_strips(plan) if sid not in led]
-    spoken_for = led | set(alltag)
+    everyday = [sid for sid in everyday_strips(plan) if sid not in led]
+    spoken_for = led | set(everyday)
     rest = sorted((sid for sid in plan["strips"] if sid not in spoken_for), key=lambda sid: int(sid[1:]))
-    return pinned + _interleave(alltag, rest, ALLTAG_PATTERN)
+    return pinned + _interleave(everyday, rest, EVERYDAY_PATTERN)
 
 
 def forms_of(plan: dict) -> dict[str, str]:

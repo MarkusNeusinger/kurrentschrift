@@ -624,9 +624,9 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Entwicklungssatzes dev-19), die aus
   anderen Kurationsschichten stammen; ein Wort, das der Plan schon
   trägt, wird gemeldet und übersprungen, nicht ein zweites Mal
-  eingeplant. **`pool alltag`** hängt den **Grundwortschatz**
-  (`corpus.ALLTAG_WORDS`) als gepackte Welle an und trägt sie in den
-  Planblock `alltag` ein — der sich in der Reihenfolge mit den
+  eingeplant. **`pool everyday`** hängt den **Grundwortschatz**
+  (`corpus.EVERYDAY_WORDS`) als gepackte Welle an und trägt sie in den
+  Planblock `everyday` ein — der sich in der Reihenfolge mit den
   eingefrorenen Streifen **verschränkt** statt sie anzuführen
   (Proposal §4). Der Lauf ist rein lokal — Kuration lesen, `streifen.json`
   schreiben, kein Netz und keine DB —, aber er ändert eine committete
