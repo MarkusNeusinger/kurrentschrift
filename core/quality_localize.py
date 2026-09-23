@@ -1172,11 +1172,14 @@ def suetterlin_penalty_sites(
             context_cells=cells,
         )
 
+    # `value`, not `raw`: a site whose share rounds to zero is not drawn, and a
+    # pin on it would number a mark the reader cannot find — the list would
+    # then show fewer discs than the image offers sites to pin.
     located = [
         site
         for key in CATEGORIES
         for site in categories[key].sites
-        if site.x is not None and site.y is not None and site.raw > 0.0
+        if site.x is not None and site.y is not None and site.value > 0.0
     ]
     located.sort(key=lambda s: (-s.raw * rates[s.category], CATEGORIES.index(s.category), s.index))
     pins = tuple(

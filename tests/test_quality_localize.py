@@ -192,6 +192,8 @@ def test_pins_rank_the_costliest_located_sites():
     for pin in pm.pins:
         site = pm.categories[pin.category].sites[pin.index]
         assert site.x == pin.x and site.y == pin.y and site.raw > 0.0
+        # A pin always lands on a DRAWN site: its apportioned share is visible.
+        assert site.value > 0.0
 
 
 def test_a_recomputation_that_drifts_claims_no_places(monkeypatch: pytest.MonkeyPatch):
