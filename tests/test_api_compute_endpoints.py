@@ -11,6 +11,8 @@ HTTP, and the get-by-id 404s. Same in-memory aiosqlite stack
 
 from __future__ import annotations
 
+import pytest
+
 from tests.api_harness import Harness
 
 
@@ -256,8 +258,13 @@ async def test_penalty_sites_401_before_404_then_409_without_pixel_meta(api: Har
     assert "re-trace" in res.json()["detail"]
 
 
-async def test_penalty_sites_409_for_a_row_it_cannot_localize(api: Harness, synthetic_chart_path: str):
-    """A corrupt x-height is the author's to fix — a clear 409, not a NaN turned 500."""
+@pytest.mark.parametrize("unit_px", [-100.0, 0.0])
+async def test_penalty_sites_409_for_a_row_it_cannot_localize(api: Harness, synthetic_chart_path: str, unit_px: float):
+    """A corrupt x-height is the author's to fix — a clear 409, not a NaN turned 500.
+
+    0.0 is its own case: a stored zero is a corrupt value, not a missing one,
+    and must not be quietly replaced by the bbox's x-height.
+    """
     style_id, source_id = await api.seed_style_and_source(width_resolver="constant", chart_path=synthetic_chart_path)
     await api.client.request(
         "PUT", f"/sources/{source_id}/bboxes/n", json_body=_bbox_body(), headers=api.admin_headers()
@@ -266,7 +273,7 @@ async def test_penalty_sites_409_for_a_row_it_cannot_localize(api: Harness, synt
         "pixel_anchors": [[400.0, 200.0 + 20.0 * i] for i in range(20)],
         "half_widths_px": [4.0] * 20,
         "stroke_starts": [0],
-        "unit_px": -100.0,
+        "unit_px": unit_px,
     }
     await api.seed_template(style_id, source_id, "n", "n", trace_meta=trace_meta)
     res = await api.client.request(
