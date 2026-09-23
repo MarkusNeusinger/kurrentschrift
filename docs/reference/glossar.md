@@ -4770,10 +4770,13 @@ tragen. → proposals/admin-redesign.md §5.0, §9.2
 
 **Hand-Stil-Kopplung** *(Vorgabe V19)* — die aktive Eigenhand gehört immer
 zum Stil der geladenen Vorlage. Bei einem Stilwechsel fällt sie auf die
-zuletzt für DIESEN Stil GEWÄHLTE Hand zurück, sonst auf leer — zwei
-Rückfälle, kein dritter: „sonst auf deren erste" würde einen
-Arbeitsbereich unter die Überschrift und in jeden Korb-Link schreiben, den
-niemand gewählt hat. Nie eine Hand eines anderen Stils, nie eine erfundene
+zuletzt für DIESEN Stil GEWÄHLTE Hand zurück, sonst auf die EINZIGE Hand
+des Stils (Autor-Entscheid 2026-09-23, admin-redesign.md §15.5 Nr. 13),
+sonst auf leer — nie auf die erste von mehreren: „sonst auf deren erste"
+würde einen Arbeitsbereich unter die Überschrift und in jeden Korb-Link
+schreiben, den niemand gewählt hat, eine einzige Kandidatin dagegen ist
+keine Wahl, die anders hätte ausfallen können. Die Vorbelegung wird nicht
+als Wahl gemerkt. Nie eine Hand eines anderen Stils, nie eine erfundene
 Kennung; ein Gedankenstrich in der → Scope-Leiste ist die ehrliche Antwort
 für einen Stil ohne eigene Hand, und solange die beiden Abrufe nicht
 geantwortet haben, steht dort gar nichts. Daraus folgt umgekehrt: zwei

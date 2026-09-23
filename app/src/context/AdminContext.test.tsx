@@ -155,16 +155,25 @@ describe('the hand in the admin scope', () => {
     await act(async () => pick('zweit-kurrent'));
 
     await act(async () => switchTo('suet-1922'));
-    // Never a hand of another script, and nothing invented for this one.
-    expect(seen.handId).toBeNull();
-    expect(seen.handChoices).toEqual(['mn-suetterlin']);
-
-    await act(async () => pick('mn-suetterlin'));
+    // Never a hand of another script — and Sütterlin's ONLY hand stands in for
+    // a pick nobody has made yet (§15.5 Nr. 13).
     expect(seen.handId).toBe('mn-suetterlin');
+    expect(seen.handChoices).toEqual(['mn-suetterlin']);
 
     // Back to Kurrent: the hand chosen for THAT script, remembered per style.
     await act(async () => switchTo('kurrent-a'));
     expect(seen.handId).toBe('zweit-kurrent');
+  });
+
+  it('opens a fresh browser on the script\'s only hand, with nothing written to storage', async () => {
+    // The tablet case: no pick, no memory, one Sütterlin hand. The field is
+    // filled from the candidates alone — and it is NOT remembered as a pick,
+    // so a second hand appearing later leaves the choice to the author
+    // instead of keeping a default nobody made.
+    localStorage.setItem('kurrentschrift.admin.sourceId', 'suet-1922');
+    await mount();
+    expect(seen.handId).toBe('mn-suetterlin');
+    expect(localStorage.getItem('kurrentschrift.admin.handByStyle')).toBeNull();
   });
 
   it('says nothing about hands while the two reads are still out', async () => {

@@ -2887,7 +2887,9 @@ berührt oder sichtbar Geschmackssache ist.
   Snapshot → Vorher-Zahl → Übernehmen → Nachher-Zahl.
 - **V19 Hand↔Stil-Kopplung:** die aktive Hand ist immer eine Hand des
   Vorlagen-Stils; bei Stilwechsel die zuletzt gewählte Hand dieses Stils
-  oder leer.
+  oder leer. **Ergänzt 2026-09-23 vom Autor (§15.5 Nr. 13):** zwischen
+  beiden steht die EINZIGE Hand des Stils — hat er genau eine, ist sie
+  auch ohne Wahl aktiv; die erste von mehreren wird es nie.
 - **V20 Schreibweg der Bahn:** `PATCH …/pfade/{box}` mit Content-ETag
   (sha256 über `pfade`) und `If-Match`, 412 bei Konflikt — `eigenhand_strips`
   hat kein `updated_at`; der Vollersatz bleibt dem Tool; Tool-Push über
@@ -3606,6 +3608,19 @@ ist. Die Nummern sind nur Adressen für die Antwort.
     HAT. Das ist V19 wörtlich genommen und das Erste, was ins Auge fällt.
     Kipp: eine dritte Rückfallstufe in `resolveHand` — dann trägt aber jeder
     Korb-Link einen Scope, den niemand gewählt hat.
+    **Gekippt vom Autor am 2026-09-23** („bei Eigenhand sollte auf jeden
+    Fall mn-suetterlin direkt als Default-Hand ausgewählt werden, erstmal
+    wird es keine andere geben"): die dritte Stufe ist gebaut, aber als die
+    EINZIGE Hand des Stils, nie als die erste von mehreren. Damit bleibt der
+    Einwand beantwortet — eine einzige Kandidatin ist keine Wahl, die
+    jemand anders hätte treffen können, der Scope im Korb-Link ist also der,
+    den der Autor gewählt hätte. Bei zwei Händen eines Stils bleibt das Feld
+    bis zur ersten Wahl leer, bei einem Stil ohne Hand ebenso (keine
+    erfundene Kennung, Q25 a). Die Vorbelegung wird NICHT als Wahl gemerkt:
+    kommt eine zweite Hand dazu, entscheidet wieder der Autor. Folge für
+    heute: Sütterlin steht in jedem Browser auf `mn-suetterlin`; Kurrent
+    und Offenbacher bleiben „Hand: —", bis ihre Hand angelegt ist — eine
+    `mn-kurrent` gibt es in der DB noch nicht (S9).
 14. **`h=` ist Metadatum** (#626): es wird geschrieben und weitergereicht,
     beim Ankommen aber nicht übernommen. Eine Übernahme braucht zuerst eine
     Regel für den Fall, dass URL und Picker sich widersprechen.

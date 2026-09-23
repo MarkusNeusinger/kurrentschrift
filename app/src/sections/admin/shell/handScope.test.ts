@@ -83,16 +83,37 @@ describe('the active hand (V19)', () => {
     );
   });
 
-  it('takes nothing where nothing was chosen — „oder leer", not „the first one"', () => {
-    // V19 has exactly TWO fallbacks: the hand last CHOSEN for this script, or
-    // empty. The tempting third — „else the script's first hand" — would put a
-    // scope nobody picked under the heading and into every Korb link, which is
-    // the label error the Scope-Leiste exists to end.
+  it('takes the script\'s ONLY hand where nothing was chosen (§15.5 Nr. 13)', () => {
+    // The fresh browser: no pick this session, nothing remembered — and a
+    // script with exactly one hand. There is nothing to choose, so the field
+    // does not wait for a choice.
+    expect(resolveHand(null, 'kurrent', candidates, {})).toBe('mn-kurrent');
+    // A remembered hand that no read knows any more falls through to it too.
+    expect(resolveHand(null, 'kurrent', candidates, { kurrent: 'geloescht-kurrent' })).toBe('mn-kurrent');
+    // And so does a hand of another script, the Vorlage switch's case.
+    expect(resolveHand('zweit-suetterlin', 'kurrent', candidates, {})).toBe('mn-kurrent');
+  });
+
+  it('lets the default go the moment a second hand of the script appears', () => {
+    // On purpose, and the reason the provider never STORES the default as a
+    // pick: with a second hand there is a real choice, and a remembered
+    // default would make it for the author.
+    const one = handCandidates(['mn-suetterlin'], [], STYLES);
+    expect(resolveHand(null, 'suetterlin', one, {})).toBe('mn-suetterlin');
+    const two = handCandidates(['mn-suetterlin'], [{ hand: 'neu-suetterlin', style: 'suetterlin' }], STYLES);
+    expect(resolveHand(null, 'suetterlin', two, {})).toBeNull();
+    // A hand actually CHOSEN survives the arrival, as before.
+    expect(resolveHand(null, 'suetterlin', two, { suetterlin: 'mn-suetterlin' })).toBe('mn-suetterlin');
+  });
+
+  it('takes nothing where one of several would have to be chosen — „the only one", not „the first one"', () => {
+    // With two hands of one script the first by code point would put a scope
+    // nobody picked under the heading and into every Korb link, which is the
+    // label error the Scope-Leiste exists to end.
     expect(resolveHand(null, 'suetterlin', candidates, {})).toBeNull();
-    // A remembered hand that no read knows any more is not a pick either.
-    expect(resolveHand(null, 'kurrent', candidates, { kurrent: 'geloescht-kurrent' })).toBeNull();
+    expect(resolveHand(null, 'suetterlin', candidates, { suetterlin: 'geloescht-suetterlin' })).toBeNull();
     // A script with no written hand keeps the field empty rather than
-    // borrowing another script's.
+    // borrowing another script's or inventing one.
     expect(resolveHand('mn-suetterlin', 'offenbacher', candidates, { offenbacher: 'mn-suetterlin' })).toBeNull();
     expect(resolveHand('mn-suetterlin', null, candidates, {})).toBeNull();
     expect(resolveHand(null, 'suetterlin', [], {})).toBeNull();
