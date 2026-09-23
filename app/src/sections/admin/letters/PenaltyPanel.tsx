@@ -24,6 +24,7 @@
 // 2.5 s per letter.
 
 import { Alert, Box, Button, ButtonBase, Chip, CircularProgress, Divider, Stack, Typography } from '@mui/material';
+import { visuallyHidden } from '@mui/utils';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { InfoHint } from '@/components/InfoHint';
@@ -32,7 +33,12 @@ import { useRovingList } from '@/hooks/useRovingList';
 import { cropUrl, getPenaltySites } from '@/lib/api';
 import type { PenaltyCategoryKey, PenaltyCategoryOut, PenaltySiteOut, PenaltySitesOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
-import { PenaltyOverlay, PenaltyPins, PenaltyShapeIcon } from '@/sections/admin/letters/PenaltyOverlay';
+import {
+  PenaltyContextIcon,
+  PenaltyOverlay,
+  PenaltyPins,
+  PenaltyShapeIcon,
+} from '@/sections/admin/letters/PenaltyOverlay';
 import {
   CATEGORY_SHAPE,
   categoryChips,
@@ -47,6 +53,7 @@ import {
   pinRank,
   revealCategory,
   sharePercent,
+  shownPins,
   siteKey,
   siteKindLabel,
   siteShape,
@@ -81,12 +88,12 @@ const CHIP_SX = {
 
 type Located = { category: PenaltyCategoryKey; site: PenaltySiteOut };
 
-interface Props {
+type Props = {
   sourceId: string;
   glyphKey: string;
   cacheBust?: number;
   onMark: (ref: PenaltyRef) => void;
-}
+};
 
 export function PenaltyPanel({ sourceId, glyphKey, cacheBust, onMark }: Props) {
   const t = de.admin.letters.penalties;
@@ -120,9 +127,16 @@ export function PenaltyPanel({ sourceId, glyphKey, cacheBust, onMark }: Props) {
   }, [sourceId, glyphKey, cacheBust]);
 
   if (error) {
+    // No chart row yet is a state, not a failure (FitView's and QualityView's
+    // own branch). A 409 is a row the ruler cannot score — no pixel anchors, or
+    // geometry it refuses — and the generic conflict sentence („erst neu
+    // laden") would send the author the wrong way; the lens says what helps,
+    // and the raw line stays folded underneath.
+    if (error.status === 404) return <Alert severity="info">{de.admin.diagnostics.noCanonicalShort}</Alert>;
+    const shown = error.status === 409 ? { ...error, sentence: t.unscorable } : error;
     return (
       <Alert severity="warning">
-        <ErrorText error={error} prefix={t.errorPrefix} />
+        <ErrorText error={shown} prefix={t.errorPrefix} />
       </Alert>
     );
   }
@@ -182,6 +196,10 @@ function PenaltyLens({
 
   const chips = useMemo(() => categoryChips(data.sites), [data.sites]);
   const drift = useMemo(() => stampDrift(data.stamped, data.components), [data.stamped, data.components]);
+  // The pins the image draws — never one on a site apportioned 0.0000
+  // (`shownPins`) — and the payload the overlay reads them from.
+  const pins = useMemo(() => shownPins(data.pins, data.sites), [data.pins, data.sites]);
+  const drawn = useMemo(() => ({ ...data, pins }), [data, pins]);
   const bySiteKey = useMemo(() => {
     const out = new Map<string, Located>();
     for (const category of PENALTY_CATEGORIES) {
@@ -190,7 +208,9 @@ function PenaltyLens({
     return out;
   }, [data.sites]);
   // What „Alle Stellen" lists: every site that carries a part of its number,
-  // with or without a place (`listedSites`).
+  // with or without a place (`listedSites`), in EVERY category — a legend chip
+  // switches its category off on the image only, so the count and the list
+  // stay one number whatever is switched off.
   const siteCount = useMemo(
     () => PENALTY_CATEGORIES.reduce((sum, key) => sum + listedSites(data.sites[key]).rows.length, 0),
     [data.sites],
@@ -228,7 +248,7 @@ function PenaltyLens({
         key={key}
         entry={entry}
         owner={data.sites[entry.category]}
-        rank={withPin ? pinRank(data.pins, entry.category, entry.site.index) : null}
+        rank={withPin ? pinRank(pins, entry.category, entry.site.index) : null}
         selected={key === selectedKey}
         onSelect={() => select(entry.category, entry.site.index)}
       />
@@ -343,14 +363,14 @@ function PenaltyLens({
                 }}
               />
               <PenaltyOverlay
-                data={data}
+                data={drawn}
                 scale={scale}
                 hidden={hidden}
                 selectedKey={selectedKey}
                 onSelect={selectFromImage}
               />
               <PenaltyPins
-                data={data}
+                data={drawn}
                 scale={scale}
                 hidden={hidden}
                 selectedKey={selectedKey}
@@ -364,13 +384,13 @@ function PenaltyLens({
           <Typography component="h3" variant="caption" sx={{ color: 'text.primary', fontWeight: 600 }}>
             {t.pinsTitle}
           </Typography>
-          {data.pins.length === 0 ? (
+          {pins.length === 0 ? (
             <Typography variant="caption" color="textSecondary">
               {t.pinsNone}
             </Typography>
           ) : (
             <Box {...pinRoving.containerProps} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-              {data.pins.map((pin) => {
+              {pins.map((pin) => {
                 const entry = bySiteKey.get(siteKey(pin.category, pin.index));
                 if (!entry) return null;
                 return (
@@ -389,7 +409,7 @@ function PenaltyLens({
               <PenaltyDetail
                 entry={selected}
                 owner={data.sites[selected.category]}
-                rank={pinRank(data.pins, selected.category, selected.site.index)}
+                rank={pinRank(pins, selected.category, selected.site.index)}
                 unitPx={data.frame.unit_px}
                 onMark={() => onMark(penaltyRefOf(selected.category, selected.site, data.sites[selected.category]))}
               />
@@ -402,18 +422,26 @@ function PenaltyLens({
 
           <Divider />
 
-          <Button
-            size="small"
-            aria-expanded={allOpen}
-            onClick={() => setAllOpen((v) => !v)}
-            sx={{ alignSelf: 'flex-start', minHeight: TOUCH_TARGET }}
-          >
-            {allOpen ? t.allHide : fmt(t.allToggle, { count: siteCount })}
-          </Button>
+          {/* The disclosure pattern: the toggle IS the section's h3, so the
+              per-category h4s below nest under „Alle Stellen" rather than
+              under the pins' heading above. */}
+          <Typography component="h3" variant="caption" sx={{ m: 0, alignSelf: 'flex-start' }}>
+            <Button
+              size="small"
+              aria-expanded={allOpen}
+              onClick={() => setAllOpen((v) => !v)}
+              sx={{ minHeight: TOUCH_TARGET }}
+            >
+              {allOpen ? t.allHide : fmt(t.allToggle, { count: siteCount })}
+            </Button>
+          </Typography>
           {allOpen && (
             <Box {...allRoving.containerProps} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {/* Every applicable category, hidden or not: the legend switch
+                  acts on the image, and a row chosen here shows its category
+                  again (`revealCategory`). */}
               {chips
-                .filter((chip) => chip.applicable && !hidden.has(chip.key))
+                .filter((chip) => chip.applicable)
                 .map((chip) => {
                   const { rows, zero } = listedSites(data.sites[chip.key]);
                   return (
@@ -424,6 +452,11 @@ function PenaltyLens({
                         sx={{ color: 'text.primary', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}
                       >
                         {chip.text}
+                        {hidden.has(chip.key) && (
+                          <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400 }}>
+                            {` · ${t.hiddenNote}`}
+                          </Box>
+                        )}
                       </Typography>
                       {rows.map((site) => (
                         <Box key={site.index} {...allRoving.rowProps(siteKey(chip.key, site.index))}>
@@ -432,7 +465,7 @@ function PenaltyLens({
                       ))}
                       {zero > 0 && (
                         <Typography variant="caption" color="textSecondary">
-                          {fmt(t.belowCount, { count: zero })}
+                          {zero === 1 ? t.belowOne : fmt(t.belowCount, { count: zero })}
                         </Typography>
                       )}
                     </Box>
@@ -515,6 +548,14 @@ function SiteRow({
       {rank !== null ? <PinDisc rank={rank} /> : <PenaltyShapeIcon shape={siteShape(category, site)} />}
       <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <Typography variant="body2" component="span" sx={{ color: 'text.primary' }}>
+          {/* The disc is aria-hidden; its rank is part of the row's name, so
+              „Alle Stellen" — sorted by value, not by rank — still says which
+              rows are among the five marked on the image. */}
+          {rank !== null && (
+            <Box component="span" sx={visuallyHidden}>
+              {fmt(t.rankPrefix, { rank })}
+            </Box>
+          )}
           {`${penaltyLabel({ category, index: site.index })} · ${siteKindLabel(site)}`}
         </Typography>
         <Typography
@@ -628,6 +669,17 @@ function PenaltyLegend() {
               </Typography>
             </Box>
           ))}
+          <Box component="li" sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+            <Box sx={{ pt: 0.25 }}>
+              <PenaltyContextIcon />
+            </Box>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              <Box component="span" sx={{ color: paper.ink, fontWeight: 600 }}>
+                {t.legendContextLabel}
+              </Box>
+              {` — ${t.legendContext}`}
+            </Typography>
+          </Box>
         </Box>
         <Typography variant="body2">{t.legendExact}</Typography>
         <Typography variant="body2">{t.legendPoints}</Typography>

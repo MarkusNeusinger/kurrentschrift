@@ -243,13 +243,23 @@ export const roleDash = {
 // white AND against that dimmed ink — measured by name in `paper.test.ts`.
 //
 // ONE hue for every deduction, on purpose: the category is carried by the
-// mark's SHAPE (square, ring, bracket, band, hatch, dots) and the magnitude by
-// its width or size, so no reader has to decode six colours, a red-green-blind
-// one least of all (Strichart-Regel, design-system.md §2). The legend names the
-// shape, never a colour.
+// mark's SHAPE (square, ring, bracket, band, hatch, crosshatch, stipple, edge
+// ticks, feelers) and the magnitude by its width or size, so no reader has to
+// decode six colours, a red-green-blind one least of all (Strichart-Regel,
+// design-system.md §2). The legend names the shape, never a colour.
+//
+// What frames a deduction without being one — the Doppelzug zone, the Glätte
+// corner windows — is CONTEXT and never wears the deduction hue: it has a hue
+// AND a form of its own (a dashed outline, a dashed span with end bars), so
+// „is this a deduction?" is answered twice, and never by colour alone.
 export const penalty = {
-  // Karmin (named pigment, cochineal lake) — every deduction mark.
+  // Karmin (named pigment, cochineal lake) — every deduction mark, and only those.
   mark: '#960018',
+  // Ultramarin (named pigment; approx) — the context marks, thin and dashed.
+  // Far from every other token here for a deuteranope too (ΔE ≥ 52, measured
+  // in `paper.test.ts`), and on the blue side, where the other thing the
+  // ruler LOOKED AT rather than subtracted — the centreline — already sits.
+  context: '#4040c0',
   // The scored centreline, thin, under the marks — Preußischblau like the Tafel
   // role, because it IS the Tafel row's geometry the ruler measured.
   centerline: pigment.prussianBlue,

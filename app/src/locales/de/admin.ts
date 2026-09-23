@@ -296,6 +296,11 @@ export const admin = {
       toggle: 'Abzüge zeigen',
       loading: 'Abzüge werden neu gemessen …',
       errorPrefix: 'Abzüge konnten nicht gemessen werden:',
+      // The route's 409: a row without pixel anchors, or one whose geometry the
+      // metric cannot score. Reloading cannot help — the generic conflict
+      // sentence would send the author the wrong way.
+      unscorable:
+        'Diese Zeile lässt sich nicht auswerten — ihr fehlen die Pixel-Anker, oder ihre Geometrie ist ungültig. Erst im Wizard neu abtasten oder nachzeichnen.',
       // Which row is under the lens, and why only that one.
       rowNote:
         'Tafel-Duktus (Variante 0), neu gemessen gegen den Ausschnitt. Die Laufform ist nicht gegen die Tafel gemessen — ihr gespeicherter Score ist eine Kopie dieser Zeile.',
@@ -304,6 +309,9 @@ export const admin = {
       storedNote: 'Stand der letzten Ableitung — weicht um mehr als 0.005 ab.',
       notApplicable: 'nicht anwendbar',
       noPlace: 'ohne Ort',
+      // A category whose map the core dropped (`in_sync` false): the number
+      // stands, its places do not — not the same thing as a part without a place.
+      mapDropped: 'Karte verworfen (Nachrechnung weicht ab)',
       // „4 Stellen", „1 Stelle", „keine Stelle" — the count a chip carries.
       sitesOne: '1 Stelle',
       sitesMany: '{{count}} Stellen',
@@ -312,6 +320,11 @@ export const admin = {
       legendAria: 'Die Abzugs-Marken erklären',
       legendIntro:
         'Die Form sagt die Kategorie, die Breite oder Größe den Anteil am Abzug; die dünne durchgezogene Linie ist die gemessene Mittellinie, die Scheiben ①–⑤ die fünf teuersten Stellen. Die Stellen einer Kategorie summieren sich auf die gezeigte Zahl bis zur vierten Stelle.',
+      // The context marks: they frame a deduction and are none — own form, own
+      // hue (styles/paper.ts `penalty.context`); the text names forms only.
+      legendContextLabel: 'Kontext',
+      legendContext:
+        'kein Abzug. Dünn gestrichelt umrissen: die Doppelzug-Zone. Gestrichelt unterlegt, mit Querbalken an den Enden: die Eckfenster der Glätte.',
       legendExact:
         'Term: die Stelle IST ein Summand der Zahl (Ecken, Kreuzungsflucht, Doppelzug). Anteil: der Abzug läuft durch eine Exponentialfunktion, ein Produkt oder eine Wurzel und ist proportional verteilt (Glätte, Senkrechte, Deckungslücke).',
       legendPoints:
@@ -322,15 +335,15 @@ export const admin = {
       // no colour words (design-system.md §2, Strichart-Regel).
       markerHint: {
         smoothness:
-          'Band entlang der Mittellinie, je Punkt so breit wie sein Anteil am Ruck. Gepunktet: Eckfenster — zählen unter Ecken.',
+          'Band entlang der Mittellinie, je Punkt so breit wie sein Anteil am Ruck. Wo es aussetzt, liegt ein Eckfenster (Kontext) — das zählt unter Ecken.',
         verticality:
           'Klammer neben dem Lauf, gestrichelt die ideale Senkrechte, die gemessene Abweichung überhöht gezeichnet — ×20, weniger, wo sie sonst weiter als 0.15 x-Höhen ausschlüge.',
         corner:
           'Quadrat am Scheitel, die beiden Anlaufstücke, gestrichelt ihre Sehnen, ein Punkt an der größten Abweichung.',
         collinearity: 'Ring an der Kreuzung und die beiden gefitteten Geraden davor und dahinter.',
-        retrace: 'Kreuzschraffiert: fehlende Tinte in der Doppelzug-Zone; gepunktet der Rand der Zone.',
+        retrace: 'Kreuzschraffiert: fehlende Tinte in der Doppelzug-Zone; die Zone selbst ist Kontext.',
         coverage:
-          'Schraffiert: tiefe Tintenlücken. Gerastert: Render über Papier. Randpunkte: Chamfer. Fühler vom Mittellinienpunkt zum Skelett: Geo.',
+          'Schraffiert: tiefe Tintenlücken. Gerastert: Render über Papier. Kurze Querstriche über den Rand: Chamfer. Fühler vom Mittellinienpunkt zum Skelett: Geo.',
       },
       pinsTitle: 'Die fünf teuersten Stellen',
       pinsNone: 'Keine Stelle mit Ort trägt einen Abzug.',
@@ -344,10 +357,17 @@ export const admin = {
       position: 'x {{x}} · y {{y}} Pixel im Ausschnitt',
       positionNone: 'ohne Ort — zählt in der Zahl, hat aber keine Stelle im Ausschnitt',
       exaggerated: 'Abweichung ×{{factor}} überhöht gezeichnet — echt ist sie meist unter einem Pixel.',
-      windowsNote: 'Gepunktet: die Eckfenster — was dort liegt, zählt unter Ecken.',
+      windowsNote:
+        'Gestrichelt unterlegt, mit Querbalken an den Enden: die Eckfenster — was dort liegt, zählt unter Ecken.',
       partOf: 'Teil {{part}}',
       allToggle: 'Alle Stellen ({{count}})',
       allHide: 'Stellenliste schließen',
+      // Beside a category group in „Alle Stellen" when its legend chip is off:
+      // the switch acts on the image only, and choosing a row shows it again.
+      hiddenNote: 'im Bild ausgeblendet',
+      // The pin's rank, spoken: the ①–⑤ disc beside a row is aria-hidden.
+      rankPrefix: 'Rang {{rank}} · ',
+      belowOne: '+ 1 Stelle unter 0.0001 — ohne Anteil an der gezeigten Zahl, nicht gezeichnet',
       belowCount: '+ {{count}} Stellen unter 0.0001 — ohne Anteil an der gezeigten Zahl, nicht gezeichnet',
       mark: 'Bemängeln',
       markHint:
@@ -1194,6 +1214,9 @@ export const admin = {
       'Die Vorlage, wie der Duktus sie schreibt: Strich für Strich, mit echtem Absetzen zwischen den Zügen. Genau so erscheint der Buchstabe später im Quiz — und so soll er einmal auf der Startseite schreiben.',
     computing: 'Diagnose wird gerechnet …',
     noCanonicalShort: 'noch kein Canonical — erst Strich aufnehmen',
+    // The quality route's 409: a row older than the pixel-space trace meta.
+    // „neu laden" cannot help there, so it gets its own sentence.
+    noPixelAnchors: 'Dieser Zeile fehlen die Pixel-Anker — erst im Wizard neu abtasten oder nachzeichnen.',
     reload: 'neu laden',
     cropHeading: 'Original (Tafel-Ausschnitt)',
     cropCaption:

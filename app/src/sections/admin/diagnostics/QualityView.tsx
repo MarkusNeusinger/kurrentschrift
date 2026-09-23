@@ -163,9 +163,17 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
     return (
       <Box sx={{ p: 2 }}>
         {/* No canonical yet is a state, not a failure — the typed status says
-            so without sniffing the message. */}
+            so without sniffing the message. A 409 here is a row without pixel
+            anchors: the generic „erst neu laden" would send the author the
+            wrong way, so it gets its own sentence and keeps the raw detail. */}
         <Alert severity={error.status === 404 ? 'info' : 'error'}>
-          {error.status === 404 ? de.admin.diagnostics.noCanonicalShort : <ErrorText error={error} />}
+          {error.status === 404 ? (
+            de.admin.diagnostics.noCanonicalShort
+          ) : (
+            <ErrorText
+              error={error.status === 409 ? { ...error, sentence: de.admin.diagnostics.noPixelAnchors } : error}
+            />
+          )}
         </Alert>
         <Button size="small" startIcon={<RefreshIcon />} onClick={retry} sx={{ mt: 1 }}>
           {de.admin.diagnostics.reload}

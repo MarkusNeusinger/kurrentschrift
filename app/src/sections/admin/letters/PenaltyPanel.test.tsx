@@ -19,8 +19,12 @@ const payload = vi.hoisted(() => ({ current: null as unknown }));
 vi.mock('@/lib/api', async (orig) => ({
   ...(await orig<typeof import('@/lib/api')>()),
   cropUrl: () => 'crop.png',
-  getPenaltySites: () => Promise.resolve(payload.current),
+  // An Error stands for a failed call, anything else for the payload.
+  getPenaltySites: () =>
+    payload.current instanceof Error ? Promise.reject(payload.current) : Promise.resolve(payload.current),
 }));
+
+import { ApiError } from '@/lib/api/client';
 
 import { PenaltyPanel } from './PenaltyPanel';
 
@@ -146,7 +150,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-async function mount(data: PenaltySitesOut, onMark: (ref: PenaltyRef) => void = () => undefined) {
+async function mount(data: PenaltySitesOut | Error, onMark: (ref: PenaltyRef) => void = () => undefined) {
   payload.current = data;
   await act(async () => {
     root.render(<PenaltyPanel sourceId="src" glyphKey="a" onMark={onMark} />);
@@ -217,6 +221,59 @@ describe('PenaltyPanel', () => {
     expect(rim?.textContent).toContain('ohne Ort');
     await act(async () => rim?.click());
     expect(container.textContent).toContain('ohne Ort — zählt in der Zahl');
+  });
+
+  it('keeps a category switched off on the image in „Alle Stellen", count and all', async () => {
+    await mount(gleichzug());
+    expect(byText('Alle Stellen (3)')).toBeDefined();
+    await act(async () => byText('Ecken 0.1711')?.click());
+    // The switch acts on the image: the count and the list stay whole.
+    await act(async () => byText('Alle Stellen (3)')?.click());
+    const groups = [...container.querySelectorAll('h4')].map((h) => h.textContent);
+    expect(groups).toContain('Ecken 0.1711 · 2 Stellen · im Bild ausgeblendet');
+    // Choosing one of its rows there shows the category again.
+    const rows = buttons().filter((b) => b.textContent?.includes('Ecken #1 · Ecke'));
+    await act(async () => rows[rows.length - 1]?.click());
+    expect(byText('Ecken 0.1711')?.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('nests the category groups under a heading of their own', async () => {
+    await mount(gleichzug());
+    await act(async () => byText('Alle Stellen')?.click());
+    const headings = [...container.querySelectorAll('h3, h4')].map((h) => `${h.tagName}:${h.textContent}`);
+    const own = headings.findIndex((h) => h === 'H3:Stellenliste schließen');
+    expect(own).toBeGreaterThan(headings.indexOf('H3:Die fünf teuersten Stellen'));
+    expect(headings.slice(own + 1).every((h) => h.startsWith('H4:'))).toBe(true);
+    expect(headings.length).toBeGreaterThan(own + 1);
+  });
+
+  it('speaks the ①–⑤ rank the disc only shows', async () => {
+    await mount(gleichzug());
+    await act(async () => byText('Alle Stellen')?.click());
+    const ranked = buttons().filter((b) => b.textContent?.includes('Rang 2 · Ecken #1 · Ecke'));
+    // Once in the pins list, once in „Alle Stellen" — sorted by value there.
+    expect(ranked).toHaveLength(2);
+    expect(byText('Deckungslücke #0')?.textContent).not.toContain('Rang');
+  });
+
+  it('never pins a site apportioned 0.0000, and counts one such site in the singular', async () => {
+    const data = gleichzug();
+    const zero = { ...data.sites!.corner.sites[1], index: 2, value: 0, share: 0, points_est: 0.001, x: 5, y: 5 };
+    data.sites!.corner.sites.push(zero);
+    data.pins.push({ rank: 3, category: 'corner', index: 2, points_est: 0.001, x: 5, y: 5 });
+    await mount(data);
+    expect(buttons().some((b) => b.textContent?.includes('Ecken #2'))).toBe(false);
+    await act(async () => byText('Alle Stellen')?.click());
+    expect(container.textContent).toContain('+ 1 Stelle unter 0.0001');
+    expect(container.textContent).not.toContain('+ 1 Stellen');
+  });
+
+  it('says what helps when the row cannot be scored, and keeps the raw line', async () => {
+    await mount(new ApiError(409, "409 Conflict: stored template for 'a' lacks pixel-space trace meta"));
+    const text = container.textContent ?? '';
+    expect(text).toContain('Erst im Wizard neu abtasten oder nachzeichnen.');
+    expect(text).not.toContain('erst neu laden');
+    expect(container.querySelector('details code')?.textContent).toContain('lacks pixel-space trace meta');
   });
 
   it('gives a script without categories the list’s own sentence', async () => {

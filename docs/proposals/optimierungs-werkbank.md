@@ -596,28 +596,44 @@ Regel umgekehrt).
 
 | Kategorie | Marke |
 |---|---|
-| Glätte | Band entlang der Mittellinie, je Punkt so breit wie sein Anteil am Ruck; gepunktet die Eckfenster („zählt unter Ecken") |
+| Glätte | Band entlang der Mittellinie, je Punkt so breit wie sein Anteil am Ruck; wo es aussetzt, ein Eckfenster als Kontext („zählt unter Ecken") |
 | Senkrechte | Klammer neben dem Lauf, gestrichelt die Ideal-Senkrechte, die Abweichung überhöht (×20, weniger, wo sie weiter als 0,15 x-Höhen ausschlüge; der Faktor steht im Detail) |
 | Ecken | Quadrat am Scheitel (die Marke der Landmarken-Umkehrecke), die Anlaufstücke, gestrichelt ihre Sehnen, Punkt an der größten Abweichung |
 | Kreuzungsflucht | Ring an der Kreuzung und die beiden gefitteten Geraden |
-| Doppelzug | kreuzschraffiert die fehlende Tinte in der Zone, gepunktet deren Rand |
-| Deckungslücke | schraffiert tiefe Tintenlücken, gerastert Render über Papier, Randpunkte fürs Chamfer, Fühler zum Skelett für Geo |
+| Doppelzug | kreuzschraffiert die fehlende Tinte in der Zone; die Zone selbst als Kontext |
+| Deckungslücke | schraffiert tiefe Tintenlücken, gerastert Render über Papier, kurze Querstriche über den Rand fürs Chamfer, Fühler zum Skelett für Geo |
 
-**Ein Farbton für alle** (Karmin, `styles/paper.ts` `penalty`): die Form
-trägt die Kategorie, die Breite die Größe — auf EINER Skala für den
-ganzen Buchstaben, den linearisierten Punkten der Stelle. Die
-Legenden-Chips sind zugleich die Kopfzeile „Abzüge (neu gemessen): …" und der
-Filter; ein Term, der nie griff, heißt „nicht anwendbar", nie 0, und ist
-kein Schalter. Weicht der gespeicherte Listenwert um mehr als 0,005 ab,
-steht er als „gespeichert: …" daneben. Die fünf teuersten Stellen sind die
-Scheiben ①–⑤ im Bild und die Liste daneben; „Alle Stellen" öffnet den Rest
-als Roving-Liste. **Liste und Bild wählen beidseitig** — die Marken im Bild
-sind Zeiger-Zucker, der Tastatur- und Screenreader-Weg ist die Liste.
-Stellen, deren Anteil auf vier Stellen 0.0000 ist, werden gezählt, nicht
-gezeichnet; was keinen Ort hat (der Kanten-Saum der Deckungslücke), steht
-als Zeile „ohne Ort". Nur die Tafelzeile (V0): eine Laufform-Zeile wurde nie
-gegen die Tafel gemessen. Kurrent und Offenbacher bekommen den Satz der
-Liste — „diese Schrift misst anders".
+**Ein Farbton für alle Abzüge** (Karmin, `styles/paper.ts` `penalty.mark`):
+die Form trägt die Kategorie, die Breite die Größe — auf EINER Skala für den
+ganzen Buchstaben, den linearisierten Punkten der Stelle. **Kontext ist kein
+Abzug und trägt eigene Farbe UND eigene Form** (`penalty.context`,
+Ultramarin, dünn gestrichelt): die Doppelzug-Zone als Umriss, die Eckfenster
+der Glätte als gestrichelte Unterlegung mit Querbalken an den Enden. Die
+Trennung ist eine Review-Lehre (2026-09-24): vorher waren Zonenrand,
+Chamfer-Rand, Eckfenster und ein Streifen Raster vier Punktketten auf
+denselben Kantenpixeln — die Zone ist `Tinte ∩ Umkreis`, ihr Rand IST die
+Tintenkante, auf der das Chamfer sitzt —, also für jeden Leser eine Marke.
+Die Legenden-Chips sind zugleich die Kopfzeile „Abzüge (neu gemessen): …" und
+der Filter fürs BILD; ein Term, der nie griff, heißt „nicht anwendbar", nie
+0, und ist kein Schalter, und eine Kategorie, deren Karte der Kern verworfen
+hat (`in_sync` falsch), heißt „Karte verworfen (Nachrechnung weicht ab)"
+statt als gewöhnliches „ohne Ort" durchzugehen. Weicht der gespeicherte
+Listenwert um mehr als 0,005 ab, steht er als „gespeichert: …" daneben. Die
+fünf teuersten Stellen sind die Scheiben ①–⑤ im Bild und die Liste daneben;
+„Alle Stellen" öffnet ALLE anwendbaren Kategorien als Roving-Liste, auch
+eine im Bild ausgeblendete (so vermerkt) — eine dort gewählte Stelle blendet
+ihre Kategorie wieder ein. **Liste und Bild wählen beidseitig** — die Marken
+im Bild sind Zeiger-Zucker, der Tastatur- und Screenreader-Weg ist die Liste,
+und der Rang ①–⑤ steht dort auch im Namen der Zeile. Stellen, deren Anteil
+auf vier Stellen 0.0000 ist, werden gezählt, nicht gezeichnet — und
+bekommen keine Scheibe, auch wenn der Kern sie nach dem ungerundeten Anteil
+gereiht hat; die übrigen Scheiben rücken nach. Was keinen Ort hat (der
+Kanten-Saum der Deckungslücke), steht als Zeile „ohne Ort". Nur die
+Tafelzeile (V0): eine Laufform-Zeile wurde nie gegen die Tafel gemessen.
+Eine Zeile ohne Pixel-Anker oder mit ungültiger Geometrie (die 409 der
+Route) bekommt den Satz, der hilft — neu abtasten oder nachzeichnen —, nicht
+das allgemeine „erst neu laden". Kurrent und Offenbacher bekommen den Satz
+der Liste — „diese Schrift misst anders".
 
 ### 9.2 Route und Rechnung
 
@@ -638,7 +654,7 @@ Korb-Fix. Die Linse schreibt die ersten zwei Notizzeilen wie in §8.4:
 
 > ```
 > Abzug: Ecken #1 (corner#1) · a · Tafel-Duktus (Variante 0) · 0.0954 von 0.1711
-> Term · ≈ 2.28 Punkte · kind corner · x 72.6 px · y 24.86 px · anchor 71 · s_in 0.1187 · s_out 0.1218 · q 0.6182
+> Term · ≈ 2.28 Punkte · kind corner · x 72.6 px · y 24.86 px · anchor 71 · sample 142 · s_in 0.1187 · s_out 0.1218 · q 0.6182
 > ```
 
 Die Korb-Überschrift bleibt „Buchstabe a", der Kopf eröffnet den Text.

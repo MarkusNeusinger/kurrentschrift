@@ -46,7 +46,7 @@ export type MarkerShape =
   | 'crosshatch' // Doppelzug — missed ink in the retrace zone
   | 'hatch' // Deckungslücke/Dice — deep missed ink
   | 'stipple' // Deckungslücke/Dice — render over paper
-  | 'edgeDots' // Deckungslücke/Chamfer — boundary pixels
+  | 'edgeTicks' // Deckungslücke/Chamfer — short ticks across the boundary
   | 'whiskers' // Deckungslücke/Geo — feelers from the centreline to the skeleton
   | 'none';
 
@@ -61,11 +61,14 @@ export const CATEGORY_SHAPE: Record<PenaltyCategoryKey, MarkerShape> = {
 };
 
 // Deckungslücke is three factors, and each gets its own mark: a Dice miss is
-// pixels, a Chamfer part is a boundary, a Geo part is a distance.
+// pixels, a Chamfer part is a boundary, a Geo part is a distance. The Chamfer
+// boundary is TICKED, not dotted: its pixels are ink and render edge pixels,
+// the very pixels the Doppelzug zone's outline runs along, and two dotted
+// edges on one line were one mark to every reader (review of 2026-09-24).
 const COVERAGE_SHAPE: Record<string, MarkerShape> = {
   missed_ink: 'hatch',
   excess_render: 'stipple',
-  edge: 'edgeDots',
+  edge: 'edgeTicks',
   off_skeleton: 'whiskers',
 };
 
@@ -89,9 +92,9 @@ export const isLocated = (site: PenaltySiteOut): site is PenaltySiteOut & { x: n
  */
 export const isDrawn = (site: PenaltySiteOut): boolean => site.value > 0;
 
-/** The marks drawn in the crop's pixel grid (cells, boundary dots) rather than along the centreline. */
+/** The marks drawn in the crop's pixel grid (cells, boundary ticks) rather than along the centreline. */
 export const isPixelShape = (shape: MarkerShape): boolean =>
-  shape === 'hatch' || shape === 'stipple' || shape === 'crosshatch' || shape === 'edgeDots';
+  shape === 'hatch' || shape === 'stipple' || shape === 'crosshatch' || shape === 'edgeTicks';
 
 /**
  * How far the deviation of a Senkrechte run is blown up to be seen at all:
@@ -151,11 +154,12 @@ export const sharePercent = (site: PenaltySiteOut): number => Math.round(site.sh
 
 // ------------------------------------------------------------------ legend
 
-export interface CategoryChip {
+export type CategoryChip = {
   key: PenaltyCategoryKey;
   label: string;
   value: number;
   applicable: boolean;
+  /** False when the core dropped the map: the number stands, its places do not. */
   inSync: boolean;
   /** Sites with a place and a part of the number — what the image draws and the chip filters. */
   located: number;
@@ -164,7 +168,7 @@ export interface CategoryChip {
   /** A chip is a FILTER only where there is something to draw; otherwise a plain label. */
   filterable: boolean;
   text: string;
-}
+};
 
 function countText(count: number): string {
   const t = de.admin.letters.penalties;
@@ -177,6 +181,12 @@ function countText(count: number): string {
  * first like the list's own „Abzüge:" line, then what does not apply, in the
  * metric's order. „nicht anwendbar" instead of 0, because a term that never
  * applied was not measured as perfect (Ehrliche Leerzustände).
+ *
+ * A category whose map the core DROPPED (`in_sync` false — the recomputation
+ * drifted from the metric, so the whole number came back as one unlocated
+ * site) says so instead of passing for an ordinary part without a place: the
+ * legitimate Deckungslücke rim reads „… ohne Ort", a dropped map reads
+ * „Karte verworfen (Nachrechnung weicht ab)".
  */
 export function categoryChips(sites: Record<PenaltyCategoryKey, PenaltyCategoryOut>): CategoryChip[] {
   const t = de.admin.letters.penalties;
@@ -191,6 +201,7 @@ export function categoryChips(sites: Record<PenaltyCategoryKey, PenaltyCategoryO
     const unlocatedValue = unlocatedUnits / 10_000;
     let text: string;
     if (!category.applicable) text = `${label} · ${t.notApplicable}`;
+    else if (!category.in_sync) text = `${label} ${fourPlaces(category.value)} · ${t.mapDropped}`;
     else {
       const parts = [`${label} ${fourPlaces(category.value)}`, countText(located)];
       if (unlocatedUnits > 0) parts.push(`${fourPlaces(unlocatedValue)} ${t.noPlace}`);
@@ -216,12 +227,12 @@ export function categoryChips(sites: Record<PenaltyCategoryKey, PenaltyCategoryO
   });
 }
 
-export interface StampDrift {
+export type StampDrift = {
   key: PenaltyCategoryKey;
   label: string;
   stamped: number;
   measured: number;
-}
+};
 
 /**
  * The categories whose STAMPED value (what the list shows, from the last
@@ -312,8 +323,8 @@ export const markWidth = (t: number): number => MARK_WIDTH_MIN + t * (MARK_WIDTH
 /**
  * One category's sites as the list shows them: largest part first, and the
  * sites whose apportioned part is 0.0000 counted rather than listed — they
- * are real and drawn, but twelve rows of zeros would bury the ones that carry
- * the number.
+ * are real and counted, not drawn (`isDrawn`), and twelve rows of zeros would
+ * bury the ones that carry the number.
  */
 export function listedSites(category: PenaltyCategoryOut): { rows: PenaltySiteOut[]; zero: number } {
   const rows = category.sites.filter(isDrawn);
@@ -321,28 +332,146 @@ export function listedSites(category: PenaltyCategoryOut): { rows: PenaltySiteOu
   return { rows, zero: category.sites.length - rows.length };
 }
 
+type Cells = ReadonlyArray<readonly [number, number, number]>;
+type Point = [number, number];
+
 /**
- * The boundary pixels of a set of cell runs `[x, y, width]`, in raster order —
- * a zone pixel with a 4-neighbour outside the zone. What the Doppelzug zone's
- * rim is drawn from: the missed ink inside the zone only reads against it.
+ * The outline of a set of cell runs `[x, y, width]`, as closed loops of corner
+ * points on the PIXEL EDGES (pixel c spans [c, c + 1]) — what the Doppelzug
+ * zone is drawn as: context, a dashed line round the region the retrace term
+ * takes its recall over, so the missed ink inside reads against it.
+ *
+ * A LINE, not dots on the boundary pixels, on purpose: the zone is `ink ∩
+ * region`, so its boundary pixels ARE the ink edge — the pixels a Chamfer site
+ * sits on — and dots on dots were one mark to every reader (review of
+ * 2026-09-24). And one continuous loop rather than a unit segment per pixel
+ * side, because a dash pattern restarts on every subpath: four-pixel pieces
+ * would each open with a dash and read as a solid line.
+ *
+ * Each pixel side facing outside becomes an edge directed with the zone on its
+ * right; a vertex where two regions only touch diagonally turns right, so they
+ * stay two loops. Collinear corners are dropped.
  */
-export function zoneRim(cells: ReadonlyArray<readonly [number, number, number]>): Array<[number, number]> {
+export function zoneOutline(cells: Cells): Point[][] {
   const inside = new Set<string>();
   for (const [x, y, w] of cells) for (let k = 0; k < w; k += 1) inside.add(`${x + k},${y}`);
-  const out: Array<[number, number]> = [];
+  const has = (x: number, y: number) => inside.has(`${x},${y}`);
+  const outgoing = new Map<string, Point[]>();
+  const edge = (x0: number, y0: number, x1: number, y1: number) => {
+    const key = `${x0},${y0}`;
+    const list = outgoing.get(key);
+    if (list) list.push([x1, y1]);
+    else outgoing.set(key, [[x1, y1]]);
+  };
   for (const [x, y, w] of cells) {
     for (let k = 0; k < w; k += 1) {
       const px = x + k;
-      const neighbours: Array<[number, number]> = [
-        [px - 1, y],
-        [px + 1, y],
-        [px, y - 1],
-        [px, y + 1],
-      ];
-      if (neighbours.some(([nx, ny]) => !inside.has(`${nx},${ny}`))) out.push([px, y]);
+      if (!has(px, y - 1)) edge(px, y, px + 1, y);
+      if (!has(px + 1, y)) edge(px + 1, y, px + 1, y + 1);
+      if (!has(px, y + 1)) edge(px + 1, y + 1, px, y + 1);
+      if (!has(px - 1, y)) edge(px, y + 1, px, y);
     }
   }
-  return out;
+  const loops: Point[][] = [];
+  for (const [startKey, starts] of outgoing) {
+    const [sx, sy] = startKey.split(',').map(Number);
+    while (starts.length > 0) {
+      const loop: Point[] = [[sx, sy]];
+      let [cx, cy] = [sx, sy];
+      let [nx, ny] = starts.pop() as Point;
+      // Every vertex has as many edges out as in, so the walk closes.
+      for (;;) {
+        const [dx, dy] = [nx - cx, ny - cy];
+        [cx, cy] = [nx, ny];
+        if (cx === sx && cy === sy) break;
+        loop.push([cx, cy]);
+        const ends = outgoing.get(`${cx},${cy}`) ?? [];
+        // Right turn first (towards the zone), then straight, then left.
+        const order: Point[] = [
+          [-dy, dx],
+          [dx, dy],
+          [dy, -dx],
+        ];
+        let pick = -1;
+        for (const [ox, oy] of order) {
+          pick = ends.findIndex(([ex, ey]) => ex - cx === ox && ey - cy === oy);
+          if (pick >= 0) break;
+        }
+        if (pick < 0) break;
+        [nx, ny] = ends.splice(pick, 1)[0];
+      }
+      loops.push(dropCollinear(loop));
+    }
+  }
+  return loops;
+}
+
+function dropCollinear(loop: Point[]): Point[] {
+  const n = loop.length;
+  if (n < 3) return loop;
+  return loop.filter((p, i) => {
+    const a = loop[(i - 1 + n) % n];
+    const b = loop[(i + 1) % n];
+    return (p[0] - a[0]) * (b[1] - p[1]) - (p[1] - a[1]) * (b[0] - p[0]) !== 0;
+  });
+}
+
+/** One Chamfer tick: a pixel centre and the unit normal of the edge through it. */
+export type EdgeTick = { x: number; y: number; nx: number; ny: number };
+
+/**
+ * Where a Chamfer site's ticks stand: its boundary pixels thinned to at least
+ * `spacing` crop pixels apart (raster order, greedy), each with the normal of
+ * the edge there — the principal axis of the site's pixels within reach,
+ * turned a quarter. A tick ACROSS the edge is a form no other mark uses; a dot
+ * on it was the Doppelzug outline's form too. A lone pixel has no direction
+ * and gets an upright tick.
+ */
+export function edgeTicks(cells: Cells, spacing: number): EdgeTick[] {
+  const pts: Point[] = [];
+  for (const [x, y, w] of cells) for (let k = 0; k < w; k += 1) pts.push([x + k + 0.5, y + 0.5]);
+  const gap = Math.max(1, spacing);
+  const kept: Point[] = [];
+  for (const p of pts) if (kept.every((q) => Math.hypot(p[0] - q[0], p[1] - q[1]) >= gap)) kept.push(p);
+  const reach = Math.max(1.5, gap);
+  return kept.map(([x, y]) => {
+    const near = pts.filter(([px, py]) => Math.hypot(px - x, py - y) <= reach);
+    if (near.length < 2) return { x, y, nx: 0, ny: 1 };
+    const mx = near.reduce((s, [px]) => s + px, 0) / near.length;
+    const my = near.reduce((s, [, py]) => s + py, 0) / near.length;
+    let sxx = 0;
+    let syy = 0;
+    let sxy = 0;
+    for (const [px, py] of near) {
+      sxx += (px - mx) ** 2;
+      syy += (py - my) ** 2;
+      sxy += (px - mx) * (py - my);
+    }
+    const along = 0.5 * Math.atan2(2 * sxy, sxx - syy);
+    return { x, y, nx: -Math.sin(along), ny: Math.cos(along) };
+  });
+}
+
+/**
+ * The two end bars of a context span (a Glätte corner window): at each end a
+ * bar of `half` either side of the line, square to its first or last step.
+ * Empty for a span with no length.
+ */
+export function spanBars(points: ReadonlyArray<readonly [number, number]>, half: number): Array<[Point, Point]> {
+  if (points.length < 2) return [];
+  const bar = (at: readonly [number, number], from: readonly [number, number]): [Point, Point] | null => {
+    const [dx, dy] = [at[0] - from[0], at[1] - from[1]];
+    const len = Math.hypot(dx, dy);
+    if (!(len > 0)) return null;
+    const [nx, ny] = [(-dy / len) * half, (dx / len) * half];
+    return [
+      [at[0] - nx, at[1] - ny],
+      [at[0] + nx, at[1] + ny],
+    ];
+  };
+  const first = bar(points[0], points[1]);
+  const last = bar(points[points.length - 1], points[points.length - 2]);
+  return [first, last].filter((b): b is [Point, Point] => b !== null);
 }
 
 /**
@@ -385,6 +514,27 @@ export function placePins(
     placed.push({ rank: pin.rank, ...(free ?? candidates[0]) });
   }
   return placed;
+}
+
+/**
+ * The ①–⑤ pins the lens shows: the payload's, minus any whose site the image
+ * does not draw, ranked again from 1 in the payload's order. The core ranks by
+ * the UNROUNDED part (`raw > 0`); where a category's number rounds to 0.0000
+ * its sites are apportioned 0.0000 each, and such a pin would name a mark the
+ * image leaves out — a disc whose leader points at bare crop and a row reading
+ * „0.0000 von 0.0000". One rule for image, lists and pins: `isDrawn`.
+ */
+export function shownPins(
+  pins: readonly PenaltyPinOut[],
+  sites: Record<PenaltyCategoryKey, PenaltyCategoryOut>,
+): PenaltyPinOut[] {
+  return [...pins]
+    .sort((a, b) => a.rank - b.rank)
+    .filter((pin) => {
+      const site = sites[pin.category]?.sites.find((s) => s.index === pin.index);
+      return site !== undefined && isLocated(site) && isDrawn(site);
+    })
+    .map((pin, i) => (pin.rank === i + 1 ? pin : { ...pin, rank: i + 1 }));
 }
 
 /** The ①–⑤ rank of a site, or null when it is not among the pins. */

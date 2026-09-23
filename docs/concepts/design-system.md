@@ -176,12 +176,19 @@ unmöglich (s. o.), darum wird der Grund geändert statt des Bands. Der
 Tafel-Ausschnitt liegt auf `penaltyCropAlpha` = 0,35 gedimmt (wie die
 Skelett-Spalte der Diagnose), und jedes Token erreicht 3 : 1 gegen weiß UND
 gegen die so gedimmte Tinte `#b2afab`. **Ein** Farbton für alle sechs
-Kategorien — `penalty.mark` Karmin `#960018`; die Kategorie trägt die FORM
-(Quadrat, Ring, Klammer, Band, Schraffur, Raster), die Größe die Breite.
-Dazu `centerline` (Preußischblau, die gemessene Mittellinie), `selected`
-(`viridianText`, ein Zustand; der knappe Deuteranopen-Abstand zur
-Mittellinie ist benannt und von Ring + Breite getragen) und `pin` (Tinte,
-die ①–⑤-Scheiben).
+Kategorien — `penalty.mark` Karmin `#960018`, NUR für Abzüge; die Kategorie
+trägt die FORM (Band, Klammer, Quadrat, Ring, Kreuzschraffur, Schraffur,
+Raster, Querstriche über den Rand, Fühler), die Größe die Breite. Was einen
+Abzug rahmt, ohne einer zu sein — die Doppelzug-Zone, die Eckfenster der
+Glätte —, ist **Kontext**: `penalty.context` (Ultramarin, approx
+`#4040c0`), dünn gestrichelt, in Formen, die kein Abzug trägt (Umriss;
+Unterlegung mit Querbalken). Keine zwei Bedeutungen teilen sich eine Form:
+Punktketten auf der Tintenkante waren Zonenrand, Chamfer, Eckfenster und
+Raster zugleich (Review 2026-09-24). Dazu `centerline` (Preußischblau, die
+gemessene Mittellinie), `selected` (`viridianText`, ein Zustand; der knappe
+Deuteranopen-Abstand zur Mittellinie ist benannt und von Ring + Breite
+getragen) und `pin` (Tinte, die ①–⑤-Scheiben). `context` hält zu jedem
+anderen Token ΔE ≥ 35 auch für Deuteranope (gemessen in `paper.test.ts`).
 
 Font-Tokens (ebenfalls `styles/paper.ts`): `garamond` (EB Garamond, Body/UI &
 Theme-Default), `display` (Playfair Display, Display-Überschriften), `script`

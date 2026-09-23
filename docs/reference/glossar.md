@@ -4826,13 +4826,18 @@ deckend 3 : 1 gegen weiß UND gegen Platten-Tinte schafft, ist unmöglich.
 Geändert wird darum der Grund statt des Bands — der Tafel-Ausschnitt liegt
 auf 0,35 gedimmt (wie in der Skelett-Spalte der Diagnose), und jedes Token
 erreicht 3 : 1 gegen weiß und gegen die gedimmte Tinte. EIN Farbton
-(`mark`, Karmin) für alle sechs Kategorien: die Kategorie trägt die Form,
-die Größe die Breite, und kein Leser muss sechs Farben unterscheiden. Dazu
-`centerline` (die gemessene Mittellinie), `selected` (ein Zustand, darum
-Viridian in Textstärke) und `pin` (die ①–⑤-Scheiben). *Technisch:*
-`app/src/styles/paper.ts`; `app/src/styles/paper.test.ts` misst die
-gedimmte Tinte als Tripwire und benennt das eine knappe Paar
-(Auswahl ↔ Mittellinie, von Ring und Breite getragen).
+(`mark`, Karmin) für alle sechs Kategorien und NUR für Abzüge: die
+Kategorie trägt die Form, die Größe die Breite, und kein Leser muss sechs
+Farben unterscheiden. `context` (Ultramarin) zeichnet, was einen Abzug
+rahmt, ohne einer zu sein — den Umriss der Doppelzug-Zone, die Eckfenster
+der Glätte —, dünn gestrichelt und in Formen, die kein Abzug trägt; vorher
+waren Zonenrand und Chamfer-Rand dieselbe Punktkette auf denselben
+Kantenpixeln (Review 2026-09-24). Dazu `centerline` (die gemessene
+Mittellinie), `selected` (ein Zustand, darum Viridian in Textstärke) und
+`pin` (die ①–⑤-Scheiben). *Technisch:* `app/src/styles/paper.ts`;
+`app/src/styles/paper.test.ts` misst die gedimmte Tinte als Tripwire, hält
+`context` zu jedem anderen Token über der Deuteranopen-Schwelle und benennt
+das eine knappe Paar (Auswahl ↔ Mittellinie, von Ring und Breite getragen).
 → Ebenen-Token; Strichart-Regel; concepts/design-system.md §2
 
 **Freigabe-Maschine (geplant)** — das Zielbild für den Rollenwechsel von

@@ -13,6 +13,7 @@ import {
   CATEGORY_SHAPE,
   categoryChips,
   coveragePart,
+  edgeTicks,
   isDrawn,
   isPixelShape,
   lensScale,
@@ -27,13 +28,15 @@ import {
   pinRank,
   placePins,
   revealCategory,
+  shownPins,
   siteShape,
+  spanBars,
   stampDrift,
   toggleCategory,
   VERTICAL_EXAGGERATION,
   VERTICAL_SWING_UNITS,
   verticalExaggeration,
-  zoneRim,
+  zoneOutline,
 } from './penaltyLens';
 
 const site = (over: Partial<PenaltySiteOut> = {}): PenaltySiteOut => ({
@@ -91,7 +94,7 @@ describe('marker shapes — the channel that is not colour', () => {
   it('splits Deckungslücke into marks no other category uses', () => {
     const kinds = ['missed_ink', 'excess_render', 'edge', 'off_skeleton'];
     const shapes = kinds.map((kind) => siteShape('coverage', site({ kind })));
-    expect(shapes).toEqual(['hatch', 'stipple', 'edgeDots', 'whiskers']);
+    expect(shapes).toEqual(['hatch', 'stipple', 'edgeTicks', 'whiskers']);
     expect(new Set(shapes).size).toBe(4);
     // Doppelzug's missed ink is crosshatched, Deckungslücke's hatched: the same
     // pixels can carry both, and they must not read as one mark.
@@ -111,7 +114,7 @@ describe('marker shapes — the channel that is not colour', () => {
   });
 
   it('draws only the pixel marks in the crop grid', () => {
-    expect(['hatch', 'stipple', 'crosshatch', 'edgeDots'].every((s) => isPixelShape(s as never))).toBe(true);
+    expect(['hatch', 'stipple', 'crosshatch', 'edgeTicks'].every((s) => isPixelShape(s as never))).toBe(true);
     expect(['band', 'bracket', 'square', 'ring', 'whiskers'].some((s) => isPixelShape(s as never))).toBe(false);
   });
 });
@@ -171,6 +174,23 @@ describe('legend chips — the „Abzüge (neu gemessen)" line', () => {
 
   it('names the collinearity deduction „Kreuzungsflucht", never the landmark word', () => {
     expect(chips.some((c) => c.label === 'Kreuzung')).toBe(false);
+  });
+
+  it('tells a dropped map apart from an ordinary part without a place', () => {
+    // The core's drift group: the whole number as ONE unlocated site.
+    const drifted = categoryChips(
+      allSites({
+        smoothness: category({
+          value: 0.0123,
+          in_sync: false,
+          sites: [site({ kind: 'unlocated', value: 0.0123, x: null, y: null, numbers: { reason: 'recomputation_drift' } })],
+        }),
+      }),
+    ).find((c) => c.key === 'smoothness');
+    expect(drifted?.inSync).toBe(false);
+    expect(drifted?.text).toBe('Glätte 0.0123 · Karte verworfen (Nachrechnung weicht ab)');
+    expect(drifted?.text).not.toContain('ohne Ort');
+    expect(drifted?.filterable).toBe(false);
   });
 });
 
@@ -270,6 +290,22 @@ describe('site lists', () => {
     expect(pinRank(pins, 'corner', 1)).toBe(1);
     expect(pinRank(pins, 'corner', 0)).toBeNull();
   });
+
+  it('never pins a site the image does not draw, and ranks the rest again from 1', () => {
+    // The core pins by the unrounded part; a category whose number rounds to
+    // 0.0000 apportions 0.0000 to each of its sites, which the image leaves out.
+    const sites = allSites({
+      retrace: category({ value: 0, sites: [site({ index: 0, kind: 'missed_ink', value: 0, points_est: 0.02 })] }),
+      corner: category({ value: 0.0003, sites: [site({ index: 0, value: 0.0003, points_est: 0.01 })] }),
+    });
+    const pins: PenaltyPinOut[] = [
+      { rank: 1, category: 'retrace', index: 0, points_est: 0.02, x: 10, y: 12 },
+      { rank: 2, category: 'corner', index: 0, points_est: 0.01, x: 10, y: 12 },
+    ];
+    expect(shownPins(pins, sites)).toEqual([{ ...pins[1], rank: 1 }]);
+    // Nothing to drop: the payload's own pins, untouched.
+    expect(shownPins([pins[1]].map((p) => ({ ...p, rank: 1 })), sites)[0]).toEqual({ ...pins[1], rank: 1 });
+  });
 });
 
 describe('the ①–⑤ discs', () => {
@@ -306,15 +342,86 @@ describe('frame', () => {
     expect(lensScale({ width: 87, height: 205, unit_px: 62 }, 560, 540)).toBeCloseTo(540 / 205);
   });
 
-  it('traces the rim of a zone as its boundary pixels', () => {
-    // A 3×3 block: everything but the centre is rim.
-    const rim = zoneRim([
+});
+
+describe('context and edge forms', () => {
+  it('outlines a zone as one closed loop on the pixel edges', () => {
+    // A 3×3 block: one loop, its four corners — no dot per boundary pixel.
+    const loops = zoneOutline([
+      [2, 1, 3],
+      [2, 2, 3],
+      [2, 3, 3],
+    ]);
+    expect(loops).toHaveLength(1);
+    expect([...loops[0]].sort()).toEqual(
+      [
+        [2, 1],
+        [5, 1],
+        [5, 4],
+        [2, 4],
+      ].sort(),
+    );
+  });
+
+  it('gives a ring its inner outline too, and keeps diagonal neighbours apart', () => {
+    const ring = zoneOutline([
       [0, 0, 3],
-      [0, 1, 3],
+      [0, 1, 1],
+      [2, 1, 1],
       [0, 2, 3],
     ]);
-    expect(rim).toHaveLength(8);
-    expect(rim).not.toContainEqual([1, 1]);
+    expect(ring).toHaveLength(2);
+    expect(ring.map((loop) => loop.length).sort()).toEqual([4, 4]);
+    // Two pixels touching only at a corner are two regions, not a figure eight.
+    expect(
+      zoneOutline([
+        [0, 0, 1],
+        [1, 1, 1],
+      ]),
+    ).toHaveLength(2);
+    expect(zoneOutline([])).toEqual([]);
+  });
+
+  it('ticks a Chamfer edge across it, spaced, on the pixel centres', () => {
+    // A horizontal edge: the ticks stand upright, at least the gap apart.
+    const flat = edgeTicks([[10, 5, 12]], 3);
+    expect(flat.length).toBe(4);
+    for (const tick of flat) {
+      expect(tick.y).toBe(5.5);
+      expect(Math.abs(tick.ny)).toBeCloseTo(1);
+      expect(tick.nx).toBeCloseTo(0);
+    }
+    for (let i = 1; i < flat.length; i += 1) expect(flat[i].x - flat[i - 1].x).toBeGreaterThanOrEqual(3);
+    // A vertical edge: the ticks lie flat.
+    const column = edgeTicks(
+      Array.from({ length: 8 }, (_, i) => [4, i, 1] as [number, number, number]),
+      2,
+    );
+    for (const tick of column) expect(Math.abs(tick.nx)).toBeCloseTo(1);
+    // A lone pixel has no direction: an upright tick, never NaN.
+    expect(edgeTicks([[0, 0, 1]], 3)).toEqual([{ x: 0.5, y: 0.5, nx: 0, ny: 1 }]);
+  });
+
+  it('bars a corner window square to its ends', () => {
+    const bars = spanBars(
+      [
+        [0, 0],
+        [4, 0],
+        [4, 4],
+      ],
+      2,
+    );
+    expect(bars).toEqual([
+      [
+        [0, 2],
+        [0, -2],
+      ],
+      [
+        [6, 4],
+        [2, 4],
+      ],
+    ]);
+    expect(spanBars([[1, 1]], 2)).toEqual([]);
   });
 });
 

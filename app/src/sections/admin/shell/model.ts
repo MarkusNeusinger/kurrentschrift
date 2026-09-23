@@ -44,7 +44,7 @@ export interface LandmarkRef {
 // category's number and the raw numbers behind it. Always the chart row
 // (variant 0) — the lens measures nothing else. `x`/`y` are crop pixels and
 // null for the part without a place.
-export interface PenaltyRef {
+export type PenaltyRef = {
   category: PenaltyCategoryKey;
   index: number;
   kind: string;
@@ -55,7 +55,7 @@ export interface PenaltyRef {
   x: number | null;
   y: number | null;
   numbers: Record<string, number | string | boolean | null>;
-}
+};
 
 // The levels the doctrine knows (optimierungs-werkbank.md §5): a letter, a
 // join, or the whole word — plus `landmark`, the generated structure layer of

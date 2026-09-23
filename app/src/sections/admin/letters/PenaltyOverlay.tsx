@@ -23,11 +23,19 @@
 // sites are a keyboard list beside the image (the pins and „Alle Stellen"),
 // which is where a screen reader and the Tab key select them. A tap on a mark
 // selects the same site in that list — the selection is one state, shown twice.
+//
+// Two vocabularies, never mixed: a DEDUCTION is drawn in `penalty.mark` in its
+// category's form; CONTEXT — what frames a deduction without being one, the
+// Doppelzug zone and the Glätte corner windows — is drawn in `penalty.context`,
+// thin and dashed, in forms no deduction uses (an outline, a span with end
+// bars). Before that split the zone's rim, the Chamfer edge, the corner windows
+// and a sliver of stipple were all rows of small dots on the same edge pixels.
 
 import { useId, useMemo } from 'react';
 
 import type { PenaltyCategoryKey, PenaltyCategoryOut, PenaltyPathOut, PenaltySiteOut, PenaltySitesOut } from '@/lib/api';
 import {
+  edgeTicks,
   isDrawn,
   isLocated,
   isPixelShape,
@@ -38,8 +46,9 @@ import {
   placePins,
   siteKey,
   siteShape,
+  spanBars,
   verticalExaggeration,
-  zoneRim,
+  zoneOutline,
   type MarkerShape,
 } from '@/sections/admin/letters/penaltyLens';
 import { garamond, penalty, strokeStyle, type StrokeStyle } from '@/styles/paper';
@@ -55,6 +64,14 @@ const PIN_OFFSET = 20;
 const PIN_FONT = 14; // the caption floor (design-system.md §9)
 const SELECT_RING = 15;
 const PATTERN = 6;
+// The Chamfer ticks: how far apart along the edge, and how long across it.
+const TICK_GAP = 6;
+const TICK_LENGTH = 6;
+// The context marks: the zone outline's line, the corner window's dashed
+// underlay (wider than the centreline drawn over it) and its end bars.
+const CONTEXT_LINE = 1.5;
+const WINDOW_LINE = 3.5;
+const WINDOW_BAR = 6;
 
 type Data = Required<Pick<PenaltySitesOut, 'pins'>> & {
   frame: NonNullable<PenaltySitesOut['frame']>;
@@ -62,14 +79,14 @@ type Data = Required<Pick<PenaltySitesOut, 'pins'>> & {
   sites: NonNullable<PenaltySitesOut['sites']>;
 };
 
-export interface PenaltyOverlayProps {
+export type PenaltyOverlayProps = {
   data: Data;
   /** Screen pixels per crop pixel. */
   scale: number;
   hidden: ReadonlySet<PenaltyCategoryKey>;
   selectedKey: string | null;
   onSelect: (category: PenaltyCategoryKey, index: number) => void;
-}
+};
 
 type Located = { category: PenaltyCategoryKey; site: PenaltySiteOut & { x: number; y: number }; t: number };
 
@@ -82,16 +99,17 @@ export function PenaltyOverlay({ data, scale, hidden, selectedKey, onSelect }: P
   // apportioned 0.0000 adds nothing to the four places shown, and on a letter
   // like `M` there are dozens of them along the edge — the list counts them
   // („nicht gezeichnet") instead of the image burying the ones that matter.
-  const located = useMemo(() => {
+  const everyLocated = useMemo(() => {
     const max = maxPoints(sites);
     const out: Located[] = [];
     for (const category of PENALTY_CATEGORIES) {
       for (const site of sites[category].sites) {
-        if (isLocated(site) && isDrawn(site)) out.push({ category, site, t: magnitude(site.points_est, max) });
+        if (isLocated(site)) out.push({ category, site, t: magnitude(site.points_est, max) });
       }
     }
     return out;
   }, [sites]);
+  const located = useMemo(() => everyLocated.filter((entry) => isDrawn(entry.site)), [everyLocated]);
 
   // The Glätte band is as wide as each sample's share of the jerk, on ONE scale
   // for the whole letter so two segments compare.
@@ -102,7 +120,9 @@ export function PenaltyOverlay({ data, scale, hidden, selectedKey, onSelect }: P
   }, [sites]);
 
   const shown = located.filter((entry) => !hidden.has(entry.category));
-  const selected = located.find((entry) => siteKey(entry.category, entry.site.index) === selectedKey) ?? null;
+  // Looked up among EVERY located site, drawn or not: whatever the lists and
+  // pins offer, a chosen site with a place always gets its ring on the image.
+  const selected = everyLocated.find((entry) => siteKey(entry.category, entry.site.index) === selectedKey) ?? null;
   // Costliest last, so where two touch targets overlap the bigger deduction wins the tap.
   const hitOrder = [...shown].sort((a, b) => a.site.points_est - b.site.points_est);
 
@@ -154,12 +174,17 @@ export function PenaltyOverlay({ data, scale, hidden, selectedKey, onSelect }: P
         })}
       </defs>
 
-      {/* Context drawn AROUND the sites: the Doppelzug zone's rim. */}
-      {!hidden.has('retrace') && <ZoneRim cells={sites.retrace.context_cells} u={u} />}
+      {/* Context first, under every deduction: the Doppelzug zone's outline. */}
+      {!hidden.has('retrace') && <ZoneOutline cells={sites.retrace.context_cells} u={u} />}
 
       {shown.filter((entry) => cellFirst(siteShape(entry.category, entry.site))).map((entry) => drawSite(entry, false))}
 
       <g transform="translate(0.5 0.5)">
+        {/* Glätte's corner windows — context, a dashed underlay with end bars
+            where the band stops; what lies there counts under Ecken. */}
+        {!hidden.has('smoothness') &&
+          sites.smoothness.context_paths.map((path, i) => <WindowSpan key={`win-${i}`} path={path} u={u} />)}
+
         {shown.filter((entry) => siteShape(entry.category, entry.site) === 'band').map((entry) => drawSite(entry, false))}
 
         {/* The centreline the ruler measured: thin, solid, under the point marks. */}
@@ -173,12 +198,6 @@ export function PenaltyOverlay({ data, scale, hidden, selectedKey, onSelect }: P
             strokeLinejoin="round"
           />
         ))}
-
-        {/* Glätte's corner windows — what lies there counts under Ecken. */}
-        {!hidden.has('smoothness') &&
-          sites.smoothness.context_paths.map((path, i) => (
-            <Line key={`win-${i}`} path={path} colour={penalty.mark} width={2 * u} style={strokeStyle.dotted} />
-          ))}
       </g>
 
       {/* Line and point marks — over the centreline. Cells were drawn above. */}
@@ -294,7 +313,7 @@ export function PenaltyPins({ data, scale, hidden, selectedKey, onSelect }: Pena
   );
 }
 
-interface SiteMarkProps {
+type SiteMarkProps = {
   shape: MarkerShape;
   site: PenaltySiteOut & { x: number; y: number };
   /** The site's magnitude on the letter's one scale, [0, 1]. */
@@ -306,7 +325,7 @@ interface SiteMarkProps {
   bandMax: number;
   /** The x-height in crop pixels — how far a Senkrechte run may swing. */
   unitPx: number;
-}
+};
 
 /** One site's mark — the shape says the category, the width its size. */
 function SiteMark({ shape, site, t, emphasis, patternId, u, bandMax, unitPx }: SiteMarkProps) {
@@ -330,19 +349,8 @@ function SiteMark({ shape, site, t, emphasis, patternId, u, bandMax, unitPx }: S
         </g>
       );
     }
-    case 'edgeDots':
-      // Boundary pixels as dots — „Randpunkte": the Chamfer part lives on the
-      // edge, and a dotted edge reads as an edge rather than as an area. Drawn
-      // in the pixel grid, hence the explicit half-pixel centre.
-      return (
-        <g>
-          {site.cells.flatMap(([x, y, w]) =>
-            Array.from({ length: w }, (_, k) => (
-              <circle key={`${x + k},${y}`} cx={x + k + 0.5} cy={y + 0.5} r={(0.6 + 1.0 * t + bonus / 2) * u} fill={colour} />
-            )),
-          )}
-        </g>
-      );
+    case 'edgeTicks':
+      return <EdgeTicks cells={site.cells} t={t} colour={colour} width={width} u={u} />;
     case 'band': {
       // The Glätte heat band: per step as wide as the two samples' share of the
       // jerk, on the letter's one band scale.
@@ -465,17 +473,79 @@ function Line({ path, colour, width, style }: { path: PenaltyPathOut; colour: st
 }
 
 /**
- * The Doppelzug zone's rim, as dots on its boundary pixels: the zone is where
- * the retrace term looks for ink at all, so the missed ink inside it only
- * reads against its outline.
+ * A Chamfer site: short ticks ACROSS its boundary pixels, a form no other mark
+ * uses — the Chamfer part lives on the edge, and a tick says „this edge" where
+ * a dot said nothing the Doppelzug outline did not say too. Length and width
+ * carry the size. In the pixel grid, so the centres are the explicit +0.5.
  */
-function ZoneRim({ cells, u }: { cells: PenaltyCategoryOut['context_cells']; u: number }) {
-  const rim = useMemo(() => zoneRim(cells), [cells]);
-  if (rim.length === 0) return null;
+function EdgeTicks({
+  cells,
+  t,
+  colour,
+  width,
+  u,
+}: {
+  cells: PenaltySiteOut['cells'];
+  t: number;
+  colour: string;
+  width: number;
+  u: number;
+}) {
+  const ticks = useMemo(() => edgeTicks(cells, TICK_GAP * u), [cells, u]);
+  const half = ((TICK_LENGTH + 4 * t) * u) / 2;
   return (
-    <g>
-      {rim.map(([x, y]) => (
-        <circle key={`${x},${y}`} cx={x + 0.5} cy={y + 0.5} r={0.9 * u} fill={penalty.mark} />
+    <g stroke={colour} strokeWidth={Math.max(THIN * u, width * 0.6)} strokeLinecap="butt">
+      {ticks.map(({ x, y, nx, ny }) => (
+        <line key={`${x},${y}`} x1={x - nx * half} y1={y - ny * half} x2={x + nx * half} y2={y + ny * half} />
+      ))}
+    </g>
+  );
+}
+
+/**
+ * The Doppelzug zone — context: a thin dashed OUTLINE round the region the
+ * retrace term takes its recall over, so the missed ink inside it reads
+ * against it. One continuous path per loop (`zoneOutline`), on the pixel
+ * edges, so the dash runs on instead of restarting at every pixel.
+ */
+function ZoneOutline({ cells, u }: { cells: PenaltyCategoryOut['context_cells']; u: number }) {
+  const loops = useMemo(() => zoneOutline(cells), [cells]);
+  if (loops.length === 0) return null;
+  const width = CONTEXT_LINE * u;
+  const d = loops.map((loop) => `M${loop.map(([x, y]) => `${x},${y}`).join('L')}Z`).join('');
+  return (
+    <path
+      d={d}
+      fill="none"
+      stroke={penalty.context}
+      strokeWidth={width}
+      strokeLinejoin="miter"
+      strokeLinecap={strokeStyle.dashed.cap}
+      strokeDasharray={strokeStyle.dashed.dash.map((f) => f * width).join(' ')}
+    />
+  );
+}
+
+/**
+ * A Glätte corner window — context: the stretch of centreline the smoothness
+ * term skips (it counts under Ecken), as a dashed underlay wider than the
+ * centreline drawn over it, with a bar across each end where the band stops.
+ * Pixel-centre frame (inside the translate group).
+ */
+function WindowSpan({ path, u }: { path: PenaltyPathOut; u: number }) {
+  const bars = spanBars(path.points, WINDOW_BAR * u);
+  const width = WINDOW_LINE * u;
+  return (
+    <g stroke={penalty.context} fill="none">
+      <polyline
+        points={pointsAttr(path.points)}
+        strokeWidth={width}
+        strokeLinejoin="round"
+        strokeLinecap={strokeStyle.dashed.cap}
+        strokeDasharray={strokeStyle.dashed.dash.map((f) => f * width).join(' ')}
+      />
+      {bars.map(([[x1, y1], [x2, y2]], i) => (
+        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth={CONTEXT_LINE * u} />
       ))}
     </g>
   );
@@ -522,20 +592,36 @@ export function PenaltyShapeIcon({ shape, size = 18 }: { shape: MarkerShape; siz
         return <rect x={2} y={2} width={14} height={14} fill={`url(#${id}-h)`} stroke={c} strokeWidth={0.75} />;
       case 'stipple':
         return <rect x={2} y={2} width={14} height={14} fill={`url(#${id}-s)`} stroke={c} strokeWidth={0.75} />;
-      case 'edgeDots':
+      case 'edgeTicks':
+        // Ticks across a curved edge, as the image draws them.
         return (
-          <g fill={c}>
-            {[3, 7, 11, 15].map((x) => (
-              <circle key={x} cx={x} cy={9} r={1.3} />
-            ))}
+          <g stroke={c} strokeWidth={1.6}>
+            {[-130, -110, -90, -70, -50].map((deg) => {
+              const a = (deg * Math.PI) / 180;
+              const [cx, cy, r, h] = [9, 19, 10, 3.2];
+              const [px, py] = [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+              return (
+                <line
+                  key={deg}
+                  x1={px - h * Math.cos(a)}
+                  y1={py - h * Math.sin(a)}
+                  x2={px + h * Math.cos(a)}
+                  y2={py + h * Math.sin(a)}
+                />
+              );
+            })}
           </g>
         );
       case 'whiskers':
+        // Feelers ending in a dot at the skeleton, as the image draws them.
         return (
-          <g stroke={c} strokeWidth={1.5}>
-            <line x1={3} y1={14} x2={6} y2={4} />
-            <line x1={9} y1={14} x2={11} y2={4} />
-            <line x1={15} y1={14} x2={15} y2={4} />
+          <g stroke={c} strokeWidth={1.5} fill={c}>
+            <line x1={3} y1={15} x2={5} y2={5} />
+            <line x1={9} y1={15} x2={10} y2={4} />
+            <line x1={15} y1={15} x2={15} y2={6} />
+            <circle cx={5} cy={5} r={1.5} stroke="none" />
+            <circle cx={10} cy={4} r={1.5} stroke="none" />
+            <circle cx={15} cy={6} r={1.5} stroke="none" />
           </g>
         );
       default:
@@ -556,6 +642,25 @@ export function PenaltyShapeIcon({ shape, size = 18 }: { shape: MarkerShape; siz
         </pattern>
       </defs>
       {body}
+    </svg>
+  );
+}
+
+/**
+ * The legend's swatch for CONTEXT: a dashed outline (the Doppelzug zone) over
+ * a dashed span with end bars (a Glätte corner window) — the two context
+ * forms, in the context hue, so the legend shows what „no deduction" looks like.
+ */
+export function PenaltyContextIcon({ size = 18 }: { size?: number }) {
+  const c = penalty.context;
+  return (
+    <svg width={size} height={size} viewBox="0 0 18 18" aria-hidden="true" style={{ display: 'block', flexShrink: 0 }}>
+      <g fill="none" stroke={c}>
+        <rect x={2} y={1.5} width={14} height={8.5} rx={2} strokeWidth={1.25} strokeDasharray="3 2" />
+        <line x1={3} y1={14.5} x2={15} y2={14.5} strokeWidth={2.25} strokeDasharray="3.5 2" />
+        <line x1={3} y1={12} x2={3} y2={17} strokeWidth={1.25} />
+        <line x1={15} y1={12} x2={15} y2={17} strokeWidth={1.25} />
+      </g>
     </svg>
   );
 }

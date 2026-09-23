@@ -335,6 +335,17 @@ describe('the Abzugs-Linse tokens', () => {
     expect(separation(penalty.mark, penalty.selected)).toBeGreaterThanOrEqual(SEPARATION_FLOOR);
   });
 
+  it('keeps the context marks apart from every other token, for a deuteranope too', () => {
+    // The Doppelzug zone's outline and the Glätte corner windows frame a
+    // deduction without being one. They also differ in form (dashed outline,
+    // dashed span with end bars), but they must not collapse onto the
+    // deduction hue — the one confusion this token exists to prevent — nor
+    // onto the centreline they run along, the selection or the pins.
+    for (const [key, hex] of Object.entries(penalty)) {
+      if (key !== 'context') expect(separation(penalty.context, hex)).toBeGreaterThanOrEqual(SEPARATION_FLOOR);
+    }
+  });
+
   it('names the one close pair, carried by the selection ring and width', () => {
     // Selected vs centreline sits just under the floor for a deuteranope (34.5).
     // The selection is never read by hue alone: it doubles the mark's width and
