@@ -10,12 +10,13 @@
 import type {
   InstanceOut,
   LandmarkKind,
+  PenaltyCategoryKey,
   SpecimenKind,
   WordInstanceOut,
   WordSampleOut,
   WorkItemIn,
 } from '@/lib/api';
-import { de } from '@/locales/admin';
+import { de, fmt } from '@/locales/admin';
 import { layer, liftConnector, paper, pigment, strokeStyle } from '@/styles/paper';
 
 import { keysOfText } from './focus';
@@ -38,14 +39,42 @@ export interface LandmarkRef {
   numbers: Record<string, number | string | boolean | null>;
 }
 
+// One located deduction of the Abzugs-Linse (optimierungs-werkbank.md §9), as
+// the lens hands it to the Korb: WHICH site of WHICH category, its part of the
+// category's number and the raw numbers behind it. Always the chart row
+// (variant 0) — the lens measures nothing else. `x`/`y` are crop pixels and
+// null for the part without a place.
+export interface PenaltyRef {
+  category: PenaltyCategoryKey;
+  index: number;
+  kind: string;
+  value: number;
+  categoryValue: number;
+  exact: boolean;
+  pointsEst: number;
+  x: number | null;
+  y: number | null;
+  numbers: Record<string, number | string | boolean | null>;
+}
+
 // The levels the doctrine knows (optimierungs-werkbank.md §5): a letter, a
 // join, or the whole word — plus `landmark`, the generated structure layer of
-// ONE letter (§8). `word` is the only one without a glyph key.
+// ONE letter (§8), and `penalty`, one deduction of the Abzugs-Linse (§9).
+// `word` is the only one without a glyph key.
+//
+// `penalty` is a target, not a Korb kind: it files as a plain `letter` item
+// (author decision 2026-09-23), because a complaint about where the ruler
+// subtracts lands on the authored ductus or its derivation — a quarrel with
+// the ruler itself is a proposal plus a re-baseline, never a Korb fix. It is
+// its own variant here only so the filing dialog can skip the letter pre-sort
+// question (the lens already shows the letter on its own, so the answer would
+// always be „yes" and route every flag to the wizard) and preview the head.
 export type WerkbankTarget =
   | { kind: 'letter'; glyphKey: string }
   | { kind: 'pair'; leftKey: string; rightKey: string }
   | { kind: 'word'; word: string }
-  | { kind: 'landmark'; glyphKey: string; variant: number; landmark: LandmarkRef };
+  | { kind: 'landmark'; glyphKey: string; variant: number; landmark: LandmarkRef }
+  | { kind: 'penalty'; glyphKey: string; penalty: PenaltyRef };
 
 // Where the element was SEEN — the namespace and the id, exactly the pair the
 // work-item API demands together (an id without its kind may point at nothing).
@@ -68,17 +97,20 @@ export interface Mark {
   specimen?: SpecimenRef;
 }
 
-// A lens selection is a mark whose target has a lens — the word and landmark
-// levels have none (both are filed, not inspected: a word complaint is about
-// the whole picture, a landmark is already being looked at when it is marked).
+// A lens selection is a mark whose target has a lens — the word, landmark and
+// penalty levels have none (all three are filed, not inspected: a word
+// complaint is about the whole picture, a landmark or a deduction is already
+// being looked at when it is marked).
 export type Selection = Mark & {
-  target: Exclude<WerkbankTarget, { kind: 'word' } | { kind: 'landmark' }>;
+  target: Exclude<WerkbankTarget, { kind: 'word' } | { kind: 'landmark' } | { kind: 'penalty' }>;
 };
 
 export const pairKeyOf = (leftKey: string, rightKey: string): string => `${leftKey}→${rightKey}`;
 
-// "Buchstabe a" / "Übergang d→a" / "Wort einen" / "Landmarke Kringel #1 · d" —
-// the level plus its target, as the filing dialog shows it back to the admin.
+// "Buchstabe a" / "Übergang d→a" / "Wort einen" / "Landmarke Kringel #1 · d" /
+// "Buchstabe a · Abzug Ecken #1" — the level plus its target, as the filing
+// dialog shows it back to the admin. A deduction says „Buchstabe" first
+// because that is the kind it files as.
 export function targetLabel(target: WerkbankTarget): string {
   const t = de.admin.werkbank;
   if (target.kind === 'letter') return `${t.kindLetter} ${target.glyphKey}`;
@@ -86,7 +118,50 @@ export function targetLabel(target: WerkbankTarget): string {
   if (target.kind === 'landmark') {
     return `${t.kindLandmark} ${landmarkLabel(target.landmark)} · ${target.glyphKey}`;
   }
+  if (target.kind === 'penalty') {
+    return `${t.kindLetter} ${target.glyphKey} · ${t.penaltyHead} ${penaltyLabel(target.penalty)}`;
+  }
   return `${t.kindWord} ${target.word}`;
+}
+
+// "Ecken #1" — a deduction site as the lens names it: the category's German
+// label and the site's index, which is the handle the payload uses.
+export const penaltyLabel = (ref: Pick<PenaltyRef, 'category' | 'index'>): string =>
+  `${de.wizard.optimize.cat[ref.category]} #${ref.index}`;
+
+// Four places, the precision the category numbers are shown and apportioned at.
+const fourPlaces = (value: number): string => value.toFixed(4);
+
+// The head of a deduction complaint — WRITTEN BY THE LENS, so a working session
+// can reproduce it from the row alone. The same two-line shape as the
+// landmark head: line 1 is the IDENTITY (`Abzug:` then the site, the machine
+// token `<category>#<index>` in brackets, the letter, the row, and the site's
+// part of its category's number), line 2 the measured `key value` pairs.
+// Because a deduction files as a LETTER item, the Korb headline stays
+// „Buchstabe x" and this head opens the body.
+export function penaltyNoteHead(target: Extract<WerkbankTarget, { kind: 'penalty' }>): string {
+  const { penalty: ref, glyphKey } = target;
+  const t = de.admin.letters.penalties;
+  const identity = [
+    `${de.admin.werkbank.penaltyHead}: ${penaltyLabel(ref)} (${ref.category}#${ref.index})`,
+    glyphKey,
+    landmarkRowLabel(0),
+    fmt(t.ofCategory, { value: fourPlaces(ref.value), total: fourPlaces(ref.categoryValue) }),
+  ].join(' · ');
+  // An unlocated site says so in words rather than leaving the reader to wonder
+  // whether the position was forgotten.
+  const position =
+    ref.x !== null && ref.y !== null ? [`x ${ref.x} px`, `y ${ref.y} px`] : [t.noPlace];
+  const details = [
+    ref.exact ? t.exactTerm : t.exactShare,
+    fmt(t.pointsShort, { points: ref.pointsEst.toFixed(2) }),
+    `kind ${ref.kind}`,
+    ...position,
+    ...Object.entries(ref.numbers)
+      .filter(([, value]) => value !== null && value !== undefined)
+      .map(([key, value]) => `${key} ${value}`),
+  ].join(' · ');
+  return `${identity}\n${details}`;
 }
 
 // Identity of one drawn marker within its row — what the overlay keys on and
@@ -399,6 +474,13 @@ export function workItemBodyOf(mark: Mark, note: string): WorkItemIn {
     // landmark is unworkable).
     const head = landmarkNoteHead(mark.target);
     return { ...base, kind: 'landmark', glyph_key: mark.target.glyphKey, note: note ? `${head}\n\n${note}` : head };
+  }
+  if (mark.target.kind === 'penalty') {
+    // A plain LETTER item — no kind or stage of its own (author decision
+    // 2026-09-23) — whose note opens with the lens's head, so the row still
+    // says which deduction of which letter, with which numbers.
+    const head = penaltyNoteHead(mark.target);
+    return { ...base, kind: 'letter', glyph_key: mark.target.glyphKey, note: note ? `${head}\n\n${note}` : head };
   }
   return { ...base, kind: 'word', word: mark.target.word };
 }

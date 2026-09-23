@@ -57,7 +57,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — `add_header`-Vererbungsfalle §2 · Alltagswelle (Eigenhand) §5 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Abzugs-Linse §5 · Abzugsstelle §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Span-Herkunft) §5
+- **A** — `add_header`-Vererbungsfalle §2 · Alltagswelle (Eigenhand) §5 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Abzugs-Linse §5 · Abzugsstelle §5 · Abzugs-Token §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Span-Herkunft) §5
 - **B** — Bahn §5 · Bahn-Archivkette §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Bahn-Marke §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
@@ -2643,8 +2643,9 @@ sollen die Gerade davor und die dahinter EINE Flucht bilden (Winkel `δθ`,
 Versatz `δd`). Bisher trug die Kategorie in der Oberfläche das Wort
 „Kreuzung“ (`optimize.cat.collinearity`) — genau wie die Kreuzungs-Marke
 der Landmarken-Linse auf derselben Seite, ein Wort für zwei Dinge
-(Autor-Entscheid 2026-09-23, mit der → Abzugs-Linse; die Beschriftung zieht
-mit deren Oberfläche nach). Die Umbenennung trifft nur die Abzugs-Kategorie;
+(Autor-Entscheid 2026-09-23, mit der → Abzugs-Linse; seit deren Oberfläche
+steht überall, wo die Kategorie beschriftet ist — Liste, Karten, Diagnose,
+Wizard —, „Kreuzungsflucht"). Die Umbenennung trifft nur die Abzugs-Kategorie;
 die Landmarke bleibt „Kreuzung“, und „Doppelzug“ kollidiert nicht (die
 Landmarke heißt „Retrace-Zone“). → qualitaetsmetrik.md §5
 
@@ -3653,19 +3654,24 @@ gemessen, und die Kurrent-Metrik kennt keine Abzugs-Kategorien. Die sechs
 Kategorien und ihre Metrik-Terme: Glätte (`smoothness`), Senkrechte
 (`verticality`), Ecken (`corner`), → **Kreuzungsflucht** (`collinearity`),
 Doppelzug (`retrace`), → **Deckungslücke** (`coverage`). Gerechnet wird
-live mit dem heutigen Lineal, nicht der Stempel. **Stand:** Kern und
-Admin-Route sind da, die Oberfläche folgt mit dem Overlay-PR. Beschlossen
-ist ihre Form (Autor-Entscheid 2026-09-23): eine Ebene der
-Buchstaben-Ansicht über dem Tafel-Ausschnitt; ⚑ wird einen gewöhnlichen
-Buchstaben-Auftrag (`kind = "letter"`) ablegen, denn die Beschwerde trifft
-den Duktus oder die Ableitung — ein Streit mit dem Lineal selbst ist ein
-Proposal samt Re-Baseline, kein Korb-Fix; Untertitel „Wo das Lineal
-abzieht — kein Fehlerbefund.“
+live mit dem heutigen Lineal, nicht der Stempel; weicht der gespeicherte
+Listenwert um mehr als 0,005 ab, steht er als „gespeichert: …" daneben.
+In der Buchstaben-Ansicht ist sie der Schalter **Abzüge** unter
+„Landmarken" (Autor-Entscheid 2026-09-23): der gedimmte Ausschnitt mit der
+gemessenen Mittellinie, je Kategorie eine eigene Markenform in EINEM
+Farbton (→ Abzugs-Token), Legenden-Chips als Kopfzeile und Filter, die
+Pins ①–⑤ im Bild und als Liste daneben, beidseitig wählbar. ⚑ legt einen
+gewöhnlichen Buchstaben-Auftrag (`kind = "letter"`) ab, denn die
+Beschwerde trifft den Duktus oder die Ableitung — ein Streit mit dem Lineal
+selbst ist ein Proposal samt Re-Baseline, kein Korb-Fix; Untertitel „Wo
+das Lineal abzieht — kein Fehlerbefund.“
 *Technisch:* `core/quality_localize.py` (ruft
 `suetterlin_quality_metrics` unverändert und baut die Stellen aus dessen
 Bausteinen nach), Route `GET
 /sources/{id}/templates/{glyph_key}/penalty-sites`, Schema
-`PenaltySitesOut`. → qualitaetsmetrik.md §5
+`PenaltySitesOut`; Oberfläche `sections/admin/letters/PenaltyPanel.tsx`,
+`PenaltyOverlay.tsx`, `penaltyLens.ts`. → qualitaetsmetrik.md §5,
+proposals/optimierungs-werkbank.md §9
 
 **Abzugsstelle** — ein verorteter Abzug der → **Abzugs-Linse**: eine Ecke,
 ein Senkrechtlauf, ein gewerteter Glätte-Abschnitt, eine Kreuzung, eine
@@ -3688,7 +3694,8 @@ mit der Umkehrecke der Landmarken-Linse, nicht über den Index.
 
 **ohne Ort** *(Abzugs-Linse)* — der Teil eines Abzugs, der zählt, aber
 keine Stelle hat: in der Antwort eine Stelle mit `x`/`y = null`, in der
-geplanten Oberfläche eine eigene Zeile ohne Marke statt einer Farbe. Vor
+Oberfläche eine eigene Zeile „ohne Ort" ohne Marke, und im Legenden-Chip
+als Summe („0.0658 ohne Ort"). Vor
 allem zwei Fälle: Dice-Fehlpixel im Saum von `RIM_PX = 2 · DEAD_BAND_PX` =
 1,5 px um die andere Maske — die Kantenquantisierung, im Median 91 % des
 Dice-Anteils der Deckungslücke — und eine ganze Kategorie, deren
@@ -4812,6 +4819,21 @@ darauf; `app/src/styles/paper.test.ts` prüft Gründe, Abstände und misst jede
 Deckkraft namentlich mit ihrer Zahl. *Nachzug:* höhere Deckkraft oder
 `mix-blend-mode: multiply` erst an echten Platten-Daten im Produktions-Admin
 beurteilen. → Rollen-Token; Strichart-Regel; concepts/design-system.md §2
+
+**Abzugs-Token** *(`penalty`, `penaltyCropAlpha`)* — die Farben der
+→ Abzugs-Linse, bewusst KEINE → Ebenen-Token: ein vierter Farbton, der
+deckend 3 : 1 gegen weiß UND gegen Platten-Tinte schafft, ist unmöglich.
+Geändert wird darum der Grund statt des Bands — der Tafel-Ausschnitt liegt
+auf 0,35 gedimmt (wie in der Skelett-Spalte der Diagnose), und jedes Token
+erreicht 3 : 1 gegen weiß und gegen die gedimmte Tinte. EIN Farbton
+(`mark`, Karmin) für alle sechs Kategorien: die Kategorie trägt die Form,
+die Größe die Breite, und kein Leser muss sechs Farben unterscheiden. Dazu
+`centerline` (die gemessene Mittellinie), `selected` (ein Zustand, darum
+Viridian in Textstärke) und `pin` (die ①–⑤-Scheiben). *Technisch:*
+`app/src/styles/paper.ts`; `app/src/styles/paper.test.ts` misst die
+gedimmte Tinte als Tripwire und benennt das eine knappe Paar
+(Auswahl ↔ Mittellinie, von Ring und Breite getragen).
+→ Ebenen-Token; Strichart-Regel; concepts/design-system.md §2
 
 **Freigabe-Maschine (geplant)** — das Zielbild für den Rollenwechsel von
 der Platte zur Eigenhand, als WIEDERKEHRENDE Freigabe statt als einmaliger

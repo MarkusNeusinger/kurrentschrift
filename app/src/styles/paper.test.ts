@@ -29,7 +29,19 @@ import { describe, expect, it } from 'vitest';
 
 import { mixHex } from '@/sections/admin/shell/pathOverlay';
 
-import { layer, layerAlpha, layerDash, liftConnector, mono, paper, role, roleDash, strokeStyle } from './paper';
+import {
+  layer,
+  layerAlpha,
+  layerDash,
+  liftConnector,
+  mono,
+  paper,
+  penalty,
+  penaltyCropAlpha,
+  role,
+  roleDash,
+  strokeStyle,
+} from './paper';
 
 type Rgb = [number, number, number];
 
@@ -295,6 +307,50 @@ describe('role tokens', () => {
 
   it('gives every role exactly one stroke style', () => {
     expect(Object.keys(roleDash)).toEqual(Object.keys(role));
+  });
+});
+
+describe('the Abzugs-Linse tokens', () => {
+  // The lens draws over the Tafel-Ausschnitt DIMMED to `penaltyCropAlpha`, so
+  // its two grounds are white and the plate ink composited at that opacity —
+  // the ground the marks really sit on, measured rather than assumed.
+  const dimmedInk = composite(paper.ink, penaltyCropAlpha, WHITE);
+
+  it('dims the plate ink to the recorded grey', () => {
+    // A tripwire, like the translucent uses above: a changed opacity moves this.
+    expect(dimmedInk).toBe('#b2afab');
+    expect(round2(contrast(dimmedInk, WHITE))).toBe(2.18);
+  });
+
+  it.each(Object.entries(penalty))('%s clears 3:1 on white and on the dimmed ink', (_key, hex) => {
+    expect(contrast(hex, WHITE)).toBeGreaterThanOrEqual(GROUND_FLOOR);
+    expect(contrast(hex, dimmedInk)).toBeGreaterThanOrEqual(GROUND_FLOOR);
+  });
+
+  it('keeps the marks apart from the centreline they sit on, for a deuteranope too', () => {
+    // The one pair that shares every stretch of the drawing: a mark lies ON the
+    // centreline. Width and shape also separate them, but the hues must not
+    // collapse either.
+    expect(separation(penalty.mark, penalty.centerline)).toBeGreaterThanOrEqual(SEPARATION_FLOOR);
+    expect(separation(penalty.mark, penalty.selected)).toBeGreaterThanOrEqual(SEPARATION_FLOOR);
+  });
+
+  it('names the one close pair, carried by the selection ring and width', () => {
+    // Selected vs centreline sits just under the floor for a deuteranope (34.5).
+    // The selection is never read by hue alone: it doubles the mark's width and
+    // draws a ring round the site — so this is asserted BELOW the floor, and
+    // the day a tune separates them the exception has to be removed here.
+    expect(separation(penalty.selected, penalty.centerline)).toBeLessThan(SEPARATION_FLOOR);
+  });
+
+  it('marks an active state with viridian and nothing else with it', () => {
+    expect(penalty.selected).toBe(paper.viridianText);
+    for (const [key, hex] of Object.entries(penalty)) {
+      if (key !== 'selected') {
+        expect(hex).not.toBe(paper.viridian);
+        expect(hex).not.toBe(paper.viridianText);
+      }
+    }
   });
 });
 

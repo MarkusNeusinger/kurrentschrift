@@ -17,7 +17,7 @@ import type { QualityData } from '@/lib/api';
 import { de } from '@/locales/admin';
 import { mono, paper } from '@/styles/paper';
 import { labelColumnChars } from './labelColumn';
-import { PENALTY_TEXT_COLOR, type PenaltyTier } from './scoreColors';
+import { PENALTY_EPS, PENALTY_TEXT_COLOR, type PenaltyTier } from './scoreColors';
 
 // Module-private on purpose: a score reaches the screen through ScoreChip, so
 // there is exactly one place where a threshold can be changed.
@@ -45,7 +45,8 @@ export function ScoreChip({ score }: { score: number }) {
 type ComponentKey = 'smoothness' | 'verticality' | 'corner' | 'collinearity' | 'retrace' | 'coverage';
 const COMPONENT_KEYS: ComponentKey[] = ['smoothness', 'verticality', 'corner', 'collinearity', 'retrace', 'coverage'];
 const NOTABLE_PENALTY = 0.15; // mirrors glyphlab's _SCORE_HI — a deduction worth flagging
-const PENALTY_EPS = 0.005; // below this a category is effectively perfect / not applicable
+// PENALTY_EPS (below it a category is effectively perfect / not applicable)
+// lives in scoreColors.ts, since the Abzugs-Linse reads it too.
 const BAR_FULL_PENALTY = 0.3; // penalty mapped to a full bar (penalties rarely exceed this)
 
 // The bar starts where the LONGEST label ends. A fixed 78 px column fitted

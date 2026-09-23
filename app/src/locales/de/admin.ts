@@ -286,6 +286,124 @@ export const admin = {
     landmarkSpotButton: 'Fehlende Marke melden',
     landmarkSpotHint:
       'Ins Leere klicken meldet die Stelle mit ihrer Position; der Knopf meldet dasselbe ohne Ortsangabe — dann steht im Auftrag, was du beschreibst, keine erfundene Koordinate.',
+    // The Abzugs-Linse (optimierungs-werkbank.md §9): WHERE the Gleichzug
+    // score takes its points off, drawn over the Tafel-Ausschnitt the ruler
+    // measured in. The caption is the author's own framing — a deduction is
+    // where the ruler subtracts, not a defect list to be hand-fixed.
+    penalties: {
+      title: 'Abzüge',
+      caption: 'Wo das Lineal abzieht — kein Fehlerbefund.',
+      toggle: 'Abzüge zeigen',
+      loading: 'Abzüge werden neu gemessen …',
+      errorPrefix: 'Abzüge konnten nicht gemessen werden:',
+      // Which row is under the lens, and why only that one.
+      rowNote:
+        'Tafel-Duktus (Variante 0), neu gemessen gegen den Ausschnitt. Die Laufform ist nicht gegen die Tafel gemessen — ihr gespeicherter Score ist eine Kopie dieser Zeile.',
+      measuredLead: 'Abzüge (neu gemessen):',
+      storedLead: 'gespeichert:',
+      storedNote: 'Stand der letzten Ableitung — weicht um mehr als 0.005 ab.',
+      notApplicable: 'nicht anwendbar',
+      noPlace: 'ohne Ort',
+      // „4 Stellen", „1 Stelle", „keine Stelle" — the count a chip carries.
+      sitesOne: '1 Stelle',
+      sitesMany: '{{count}} Stellen',
+      sitesNone: 'keine Stelle',
+      legendTitle: 'Was die Marken zeigen',
+      legendAria: 'Die Abzugs-Marken erklären',
+      legendIntro:
+        'Die Form sagt die Kategorie, die Breite oder Größe den Anteil am Abzug; die dünne durchgezogene Linie ist die gemessene Mittellinie, die Scheiben ①–⑤ die fünf teuersten Stellen. Die Stellen einer Kategorie summieren sich auf die gezeigte Zahl bis zur vierten Stelle.',
+      legendExact:
+        'Term: die Stelle IST ein Summand der Zahl (Ecken, Kreuzungsflucht, Doppelzug). Anteil: der Abzug läuft durch eine Exponentialfunktion, ein Produkt oder eine Wurzel und ist proportional verteilt (Glätte, Senkrechte, Deckungslücke).',
+      legendPoints:
+        'Punkte sind linearisiert — die Näherung, um wie viel der Score stiege, fiele diese eine Stelle weg. Sie reihen die Stellen, sie sind nie die Hauptzahl.',
+      legendNoPlace:
+        'Ohne Ort: was zählt, aber keine Stelle hat — vor allem der 1,5-px-Saum der Deckungslücke (Kantenquantisierung der Binarisierung).',
+      // One line per category: what its mark is. Shapes and strokes only —
+      // no colour words (design-system.md §2, Strichart-Regel).
+      markerHint: {
+        smoothness:
+          'Band entlang der Mittellinie, je Punkt so breit wie sein Anteil am Ruck. Gepunktet: Eckfenster — zählen unter Ecken.',
+        verticality:
+          'Klammer neben dem Lauf, gestrichelt die ideale Senkrechte, die gemessene Abweichung überhöht gezeichnet — ×20, weniger, wo sie sonst weiter als 0.15 x-Höhen ausschlüge.',
+        corner:
+          'Quadrat am Scheitel, die beiden Anlaufstücke, gestrichelt ihre Sehnen, ein Punkt an der größten Abweichung.',
+        collinearity: 'Ring an der Kreuzung und die beiden gefitteten Geraden davor und dahinter.',
+        retrace: 'Kreuzschraffiert: fehlende Tinte in der Doppelzug-Zone; gepunktet der Rand der Zone.',
+        coverage:
+          'Schraffiert: tiefe Tintenlücken. Gerastert: Render über Papier. Randpunkte: Chamfer. Fühler vom Mittellinienpunkt zum Skelett: Geo.',
+      },
+      pinsTitle: 'Die fünf teuersten Stellen',
+      pinsNone: 'Keine Stelle mit Ort trägt einen Abzug.',
+      // „0.0954 von 0.1711" — the site's part of its category's number.
+      ofCategory: '{{value}} von {{total}}',
+      pointsShort: '≈ {{points}} Punkte',
+      pointsLong: '≈ {{points}} Punkte (linearisiert — nur zum Reihen)',
+      exactTerm: 'Term',
+      exactShare: 'Anteil',
+      selectHint: 'Eine Stelle in der Liste oder im Bild antippen, um ihre Zahlen zu sehen.',
+      position: 'x {{x}} · y {{y}} Pixel im Ausschnitt',
+      positionNone: 'ohne Ort — zählt in der Zahl, hat aber keine Stelle im Ausschnitt',
+      exaggerated: 'Abweichung ×{{factor}} überhöht gezeichnet — echt ist sie meist unter einem Pixel.',
+      windowsNote: 'Gepunktet: die Eckfenster — was dort liegt, zählt unter Ecken.',
+      partOf: 'Teil {{part}}',
+      allToggle: 'Alle Stellen ({{count}})',
+      allHide: 'Stellenliste schließen',
+      belowCount: '+ {{count}} Stellen unter 0.0001 — ohne Anteil an der gezeigten Zahl, nicht gezeichnet',
+      mark: 'Bemängeln',
+      markHint:
+        'Legt einen Buchstaben-Auftrag an; die erste Zeile nennt die Stelle und ihre Zahl. Ein Streit mit dem Lineal selbst ist kein Korb-Fix, sondern ein Vorschlag samt Re-Baseline.',
+      // What a site IS, per payload `kind`.
+      kind: {
+        segment: 'Abschnitt',
+        run: 'Senkrechtlauf',
+        corner: 'Ecke',
+        passage: 'Durchgang',
+        missed_ink: 'fehlende Tinte',
+        excess_render: 'Render über Papier',
+        edge: 'Randstück',
+        off_skeleton: 'neben dem Skelett',
+        rim: 'Saum (Kantenquantisierung)',
+        unlocated: 'Nachrechnung weicht ab',
+      },
+      // The three factors of the coverage gate.
+      part: {
+        dice: 'Dice',
+        chamfer: 'Chamfer',
+        geo: 'Geo',
+      },
+      // Field labels for the numbers a site carries; an unknown key shows raw.
+      number: {
+        anchor: 'Anker',
+        sample: 'Abtastpunkt',
+        s_in: 'Anlauf ein',
+        s_out: 'Anlauf aus',
+        q: 'q',
+        stroke: 'Zug',
+        from: 'von Punkt',
+        to: 'bis Punkt',
+        samples: 'Abtastpunkte',
+        peak_sample: 'Spitze bei',
+        stroke_end_share: 'Anteil am Strichende',
+        rms_px: 'rms (px)',
+        rms_units: 'rms (x-Höhen)',
+        length_units: 'Länge (x-Höhen)',
+        max_dev_px: 'größte Abweichung (px)',
+        lean_deg: 'Neigung (°)',
+        x_ideal: 'Ideal-x (px)',
+        partner: 'Partnerpunkt',
+        dtheta_deg: 'Knick δθ (°)',
+        ddist_units: 'Versatz δd (x-Höhen)',
+        ddist_px: 'Versatz δd (px)',
+        pixels: 'Pixel',
+        render_px: 'Randpixel Render',
+        ink_px: 'Randpixel Tinte',
+        max_offset_px: 'größter Abstand (px)',
+        missed_px: 'fehlende Pixel',
+        excess_px: 'überschüssige Pixel',
+        rim_px: 'Saumbreite (px)',
+        reason: 'Grund',
+      },
+    },
   },
   // The deliberate promotion of learned statistics into rendering (issue #270).
   laufform: {
@@ -1035,6 +1153,10 @@ export const admin = {
     kindWord: 'Wort',
     kindNote: 'Notiz',
     kindLandmark: 'Landmarke',
+    // Not a Korb kind of its own: an Abzug from the Abzugs-Linse files as a
+    // plain LETTER item (author decision 2026-09-23). The word heads the first
+    // line of its note and names it in the filing dialog.
+    penaltyHead: 'Abzug',
     // The filing dialog.
     dialogTitle: 'Auftrag einreichen',
     dialogTarget: 'Ziel',
