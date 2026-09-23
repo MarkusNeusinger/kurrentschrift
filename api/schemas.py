@@ -1122,6 +1122,128 @@ class GlyphLandmarksOut(BaseModel):
     rows: list[TemplateLandmarksOut]
 
 
+# ---------------------------------------------------------------- Abzugs-Linse
+#
+# Where the Gleichzug metric takes its points off (`core.quality_localize`,
+# qualitaetsmetrik.md §5). Unlike the Landmarken above, everything here is in
+# CROP PIXELS — the frame the metric measured in: x right, y down, the pixel in
+# column c and row r centred on (c, r). An overlay over the crop image (pixel c
+# spans [c, c+1]) draws a point at (x + 0.5, y + 0.5) and a cell run as the
+# rect (x, y, width, 1). Marks drawn on the written glyph instead would sit
+# beside the scored ink: the renderer widens round bodies (`_fluent_widen`).
+
+# The six deductions, keyed like the metric's `components`.
+PenaltyCategoryKey = Literal["smoothness", "verticality", "corner", "collinearity", "retrace", "coverage"]
+
+
+class PenaltyPathOut(BaseModel):
+    """A named polyline of a site — a run, a fitted line, an approach, a whisker.
+
+    `values` (when present) runs along `points`: the per-sample share of a
+    Glätte segment or a Geo run, the signed x-deviation of a Senkrechte run.
+    """
+
+    role: str
+    points: list[tuple[float, float]]
+    values: list[float] = []
+
+
+class PenaltySiteOut(BaseModel):
+    """One Abzugsstelle — or, with `x`/`y` null, the honest part without a place.
+
+    `value` is the site's part of its category's number, apportioned to four
+    places so the parts add up to that number exactly. `exact` says whether it
+    is the literal term (Ecken, Kreuzungsflucht, Doppelzug) or a proportional
+    share (Glätte, Senkrechte, Deckungslücke). `points_est` is the linearised
+    score cost, for ranking and detail only. `cells` are pixel runs
+    `[x, y, width]`. `index` is the handle a complaint names; a corner site
+    ALSO carries `numbers.anchor`, which is what joins it to a Landmarken
+    corner (positional indices of the two lists differ).
+    """
+
+    index: int
+    kind: str
+    value: float
+    share: float
+    exact: bool
+    points_est: float
+    x: float | None = None
+    y: float | None = None
+    numbers: dict[str, float | int | str | bool | None]
+    paths: list[PenaltyPathOut] = []
+    cells: list[tuple[int, int, int]] = []
+
+
+class PenaltyCategoryOut(BaseModel):
+    """One deduction category: the metric's number and the sites it splits into.
+
+    `value` is the component as the metric computed it today (not the stamp);
+    `applicable` false means „nicht anwendbar", never a measured 0. `in_sync`
+    false means the localizer disagreed with the metric and hands the whole
+    value back as one unlocated site rather than a wrong map. `parts` splits
+    Deckungslücke into Dice · Chamfer · Geo; `context_*` is drawn around the
+    sites (the Glätte corner windows, the Doppelzug zone).
+    """
+
+    value: float
+    applicable: bool
+    in_sync: bool
+    exact: bool
+    points_est: float
+    sites: list[PenaltySiteOut]
+    numbers: dict[str, float | int | str | bool | None] = {}
+    parts: dict[str, float] = {}
+    context_paths: list[PenaltyPathOut] = []
+    context_cells: list[tuple[int, int, int]] = []
+
+
+class PenaltyPinOut(BaseModel):
+    """One of the five costliest located sites across all categories."""
+
+    rank: int
+    category: PenaltyCategoryKey
+    index: int
+    points_est: float
+    x: float
+    y: float
+
+
+class PenaltyFrameOut(BaseModel):
+    """The crop the metric scored: its pixel size and the x-height in pixels."""
+
+    width: int
+    height: int
+    unit_px: float
+
+
+class PenaltySitesOut(BaseModel):
+    """Response of `GET /sources/{id}/templates/{glyph_key}/penalty-sites`.
+
+    The chart row (variant 0) only — a Laufform row's stored score is a copy of
+    the chart row's, and nothing ever measured it against a crop. For a script
+    whose metric has no deduction categories (Kurrent, Offenbacher: the
+    pixel/width metric of qualitaetsmetrik.md §1–§4) `sites` is null and
+    `reason` says why (`no_components`), with every measured field null too —
+    the two metrics are never mixed. `stamped` is the component dict the
+    derivation stored (`trace_meta.quality`), for the „gespeichert: …" line;
+    `components` is today's re-score the sites add up to.
+    """
+
+    glyph_key: str
+    style_id: str
+    variant: int = 0
+    metric: str | None = None
+    reason: str | None = None
+    stamped: dict[str, Any] | None = None
+    score: float | None = None
+    components: dict[str, float] | None = None
+    applicable: dict[str, int] | None = None
+    frame: PenaltyFrameOut | None = None
+    centerline: list[list[tuple[float, float]]] | None = None
+    sites: dict[PenaltyCategoryKey, PenaltyCategoryOut] | None = None
+    pins: list[PenaltyPinOut] = []
+
+
 # ----------------------------------------------------------------------- Eigenhand
 #
 # The own-hand capture chain's admin surface. German field names appear where

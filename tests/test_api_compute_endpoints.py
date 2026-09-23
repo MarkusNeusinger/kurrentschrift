@@ -232,6 +232,65 @@ async def test_landmarks_returns_both_stored_rows_with_their_structures(api: Har
     assert loop["numbers"]["state"] == "unbekannt"
 
 
+# ------------------------------------------------------------ Abzugs-Linse
+
+
+async def test_penalty_sites_401_before_404_then_409_without_pixel_meta(api: Harness, synthetic_chart_path: str):
+    _, source_id = await api.seed_style_and_source(width_resolver="constant", chart_path=synthetic_chart_path)
+    path = f"/sources/{source_id}/templates/n/penalty-sites"
+
+    # The gate comes BEFORE the missing row (quellen-und-rechte.md §5).
+    assert (await api.client.request("GET", path)).status == 401
+    assert (await api.client.request("GET", path, headers=api.admin_headers())).status == 404  # no bbox
+
+    await api.client.request(
+        "PUT", f"/sources/{source_id}/bboxes/n", json_body=_bbox_body(), headers=api.admin_headers()
+    )
+    assert (await api.client.request("GET", path, headers=api.admin_headers())).status == 404  # no canonical
+
+    # A legacy row the metric cannot score → a clear 409, like /quality.
+    style_id = (await api.client.request("GET", f"/sources/{source_id}")).json()["style_id"]
+    await api.seed_template(style_id, source_id, "n", "n")
+    res = await api.client.request("GET", path, headers=api.admin_headers())
+    assert res.status == 409
+    assert "re-trace" in res.json()["detail"]
+
+
+async def test_penalty_sites_locate_every_deduction_of_a_gleichzug_letter(api: Harness, synthetic_chart_path: str):
+    source_id = await _seed_traced_glyph(api, synthetic_chart_path, width_resolver="constant")
+    res = await api.client.request(
+        "GET", f"/sources/{source_id}/templates/n/penalty-sites", headers=api.admin_headers()
+    )
+    assert res.status == 200, res.body
+    assert res.headers["cache-control"] == "private, no-store"
+    out = res.json()
+    assert out["metric"] == "suetterlin_naturalness" and out["reason"] is None
+    assert out["variant"] == 0
+    # The crop the metric scored (the standard test bbox: 200 × 600 px, 100 px x-height).
+    assert out["frame"] == {"width": 200, "height": 600, "unit_px": 100.0}
+    assert set(out["sites"]) == {"smoothness", "verticality", "corner", "collinearity", "retrace", "coverage"}
+    for key, category in out["sites"].items():
+        # The lens's promise, over the wire: the shown parts sum to the shown number.
+        assert category["value"] == out["components"][key]
+        assert sum(round(site["value"] * 10**4) for site in category["sites"]) == round(category["value"] * 10**4)
+    # The trace just stamped a score, so the „gespeichert" line has its numbers.
+    assert set(out["stamped"]) >= {"coverage", "smoothness"}
+    assert len(out["pins"]) <= 5
+
+
+async def test_penalty_sites_answer_null_for_a_script_without_categories(api: Harness, synthetic_chart_path: str):
+    """Kurrent's pixel/width metric has no Abzüge by category — no borrowed legend."""
+    source_id = await _seed_traced_glyph(api, synthetic_chart_path, width_resolver="pressure")
+    res = await api.client.request(
+        "GET", f"/sources/{source_id}/templates/n/penalty-sites", headers=api.admin_headers()
+    )
+    assert res.status == 200, res.body
+    out = res.json()
+    assert out["sites"] is None
+    assert out["reason"] == "no_components"
+    assert out["metric"] is None and out["components"] is None and out["pins"] == []
+
+
 async def test_fit_404_without_canonical(api: Harness, synthetic_chart_path: str):
     _, source_id = await api.seed_style_and_source(chart_path=synthetic_chart_path)
     await api.client.request(

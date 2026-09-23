@@ -509,6 +509,33 @@ Neu abgeleitet wird ausschließlich über den per-Glyphen-Endpunkt
 gehen in dem Moment auseinander, in dem sich die Metrik ändert — jede
 Re-Baseline (§2) macht die gespeicherten Zahlen historisch.
 
+### Die Abzugs-Linse — wo der Score abzieht, ohne ihn anzufassen
+
+`core/quality_localize.py` sagt für eine gespeicherte Gleichzug-Tafelzeile
+(V0) gegen ihren Tafel-Ausschnitt, **wo** die sechs Abzüge entstehen (Route
+`GET …/templates/{glyph_key}/penalty-sites`, admin-only). Das Lineal wird
+dabei nicht berührt: `suetterlin_quality_metrics` läuft unverändert, die
+Stellen werden aus denselben Bausteinen nachgebaut (`_sample_and_rings`,
+die Erkenner aus `core/geometry.py`, die Konstanten oben), der Glyph-Bench
+bleibt byte-gleich. **Regel: die Abzugsstellen einer Kategorie summieren
+sich auf die gezeigte Zahl bis zur vierten Stelle** — gepinnt in
+`tests/test_quality_localize.py`, auf allen 62 eingefrorenen Buchstaben ohne
+Abweichung. Exakte Terme sind Ecken und Kreuzungsflucht (je Stelle
+`(1−q)/N`) und Doppelzug (je fehlendem Pixel `1/Nenner`); Anteile sind
+Glätte (je Sample `|Δ²κ|`, durch das `exp` hindurch proportional),
+Senkrechte (je Lauf `L·rms`) und Deckungslücke (Log-Aufteilung auf Dice ·
+Chamfer · Geo, darunter je Pixel bzw. Sample). **Ohne Ort** bleibt, was
+keinen hat: Dice-Fehlpixel im Saum `RIM_PX = 2·DEAD_BAND_PX` um die andere
+Maske — im Median 91 % des Dice-Anteils, Kantenquantisierung — und eine
+Kategorie, deren Nachrechnung von der Metrik abwiche. Gerechnet wird live,
+nicht der Stempel (46 der 372 gestempelten Kategoriewerte weichen heute um
+mehr als 0,005 ab). Die fünf teuersten Stellen reiht die Linse nach
+linearisierten Punkten (`100·√G·w_k/W` je Einheit, Deckung `50·N/√G`) —
+eine Reihung, nie die Hauptzahl. Was sie zeigt, korrigiert sie nicht: die
+Glätte legt im Median 8 %, höchstens 29 % ihrer Masse an Strichenden ab,
+weil `discrete_curvature` dort κ = 0 setzt; die Korrektur wäre ein
+Re-Baseline.
+
 ---
 
 ## 6. Wort-Bench: Übergänge gegen echte Wortproben (2026-07-02)

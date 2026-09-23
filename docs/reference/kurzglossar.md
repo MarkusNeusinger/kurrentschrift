@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-21): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **119
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **120
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -524,6 +524,14 @@ denselben Erkennern, mit denen die Bench misst (`core/landmarks.py`).
 Generierte Ebene, also nur bemängelbar: ⚑ legt einen `landmark`-Auftrag ab,
 und ein Klick ins Leere meldet eine FEHLENDE Marke.
 → [§5](glossar.md#5-werkbank-und-prozess) · optimierungs-werkbank.md §8
+
+**Abzugs-Linse · Abzugsstelle** — die Ebene der Buchstaben-Ansicht, die
+zeigt, WO die Gleichzug-Metrik abzieht, über dem Tafel-Ausschnitt und mit
+dem unveränderten Lineal (`core/quality_localize.py`): Jede Abzugsstelle
+trägt ihren Teil der gezeigten Kategoriezahl, die Teile einer Kategorie
+summieren sich auf diese Zahl bis zur vierten Stelle, und was keinen Ort
+hat (der Kanten-Saum der Deckungslücke), steht als „ohne Ort“.
+→ [§5](glossar.md#5-werkbank-und-prozess) · qualitaetsmetrik.md §5
 
 **Stufen-Doktrin** — **Manuell hinzufügen nur, wo Ground Truth entsteht,
 die das System nicht selbst herleiten kann. Alles Generierte wird
