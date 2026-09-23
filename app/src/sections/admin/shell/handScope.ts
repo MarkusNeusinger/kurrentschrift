@@ -61,12 +61,20 @@ export const handStyle = (candidates: readonly HandCandidate[], hand: string): s
  * V19 in one function: the active hand always belongs to the Vorlage's script.
  *
  * Keep what is chosen while it fits; on a switch to another script fall back to
- * the hand last CHOSEN for that script, else to nothing. Two fallbacks, not
- * three — V19 reads „die zuletzt gewählte Hand dieses Stils oder leer", and the
- * tempting third („else its first hand") would put a scope nobody picked under
- * the heading and into every Korb link the basket writes. An empty field is the
- * honest answer, both for a script whose own hand has not been written yet and
- * for one whose hands were never looked at.
+ * the hand last CHOSEN for that script, else to the script's ONLY hand, else to
+ * nothing.
+ *
+ * The third step is the author's tip of the open taste question „Hand: —"
+ * (admin-redesign.md §15.5 Nr. 13, 2026-09-23): a fresh browser — the tablet
+ * above all — stood on an empty field beside a script with exactly one hand to
+ * offer, and had to be told the obvious once per device. It is „the only one",
+ * never „the first one", and that difference is what keeps V19's objection
+ * answered: a sole candidate is not a pick anybody could have made differently,
+ * so the scope it writes into every Korb link is the one the author would have
+ * chosen. With two hands of one script the first by code point WOULD be the
+ * unchosen scope V19 was written against, so the field stays empty there until
+ * a hand is picked — and it stays empty for a script with no written hand,
+ * rather than inventing an id no read has returned (Q25 a).
  */
 export function resolveHand(
   current: string | null,
@@ -78,5 +86,6 @@ export function resolveHand(
   const ofStyle = handsOfStyle(candidates, styleId);
   if (current && ofStyle.includes(current)) return current;
   const last = lastByStyle[styleId];
-  return last && ofStyle.includes(last) ? last : null;
+  if (last && ofStyle.includes(last)) return last;
+  return ofStyle.length === 1 ? ofStyle[0] : null;
 }

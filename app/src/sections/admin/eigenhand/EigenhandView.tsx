@@ -106,7 +106,9 @@ export function EigenhandView() {
   // workbench. What used to stand here — a default of `mn-${styles[1]}` —
   // is gone with it: it hard-wired one writer's prefix AND a position in the
   // styles array, and it invented an id no read had ever returned (Q25 a). A
-  // script without a written hand now says so instead (`noHands`).
+  // script without a written hand now says so instead (`noHands`); a script
+  // with exactly ONE opens on it, because that default comes from the
+  // candidates rather than from a literal (`resolveHand`, §15.5 Nr. 13).
 
   // Which hand the Bestand on screen belongs to. Arming the spinner and
   // clearing the error happens DURING RENDER on a switch — React's "adjusting

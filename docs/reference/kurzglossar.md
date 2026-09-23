@@ -617,7 +617,8 @@ hervorgehoben ist das Feld, um das es auf dieser Seite geht. Das Hand-Feld
 nennt immer die Eigenhand samt Rollen-Zusatz, der Korb-Zähler sitzt
 sichtbar im Vorlagen-Feld. **Hand-Stil-Kopplung (V19):** die aktive Hand
 gehört immer zum Stil der Vorlage — sonst die zuletzt für diesen Stil
-gewählte, sonst keine. `shell/ScopeBar.tsx` · `shell/handScope.ts`.
+gewählte, sonst die einzige des Stils, sonst keine.
+`shell/ScopeBar.tsx` · `shell/handScope.ts`.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §7.2
 
 **Roving-Liste** — eine Übersicht, die als Ganzes EIN Tab-Stopp ist: Tab
