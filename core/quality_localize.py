@@ -9,10 +9,15 @@ against its chart crop, without touching the ruler:
 
 * the frozen metric is CALLED, unchanged, for the headline numbers — its dict is
   handed through as is, and nothing here feeds back into it;
-* the per-location terms are rebuilt from the metric's own public building
-  blocks (`_sample_and_rings`, the `core.geometry` detectors, the constants of
-  `core.quality_suetterlin`), the way `core.laufform.row_naturalness` re-reads
-  the naturalness terms without editing the frozen files;
+* the per-location terms are rebuilt from the metric's own building blocks,
+  private ones included (`core.quality._sample_and_rings`,
+  `core.quality_suetterlin._locally_straight_mask`, the `core.geometry`
+  detectors, the constants of `core.quality_suetterlin`), the way
+  `core.laufform.row_naturalness` re-reads the naturalness terms without
+  editing the frozen files — so a rename in the frozen modules breaks this one,
+  and a re-baseline there has to be carried here (one that was not turns the
+  drifted categories „ohne Ort", see below, and fails the local fixture sweep
+  in `tests/test_quality_localize.py`);
 * every located deduction — an Abzugsstelle — carries a value, and the values
   of one category sum to the number the metric shows for it, to its last
   (fourth) digit.
@@ -28,14 +33,25 @@ How each category splits, and how honestly:
   share is proportional, not marginal; sites are the scored segments between
   stroke ends and corner windows. Senkrechte is shared per run by `L·rms`.
   Deckungslücke (`1 − dice·q_chamfer·q_geo`) is split across its three factors
-  in proportion to their log terms, which add exactly, and within each factor
-  per pixel (Dice, Chamfer) or per sample (Geo), exactly again.
+  in proportion to their log terms, which add exactly. Within its part, Dice
+  splits per pixel and the Chamfer per boundary pixel, exactly again (both are
+  linear in their pixels); the Geo splits per sample in proportion to its
+  squared excess — the RMSE is the root of their mean, so that is a share,
+  not a term.
 * **Without a place („ohne Ort").** A Dice miss within `RIM_PX` of the other
   mask is the quantised edge of a stroke — it counts in the number but marks no
   spot worth pointing at, so it is reported as one unlocated site instead of a
   thousand one-pixel marks. Should the recomputation here ever disagree with
   the metric's own number (a ruler re-baseline this module did not follow),
-  the whole category becomes one unlocated site rather than a wrong map.
+  the whole category becomes one unlocated site rather than a wrong map, and
+  its context (numbers, windows, zone) goes with the map. In the degenerate
+  case of an empty boundary or an empty skeleton, the whole Chamfer or Geo
+  part has no place either.
+
+A row whose geometry holds a non-finite number, or whose x-height is not a
+positive number, is refused with `UnscorableInputError` before anything is
+measured: the metric would hand back NaN components, and a NaN has neither a
+place nor four digits to add up to.
 
 Everything is in the metric's own CROP-PIXEL frame (x right, y down, the pixel
 in column c and row r centred on (c, r) — `rasterize_silhouette` samples pixel
@@ -178,6 +194,15 @@ Cell = tuple[int, int, int]
 Numbers = dict[str, float | int | str | bool | None]
 
 
+class UnscorableInputError(ValueError):
+    """A stored row this module cannot localize: missing fields or non-finite geometry.
+
+    A `ValueError`, so a caller that caught that keeps working; the route maps
+    it to 409 like a row without pixel-space trace meta, instead of letting a
+    NaN surface as a 500 somewhere downstream.
+    """
+
+
 @dataclass(frozen=True)
 class SitePath:
     """A named polyline in crop pixels; `values` (if any) run along its points."""
@@ -221,7 +246,9 @@ class PenaltyCategory:
     this module's recomputation of it, and `in_sync` says whether the two
     agree. `parts` splits Deckungslücke into its three factors (four places,
     summing to `value`); `context_*` carry what is drawn around the sites
-    rather than as one — the Glätte corner windows, the Doppelzug zone.
+    rather than as one — the Glätte corner windows, the Doppelzug zone. A
+    category out of sync keeps only its one unlocated site: `numbers`, `parts`
+    and `context_*` are empty, since the recomputation behind them disagreed.
     """
 
     key: str
@@ -320,12 +347,14 @@ def _runs(flags: np.ndarray) -> list[tuple[int, int]]:
 def _components(mask: np.ndarray) -> list[tuple[np.ndarray, tuple[int, int]]]:
     """The places of a pixel mask: `(component mask, (row0, col0) offset)` in raster order.
 
-    Pixels closer than `RIM_PX` to each other are one place — a staircase break
-    of one scan edge is not two sites. Measured on the 62 frozen fixtures, this
-    join takes the Chamfer edge sites from a median 81 to 29 per glyph and
-    raises what the five largest carry from 50 % to 69 % of the part, while a
-    site stays local (median extent 6 px); joining at twice that chains whole
-    strokes into one site (p90 extent 131 px).
+    Pixels at most three pixels apart per axis are one place, and the join
+    chains on: each pixel is dilated by the `RIM_PX` disk (in effect a 3×3
+    block) and dilated pixels that touch, 8-connected, belong together — a
+    staircase break of one scan edge is not two sites. Measured on the 62
+    frozen fixtures, this join takes the Chamfer edge sites from a median 81 to
+    29 per glyph and raises what the five largest carry from 50 % to 69 % of
+    the part, while a site stays local (median extent 6 px); dilating by twice
+    the radius chains whole strokes into one site (p90 extent 131 px).
     """
     joined = binary_dilation(mask, structure=_JOIN_DISK) if mask.any() else mask
     labels, _count = label(joined, structure=_EIGHT_CONNECTED)
@@ -760,8 +789,10 @@ def _coverage_sites(
     `1 − G` with `G = dice · q_chamfer · q_geo`, whose log adds exactly:
     `−ln G = −ln dice + chamfer/(0.05u) + geo/(0.08u)`. Each factor's part is
     its log term's share of `1 − G`; below that, Dice splits per missed/excess
-    pixel (`1 − dice = (|FP| + |FN|)/(|pred| + |mask|)` exactly), the Chamfer
-    per boundary pixel (the mean is a sum), the Geo per sample (the MSE is).
+    pixel (`1 − dice = (|FP| + |FN|)/(|pred| + |mask|)` exactly) and the
+    Chamfer per boundary pixel (the mean is a sum) — terms, both; the Geo
+    splits per sample in proportion to its squared excess, a share: the RMSE is
+    the root of their mean, so a sample's share is not its marginal effect.
     """
     h, w = mask.shape
     worst_px = float(np.hypot(h, w))
@@ -881,7 +912,8 @@ def _coverage_sites(
                 _Draft(kind="edge", raw=parts["chamfer"], x=None, y=None, numbers={"reason": "empty_boundary"})
             )
 
-    # Geo: the RMSE's square is a mean over samples of the dead-banded off-skeleton distance.
+    # Geo: the RMSE's square is a mean over samples of the dead-banded off-skeleton
+    # distance, so each sample takes the part in proportion to its square — a share.
     if parts["geo"] > 0.0:
         if excess is not None and nearest is not None:
             sq = excess**2
@@ -1017,6 +1049,24 @@ def _drift_group(component: float) -> dict[str, list[_Draft]]:
     return {"all": [_Draft(kind="unlocated", raw=component, x=None, y=None, numbers={"reason": "recomputation_drift"})]}
 
 
+def _require_finite(anchors_px: np.ndarray, half_widths_px: np.ndarray, unit_px: float) -> None:
+    """Refuse geometry the metric would turn into NaN components.
+
+    The frozen metric does not raise on a NaN anchor or half-width, it returns
+    NaN components — which then have no place and no digits to apportion. A
+    JSONB column cannot store a NaN, so a prod row reaches this mostly through
+    a zero or negative x-height; the pure callers (tools, tests) can hand
+    either. Both get a clear refusal instead of a crash in the apportionment.
+    """
+    if not (math.isfinite(unit_px) and unit_px > 0.0):
+        raise UnscorableInputError(f"unit_px must be a positive finite number, got {unit_px!r}")
+    for name, values in (("anchors_px", anchors_px), ("half_widths_px", half_widths_px)):
+        finite = np.isfinite(values)
+        if not finite.all():
+            rows = np.flatnonzero(~finite.reshape(len(values), -1).all(axis=1))
+            raise UnscorableInputError(f"{name} holds non-finite values (rows {rows[:5].tolist()})")
+
+
 def suetterlin_penalty_sites(
     anchors_px: np.ndarray,
     half_widths_px: np.ndarray,
@@ -1033,10 +1083,14 @@ def suetterlin_penalty_sites(
 
     Same arguments as `suetterlin_quality_metrics`, which is called unchanged;
     its dict comes back as `PenaltyMap.metrics`. The sites are rebuilt from the
-    same sampling plan and the same detectors, in crop pixels.
+    same sampling plan and the same detectors, in crop pixels. Raises
+    `UnscorableInputError` for non-finite geometry or a non-positive `unit_px`,
+    and for a metric result with a non-finite component.
     """
     anchors_px = np.asarray(anchors_px, dtype=float)
     half_widths_px = np.asarray(half_widths_px, dtype=float)
+    unit_px = float(unit_px)
+    _require_finite(anchors_px, half_widths_px, unit_px)
     metrics = suetterlin_quality_metrics(
         anchors_px,
         half_widths_px,
@@ -1062,6 +1116,9 @@ def suetterlin_penalty_sites(
 
     components = metrics["components"]
     applicable = metrics["applicable"]
+    non_finite = [key for key in CATEGORIES if not math.isfinite(float(components[key]))]
+    if non_finite:
+        raise UnscorableInputError(f"the metric returned non-finite components {non_finite}")
     rates = _points_rates(metrics)
 
     smooth_value, smooth_drafts, smooth_numbers, windows = _smoothness_sites(
@@ -1097,7 +1154,10 @@ def suetterlin_penalty_sites(
             count_key is None or int(count or 0) == int(applicable.get(count_key, 0))
         )
         if not in_sync:
+            # The context was measured by the same recomputation the map was
+            # dropped for, so it goes too — no windows around sites nobody trusts.
             groups = _drift_group(component)
+            numbers, paths, cells = {}, (), ()
         categories[key] = _finalise(
             key,
             component,
@@ -1147,12 +1207,12 @@ def suetterlin_penalty_sites_for_glyph(glyph_row: dict, bbox: dict, chart_path: 
     """
     for required in ("baseline_y", "midband_y", "y0", "y1", "x0", "x1"):
         if bbox.get(required) is None:
-            raise ValueError(f"bbox missing required field {required!r}")
+            raise UnscorableInputError(f"bbox missing required field {required!r}")
     trace_meta = glyph_row.get("trace_meta") or {}
     pixel_anchors = trace_meta.get("pixel_anchors")
     half_widths_px = trace_meta.get("half_widths_px")
     if not pixel_anchors or not half_widths_px:
-        raise ValueError("template lacks trace_meta.pixel_anchors / half_widths_px")
+        raise UnscorableInputError("template lacks trace_meta.pixel_anchors / half_widths_px")
 
     chart_gray = load_chart_grayscale(chart_path)
     crop = crop_with_mask(chart_gray, bbox, fill=1.0)

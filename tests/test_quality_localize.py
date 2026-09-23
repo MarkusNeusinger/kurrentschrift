@@ -3,9 +3,10 @@
 Pins the one promise the lens makes — the sites of a category add up to the
 number the metric shows for it, to its fourth digit — and the one it keeps
 by construction: the frozen metric's own result comes back unchanged. On
-hand-built geometry (always run) and, where the gitignored glyph-bench
-fixtures exist, over every frozen Sütterlin letter. A metric re-baseline that
-this module does not follow breaks the sweep on purpose.
+hand-built geometry (always run, CI included) and, where the gitignored
+glyph-bench fixtures exist, over every frozen Sütterlin letter. A metric
+re-baseline that this module does not follow breaks that sweep on purpose —
+locally, since CI has no fixtures and skips it.
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ from core.quality_localize import (
     PIN_COUNT,
     RIM_PX,
     PenaltyMap,
+    UnscorableInputError,
     _apportion,
     _interior_corner_anchors,
     suetterlin_penalty_sites,
@@ -57,7 +59,13 @@ def _assert_sums_hold(pm: PenaltyMap) -> None:
             assert cat.value == 0.0 and not cat.sites
 
 
-def _score(anchors_px, half_widths_px, stroke_starts, mask, corner_anchors=None) -> tuple[PenaltyMap, dict]:
+def _score(
+    anchors_px: np.ndarray,
+    half_widths_px: np.ndarray,
+    stroke_starts: list[int],
+    mask: np.ndarray,
+    corner_anchors: list[int] | None = None,
+) -> tuple[PenaltyMap, dict]:
     skel, width_map = skeleton_and_width(mask)
     args = (np.asarray(anchors_px, float), np.asarray(half_widths_px, float), stroke_starts, mask, skel, width_map)
     kwargs = {"unit_px": UNIT_PX, "corner_anchors": corner_anchors}
@@ -186,11 +194,11 @@ def test_pins_rank_the_costliest_located_sites():
         assert site.x == pin.x and site.y == pin.y and site.raw > 0.0
 
 
-def test_a_recomputation_that_drifts_claims_no_places(monkeypatch):
+def test_a_recomputation_that_drifts_claims_no_places(monkeypatch: pytest.MonkeyPatch):
     """If the ruler moved and this module did not follow, the number stays and the map goes."""
     real = localize.suetterlin_quality_metrics
 
-    def drifted(*args, **kwargs):
+    def drifted(*args: object, **kwargs: object) -> dict:
         out = real(*args, **kwargs)
         out["components"] = {**out["components"], "corner": round(out["components"]["corner"] + 0.05, 4)}
         return out
@@ -209,6 +217,70 @@ def test_a_recomputation_that_drifts_claims_no_places(monkeypatch):
     assert pm.categories["smoothness"].in_sync  # the others are untouched
 
 
+def test_a_drifted_category_draws_no_context(monkeypatch: pytest.MonkeyPatch):
+    """The context came from the recomputation the map was dropped for, so it goes too."""
+    anchors, corners = _reversal()
+    hw = np.full(len(anchors), 4.0)
+    mask = silhouette_mask(anchors, hw, [0], (160, 160), corner_anchors=corners)
+    trusted, _ = _score(anchors, hw, [0], mask, corners)
+    # In sync, Glätte draws its corner windows and states its jerk …
+    assert trusted.categories["smoothness"].context_paths
+    assert "jerk" in trusted.categories["smoothness"].numbers
+    assert trusted.pins
+
+    monkeypatch.setattr(localize, "SYNC_TOLERANCE", -1.0)  # nothing agrees any more
+    drifted, _ = _score(anchors, hw, [0], mask, corners)
+    for key in CATEGORIES:
+        cat = drifted.categories[key]
+        assert not cat.in_sync, key
+        # … out of sync, only the number and its one unlocated site remain.
+        assert (cat.numbers, cat.parts, cat.context_paths, cat.context_cells) == ({}, {}, (), ()), key
+        (site,) = cat.sites
+        assert site.x is None and site.kind == "unlocated" and site.value == cat.value
+    assert drifted.pins == ()
+
+
+@pytest.mark.parametrize(
+    ("bad", "match"),
+    [
+        ({"half_width_row": 3}, "half_widths_px"),
+        ({"anchor_row": 5}, "anchors_px"),
+        ({"unit_px": 0.0}, "unit_px"),
+        ({"unit_px": float("inf")}, "unit_px"),
+    ],
+)
+def test_non_finite_geometry_is_refused_not_mapped(bad: dict, match: str):
+    """A NaN would reach the apportionment as a NaN component; refuse it up front instead."""
+    bar = np.column_stack([np.full(20, 50.0), np.linspace(10.0, 110.0, 20)])
+    hw = np.full(len(bar), 4.0)
+    mask = silhouette_mask(bar, hw, [0], (130, 100))
+    skel, width_map = skeleton_and_width(mask)
+    if "half_width_row" in bad:
+        hw[bad["half_width_row"]] = np.nan
+    if "anchor_row" in bad:
+        bar[bad["anchor_row"], 1] = np.nan
+    with pytest.raises(UnscorableInputError, match=match):
+        suetterlin_penalty_sites(bar, hw, [0], mask, skel, width_map, unit_px=bad.get("unit_px", UNIT_PX))
+    # Still a ValueError, which is what callers of the metric already catch.
+    assert issubclass(UnscorableInputError, ValueError)
+
+
+def test_a_non_finite_component_is_refused_even_from_finite_input(monkeypatch: pytest.MonkeyPatch):
+    real = localize.suetterlin_quality_metrics
+
+    def broken(*args: object, **kwargs: object) -> dict:
+        out = real(*args, **kwargs)
+        out["components"] = {**out["components"], "smoothness": float("nan")}
+        return out
+
+    monkeypatch.setattr(localize, "suetterlin_quality_metrics", broken)
+    bar = np.column_stack([np.full(20, 50.0), np.linspace(10.0, 110.0, 20)])
+    hw = np.full(len(bar), 4.0)
+    mask = silhouette_mask(bar, hw, [0], (130, 100))
+    with pytest.raises(UnscorableInputError, match="smoothness"):
+        _score(bar, hw, [0], mask)
+
+
 def test_apportion_is_proportional_and_exact():
     assert _apportion([1.0, 1.0, 1.0], 10) == [4, 3, 3]
     assert sum(_apportion([0.3, 0.2, 0.0005, 0.1], 1711)) == 1711
@@ -220,7 +292,7 @@ def test_apportion_is_proportional_and_exact():
 # --------------------------------------------------------------- end to end
 
 
-def test_for_glyph_matches_the_stored_scorer(synthetic_chart_path, synthetic_bbox):
+def test_for_glyph_matches_the_stored_scorer(synthetic_chart_path: str, synthetic_bbox: dict):
     from core.suetterlin import canonical_suetterlin_from_path
 
     path = [{"x": 400.0, "y": float(200 + 400 * i / 39), "pressure": None, "t": float(i)} for i in range(40)]
@@ -244,7 +316,7 @@ _CONSTANT = [m for m in _MANIFESTS if json.loads(m.read_text()).get("width_resol
 
 @pytest.mark.skipif(not _CONSTANT, reason="glyph-bench fixtures are local-only (gitignored)")
 def test_every_frozen_suetterlin_letter_is_localized_to_its_last_digit():
-    """The sweep the brief's prototype ran: 62 letters, zero difference allowed."""
+    """Every frozen Sütterlin letter (62 today): zero difference allowed."""
     swept = 0
     for manifest in _CONSTANT:
         for entry in json.loads(manifest.read_text())["glyphs"]:

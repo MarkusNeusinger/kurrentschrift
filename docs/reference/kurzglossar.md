@@ -525,9 +525,10 @@ Generierte Ebene, also nur bemängelbar: ⚑ legt einen `landmark`-Auftrag ab,
 und ein Klick ins Leere meldet eine FEHLENDE Marke.
 → [§5](glossar.md#5-werkbank-und-prozess) · optimierungs-werkbank.md §8
 
-**Abzugs-Linse · Abzugsstelle** — die Ebene der Buchstaben-Ansicht, die
-zeigt, WO die Gleichzug-Metrik abzieht, über dem Tafel-Ausschnitt und mit
-dem unveränderten Lineal (`core/quality_localize.py`): Jede Abzugsstelle
+**Abzugs-Linse · Abzugsstelle** — die Auskunft, WO die Gleichzug-Metrik
+abzieht, im Tafel-Ausschnitt und mit dem unveränderten Lineal
+(`core/quality_localize.py`, Admin-Route `…/penalty-sites`; die Ebene der
+Buchstaben-Ansicht folgt mit dem Overlay-PR): Jede Abzugsstelle
 trägt ihren Teil der gezeigten Kategoriezahl, die Teile einer Kategorie
 summieren sich auf diese Zahl bis zur vierten Stelle, und was keinen Ort
 hat (der Kanten-Saum der Deckungslücke), steht als „ohne Ort“.

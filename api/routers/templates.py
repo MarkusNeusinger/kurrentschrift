@@ -46,7 +46,7 @@ from core.pipeline import (
     written_preview_for_canonical,
 )
 from core.quality import quality_for_glyph
-from core.quality_localize import METRIC_NAME, PenaltyMap, suetterlin_penalty_sites_for_glyph
+from core.quality_localize import METRIC_NAME, PenaltyMap, UnscorableInputError, suetterlin_penalty_sites_for_glyph
 from core.quality_suetterlin import suetterlin_quality_for_glyph
 from core.shaping import expected_glyph_key, is_registry_glyph_key
 from core.suetterlin import canonical_suetterlin_from_path, canonical_suetterlin_from_raw_path_only
@@ -819,9 +819,16 @@ async def get_penalty_sites(
             status.HTTP_409_CONFLICT,
             detail=f"stored template for {glyph_key!r} lacks pixel-space trace meta; resample or re-trace first",
         )
-    pm = await run_in_threadpool(
-        suetterlin_penalty_sites_for_glyph, {"trace_meta": trace_meta}, _bbox_to_dict(bbox), source.chart_path
-    )
+    try:
+        pm = await run_in_threadpool(
+            suetterlin_penalty_sites_for_glyph, {"trace_meta": trace_meta}, _bbox_to_dict(bbox), source.chart_path
+        )
+    except UnscorableInputError as exc:
+        # A corrupt row (non-finite geometry, a zero x-height) is the author's
+        # to fix, like the legacy row above — a clear 409, never a 500.
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, detail=f"stored template for {glyph_key!r} cannot be localized: {exc}"
+        ) from exc
     return _penalty_sites_out(glyph_key, style_id, stamped, pm)
 
 

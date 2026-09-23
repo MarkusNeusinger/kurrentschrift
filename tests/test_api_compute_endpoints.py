@@ -256,6 +256,26 @@ async def test_penalty_sites_401_before_404_then_409_without_pixel_meta(api: Har
     assert "re-trace" in res.json()["detail"]
 
 
+async def test_penalty_sites_409_for_a_row_it_cannot_localize(api: Harness, synthetic_chart_path: str):
+    """A corrupt x-height is the author's to fix — a clear 409, not a NaN turned 500."""
+    style_id, source_id = await api.seed_style_and_source(width_resolver="constant", chart_path=synthetic_chart_path)
+    await api.client.request(
+        "PUT", f"/sources/{source_id}/bboxes/n", json_body=_bbox_body(), headers=api.admin_headers()
+    )
+    trace_meta = {
+        "pixel_anchors": [[400.0, 200.0 + 20.0 * i] for i in range(20)],
+        "half_widths_px": [4.0] * 20,
+        "stroke_starts": [0],
+        "unit_px": -100.0,
+    }
+    await api.seed_template(style_id, source_id, "n", "n", trace_meta=trace_meta)
+    res = await api.client.request(
+        "GET", f"/sources/{source_id}/templates/n/penalty-sites", headers=api.admin_headers()
+    )
+    assert res.status == 409, res.body
+    assert "cannot be localized" in res.json()["detail"] and "unit_px" in res.json()["detail"]
+
+
 async def test_penalty_sites_locate_every_deduction_of_a_gleichzug_letter(api: Harness, synthetic_chart_path: str):
     source_id = await _seed_traced_glyph(api, synthetic_chart_path, width_resolver="constant")
     res = await api.client.request(

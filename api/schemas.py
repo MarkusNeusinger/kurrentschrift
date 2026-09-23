@@ -1180,9 +1180,11 @@ class PenaltyCategoryOut(BaseModel):
     `value` is the component as the metric computed it today (not the stamp);
     `applicable` false means „nicht anwendbar", never a measured 0. `in_sync`
     false means the localizer disagreed with the metric and hands the whole
-    value back as one unlocated site rather than a wrong map. `parts` splits
-    Deckungslücke into Dice · Chamfer · Geo; `context_*` is drawn around the
-    sites (the Glätte corner windows, the Doppelzug zone).
+    value back as one unlocated site rather than a wrong map — with `numbers`,
+    `parts` and `context_*` empty, since they came from the same disagreeing
+    recomputation. `parts` splits Deckungslücke into Dice · Chamfer · Geo;
+    `context_*` is drawn around the sites (the Glätte corner windows, the
+    Doppelzug zone).
     """
 
     value: float

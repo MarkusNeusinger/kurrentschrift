@@ -10,8 +10,10 @@
   Senkrechte and Deckungslücke are split in proportion, the last one across
   Dice · Chamfer · Geo by its exactly additive log terms. The quantised edge
   rim is kept as one site „ohne Ort“ instead of a thousand one-pixel marks,
-  and a recomputation that ever disagreed with the metric would drop its map
-  rather than draw a wrong one. The promise the lens is built around holds on
+  and a recomputation that ever disagreed with the metric would drop its map,
+  context included, rather than draw a wrong one. Geometry with a non-finite
+  number or a non-positive x-height is refused up front instead of being
+  apportioned as NaN. The promise the lens is built around holds on
   all 62 frozen Sütterlin letters with zero difference: a category's sites
   add up to the number shown for it, to its fourth digit (the unrounded parts
   as well as the apportioned four-place values). The five costliest sites
@@ -24,7 +26,8 @@
   RESERVED in the public-surface pin, computed in the threadpool from the
   chart row (variant 0) and today's ruler rather than the stamp — the stored
   components ride along as `stamped` for the „gespeichert“ line. A legacy row
-  without pixel-space trace meta answers 409; a Kurrent or Offenbacher letter
-  answers `sites: null` with `reason: "no_components"`, because its metric has
-  no deduction categories and the two metrics are never mixed. The overlay
-  itself follows in the admin UI.
+  without pixel-space trace meta answers 409, and so does a row the lens
+  refuses (non-finite geometry, a non-positive x-height); a Kurrent or
+  Offenbacher letter answers `sites: null` with `reason: "no_components"`,
+  because its metric has no deduction categories and the two metrics are
+  never mixed. The overlay itself follows in the admin UI.
