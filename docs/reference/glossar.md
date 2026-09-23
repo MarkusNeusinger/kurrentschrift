@@ -61,7 +61,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **B** — Bahn §5 · Bahn-Archivkette §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Bahn-Marke §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
-- **E** — Ebenen-Token §5 · Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
+- **E** — Ebenen-Token §5 · Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Eingabestufen (Streifen-Folger) §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fokusring (`focusRing`) §5 · Fixture-Wurzel §4 · Folger-Schalter der Ernte (`--follower`) §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Freigabe-Maschine (geplant) §5 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — Gate-Status (geplant) §5 · Gauß-Verschiebung §3 · G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grauwert-Stopp (→ Strang-Dekodierung) §3 · Grundstrich/Haarstrich §1 · Grundtafel §7 · Grundwortschatz (Eigenhand) §5 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Haken-Spitze (→ Strang-Dekodierung) §3 · Hand §2 · Hand-Stil-Kopplung §5 · Hand-Überschuss §4 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
@@ -4393,6 +4393,34 @@ Angabe die Nummer dieses Abbilds behaupten.
 `app/src/sections/admin/shell/PathOverlay.tsx`.
 → Skip-Eintrag; Span-Herkunft; Bahn-Archivkette;
 proposals/eigenhand-erfassung.md §7.5
+
+**Eingabestufen (Streifen-Folger)** *(follower input stages)* — die drei
+zuschaltbaren Stufen, die ändern, was der Tintenpfad auf einem
+Eigenhand-Streifen BEKOMMT, nie den Folger selbst (der Dekoder bleibt der
+A45-Standard der Tafel): **Beschriftungszonen** (die gedruckte Streifen-ID,
+Herkunftszeile und Wort-Beschriftungen, aus denselben Seitenprimitiven wie
+das Bogen-PDF, werden NACH der Binarisierung aus Maske und Skelett
+gelöscht — der Graupegel bleibt, also verrückt sich die adaptive Schwelle
+nicht), **Tafelmaßstab** (der Kasten wird auf die 31 px je x-Höhe der
+Tafel umgetastet, nur außerhalb ihres Bereichs 28–33, und die Bahn exakt
+auf die Streifenpixel zurückgebildet) und **Saat-Registrierung, anisotrop**
+(sy und Grundlinie aus den Moden der spaltenweisen Skelett-Extreme, an den
+63 Tafelwörtern kalibriert — der Schätzer liest dort 0,643 der Lineatur —,
+sx getrennt aus Tinten- gegen Kompositionsbreite; unlesbare Moden oder ein
+Maß jenseits der x-Höhen-Toleranz der API lassen die Saat stehen, nie
+geklemmt). Die ersten beiden sind auf jedem Tafelwort No-ops per
+Konstruktion, die dritte ist eine Registrierung und bewegt jede Saat.
+Anlass war die Eigenhand-Diagnose vom 2026-09-24: Beschriftung als Tinte
+gefahren, Pixelpreise mit 0,44× ihrer Tafelreichweite, die Saat auf der
+gedruckten statt der geschriebenen Lineatur. Alle drei sind aus, bis eine
+vorregistrierte Runde eine davon trägt.
+*Technisch:* `core/eigenhand/follower_input.py` (`label_zones_px` ·
+`ink_of` · `resample_to_plate` · `CropToStrip` · `register_seed` ·
+`PLATE_MODE_CALIBRATION` · `scale_composed_x`), `tools/eigenhand/pfad.py`
+(`FollowerInput` · `adapt_case`, `--mask-labels` · `--resample-plate` ·
+`--register-seed`), `WordCase.seed_x_scale`; im gespeicherten Eintrag
+`konfiguration.input` + `meta.input`.
+→ Streifen-Pfad; Schnittband; Saat-Abstand
 
 **Skip-Eintrag** — ein Eintrag der Pfad-Liste, der sagt, dass ein Wortkasten
 KEINE Bahn hat, und warum: `status: "skipped"` plus ein `grund` aus einer

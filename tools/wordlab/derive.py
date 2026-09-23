@@ -19,6 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from core.compose import compose_word
+from core.eigenhand.follower_input import scale_composed_x
 from core.pipeline import render_payload_for_template
 
 from .cases import WordCase
@@ -87,6 +88,10 @@ def derive_word(case: WordCase) -> WordDeriveResult:
     """
     payloads = payloads_for(case)
     composed = compose_word(case.slots, payloads, provenance=True, laufform_by_key=laufform_payloads_for(case) or None)
+    # Only an own-hand strip case ever carries a scale; a bench case composes
+    # untouched, and the guard keeps its payload the very object compose made.
+    if case.seed_x_scale != 1.0:
+        composed = scale_composed_x(composed, case.seed_x_scale)
 
     report: dict | None = None
     segments: list[dict] | None = None
