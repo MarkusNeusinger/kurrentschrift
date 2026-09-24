@@ -408,7 +408,7 @@ export function EigenhandView() {
               labelOf={itemLabel}
             />
           )}
-          {ansicht === 'statistik' && <StatistikView bestand={bestand} />}
+          {ansicht === 'statistik' && <StatistikView hand={hand} bestand={bestand} />}
           {ansicht === 'drucken' && <DruckenView hand={hand} printed={printed} onPrinted={handlePrinted} />}
         </>
       )}
