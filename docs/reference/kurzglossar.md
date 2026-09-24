@@ -729,8 +729,11 @@ Neu-Folgen desselben Kastens geht durch, solange es sie mitbringt.
 Eigenhand-Streifen BEKOMMT, nie sein Dekoder (der bleibt A45):
 Beschriftungszonen (Vorgabe seit 2026-09-24, aus mit `--no-mask-labels`),
 Plattenmaßstab (`--resample-plate`) und Saat-Registrierung
-(`--register-seed`), die beiden letzten aus. Jede Stufe muss den Plattenpfad
-stehen lassen (Platten-Wächter). `core/eigenhand/follower_input.py`.
+(`--register-seed {k,ky}`: `k` nur die x-Skala, `ky` dazu x-Höhe und
+Grundlinie), die beiden letzten aus. Jede Stufe muss den Plattenpfad
+stehen lassen (Platten-Wächter); die Saat-Registrierung läuft darum nur auf
+Bogen-Streifen (`origin` `eigenhand:`, das Stufe-3-Tor).
+`core/eigenhand/follower_input.py`.
 → [§5](glossar.md#5-werkbank-und-prozess) · messjournal.md §14 „Folger-Eingabe-Leiter `sep24`"
 
 **Span-Zuordner** — setzt die Buchstabengrenzen einer Bahn, hinter der keine

@@ -1705,7 +1705,9 @@ class TestInputStages:
     OK_INFO = {**_INFO, "status": "ok"}
 
     @staticmethod
-    def _word_case(crop: np.ndarray, baseline: int, waist: int, rect: list[int]):
+    def _word_case(
+        crop: np.ndarray, baseline: int, waist: int, rect: list[int], origin: str = "eigenhand:live:suetterlin-1922"
+    ):
         from core.extract import binarize_adaptive, skeleton_and_width
         from core.word_metric import despeckle
         from tools.wordlab.cases import WordCase
@@ -1721,6 +1723,7 @@ class TestInputStages:
             style_ratio=[1, 1, 1],
             width_resolver="constant",
             nib_units=None,
+            origin=origin,
             rect=rect,
             baseline_y=baseline,
             midband_y=waist,
@@ -1738,7 +1741,7 @@ class TestInputStages:
 
         assert tool.FollowerInput() == tool.STANDARD_INPUT
         assert (tool.STANDARD_INPUT.mask_labels, tool.STANDARD_INPUT.resample_plate) == (True, False)
-        assert tool.STANDARD_INPUT.register_seed is False
+        assert tool.STANDARD_INPUT.register_seed is None
         assert tool.STANDARD_INPUT.konfiguration() == {
             "mask_labels": True,
             "resample_xh_px": None,
@@ -1803,14 +1806,34 @@ class TestInputStages:
         monkeypatch.setattr(tool, "follow_row", lambda *args: used.append(args[-1]) or [])
         monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("a dry run must not write"))
         out = str(tmp_path / "pfade.json")
-        for flags in ([], ["--mask-labels"], ["--no-mask-labels"], ["--no-mask-labels", "--register-seed"]):
+        for flags in (
+            [],
+            ["--mask-labels"],
+            ["--no-mask-labels"],
+            ["--no-mask-labels", "--register-seed", "ky"],
+            ["--register-seed", "k"],
+        ):
             assert tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--out", out, *flags]) == 0
         assert used == [
             tool.STANDARD_INPUT,
             tool.STANDARD_INPUT,
             tool.FollowerInput(mask_labels=False),
-            tool.FollowerInput(mask_labels=False, register_seed=True),
+            tool.FollowerInput(mask_labels=False, register_seed="ky"),
+            tool.FollowerInput(register_seed="k"),
         ]
+
+    def test_the_seed_registration_is_named_by_its_scales_never_a_bare_switch(self):
+        # `--register-seed` was a bool until `sep24b` split it into k and ky;
+        # a bare flag or a third spelling must fail loudly rather than pick one.
+        from tools.eigenhand import pfad as tool
+
+        with pytest.raises(SystemExit):
+            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--register-seed"])
+        with pytest.raises(SystemExit):
+            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--register-seed", "y"])
+        with pytest.raises(ValueError, match="register_seed"):
+            tool.FollowerInput(register_seed=True)  # type: ignore[arg-type]
+        assert tool.FollowerInput(register_seed="k").konfiguration()["register_seed"] == "k"
 
     def test_cleared_labels_are_what_the_follower_is_handed(self, monkeypatch):
         # End to end over a REAL composed Bogen: the printed id, provenance and
@@ -1947,19 +1970,23 @@ class TestInputStages:
             plain["xh_px"],
         )
 
+    @staticmethod
+    def _garland_crop() -> np.ndarray:
+        crop = np.ones((160, 240))
+        for x in range(20, 220, 20):  # a garland: feet on 96, tops on 70, 3 px ink
+            crop[70:97, x : x + 3] = 0.1
+            crop[94:97, x : x + 13] = 0.1
+            crop[70:73, x + 10 : x + 23] = 0.1
+            crop[70:97, x + 10 : x + 13] = 0.1
+        return crop
+
     def test_the_seed_registration_moves_the_case_and_carries_its_x_scale(self, monkeypatch):
         from core.eigenhand.follower_input import ModeCalibration
         from tools.eigenhand import pfad as tool
 
-        skel_crop = np.ones((160, 240))
-        for x in range(20, 220, 20):  # a garland: feet on 96, tops on 70, 3 px ink
-            skel_crop[70:97, x : x + 3] = 0.1
-            skel_crop[94:97, x : x + 13] = 0.1
-            skel_crop[70:73, x + 10 : x + 23] = 0.1
-            skel_crop[70:97, x + 10 : x + 13] = 0.1
-        case = self._word_case(skel_crop, 100, 60, [0, 0, 240, 160])
+        case = self._word_case(self._garland_crop(), 100, 60, [0, 0, 240, 160])
         monkeypatch.setattr(tool, "_composed_width_units", lambda _case: 8.0)
-        stages = tool.FollowerInput(register_seed=True)
+        stages = tool.FollowerInput(register_seed="ky")
         adapted = tool.adapt_case(case, stages, xh_px=40.0, calibration=ModeCalibration(1.0, 0.0))
         moved = adapted.case
         assert adapted.seed.applied
@@ -1970,6 +1997,50 @@ class TestInputStages:
         # The ink the follower reads is not what stage 3 changes.
         assert moved.mask is case.mask and moved.rect == case.rect
 
+    def test_the_x_scale_alone_keeps_the_printed_rows(self, monkeypatch):
+        # `--register-seed k` (R-split): k against the case's own x-height,
+        # the baseline and waist exactly as the case carried them.
+        from core.eigenhand.follower_input import register_seed_width
+        from tools.eigenhand import pfad as tool
+
+        case = self._word_case(self._garland_crop(), 100, 60, [0, 0, 240, 160])
+        monkeypatch.setattr(tool, "_composed_width_units", lambda _case: 8.0)
+        adapted = tool.adapt_case(case, tool.FollowerInput(register_seed="k"), xh_px=40.0)
+        moved = adapted.case
+        expected = register_seed_width(case.skel, 100, 60, 8.0)
+        assert adapted.seed.applied and adapted.seed == expected
+        assert (moved.baseline_y, moved.midband_y) == (100, 60)
+        assert moved.seed_x_scale == expected.x_scale != 1.0
+        assert set(adapted.readings["seed"]) == {"applied", "reason", "k"}
+        assert "Saat k " in tool._input_line(adapted) and "sy" not in tool._input_line(adapted)
+
+    @pytest.mark.parametrize("mode", ["k", "ky"])
+    @pytest.mark.parametrize("origin", ["fixture:suetterlin-1922", "live:suetterlin-1922", ""])
+    def test_stage_three_never_touches_a_case_that_is_not_strip_input(self, monkeypatch, mode, origin):
+        # R-gate (`sep24b`): the plate path stays byte-identical by
+        # construction. Only the case's origin decides; the composed width is
+        # never even asked for.
+        from tools.eigenhand import pfad as tool
+
+        case = self._word_case(self._garland_crop(), 100, 60, [0, 0, 240, 160], origin=origin)
+        monkeypatch.setattr(tool, "_composed_width_units", lambda _case: pytest.fail("a plate case was registered"))
+        adapted = tool.adapt_case(case, tool.FollowerInput(register_seed=mode), xh_px=40.0)
+        assert adapted.case is case and adapted.seed is None
+        assert adapted.readings["seed"]["applied"] is False
+        assert "not strip input" in adapted.readings["seed"]["reason"]
+
+    def test_the_strip_case_carries_the_origin_the_gate_opens_on(self):
+        from tools.eigenhand import pfad as tool
+
+        prior = {
+            "seed": SimpleNamespace(have=set(), rows_for=lambda keys: ({key: {} for key in keys}, {})),
+            "manifest": {},
+            "source_id": "suetterlin-1922",
+        }
+        frame = _frame(0)
+        case, _missing = tool._case_for_box(prior, np.ones((HEIGHT_PX, WIDTH_PX)), frame, "lesen", "lesen", "x")
+        assert case.origin.startswith(tool.STRIP_ORIGIN_PREFIX)
+
     def test_an_unreadable_seed_registration_hands_over_the_case_unchanged(self, monkeypatch):
         from tools.eigenhand import pfad as tool
 
@@ -1977,7 +2048,7 @@ class TestInputStages:
         crop[2:6, 20:200] = 0.1  # ink nowhere near the printed band
         case = self._word_case(crop, 100, 60, [0, 0, 240, 160])
         monkeypatch.setattr(tool, "_composed_width_units", lambda _case: 8.0)
-        adapted = tool.adapt_case(case, tool.FollowerInput(register_seed=True), xh_px=40.0)
+        adapted = tool.adapt_case(case, tool.FollowerInput(register_seed="ky"), xh_px=40.0)
         assert adapted.case is case and adapted.case.seed_x_scale == 1.0
         assert adapted.readings["seed"]["applied"] is False and "unreadable" in adapted.readings["seed"]["reason"]
 
@@ -1995,7 +2066,8 @@ class TestInputStages:
         ("flags", "line"),
         [
             (["--no-mask-labels", "--resample-plate"], "--fassung F01 --no-mask-labels --resample-plate --apply"),
-            (["--mask-labels", "--register-seed"], "--fassung F01 --register-seed --apply"),
+            (["--mask-labels", "--register-seed", "ky"], "--fassung F01 --register-seed ky --apply"),
+            (["--register-seed", "k"], "--fassung F01 --register-seed k --apply"),
             ([], "--fassung F01 --apply"),
         ],
     )

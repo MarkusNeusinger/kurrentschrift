@@ -111,8 +111,11 @@ opt-in until a pre-registered round carries them:
                        --no-mask-labels reads them as ink again)
     --resample-plate   follow the crop at the plate's 31 px per x-height and
                        map the Bahn back into strip pixels
-    --register-seed    lay the seed on the hand's own x-height, baseline and
-                       width, measured off the ink, instead of the printed ruling
+    --register-seed {k,ky}
+                       lay the seed on the hand's own proportions, measured off
+                       the ink, instead of the printed ruling: ``k`` its width
+                       alone, ``ky`` its x-height and baseline too. Only on a
+                       case cut from a Bogen strip — a plate case skips it
 
 With all three off (``--no-mask-labels`` and neither of the others) the run is
 the one every Bahn stored before that date was made on, byte for byte. The
@@ -158,6 +161,7 @@ from core.eigenhand.follower_input import (  # noqa: E402
     ink_of,
     label_zones_px,
     register_seed,
+    register_seed_width,
     resample_to_plate,
     scale_index,
     scale_zones,
@@ -224,6 +228,16 @@ MEASURED_SENSORS = (KEY_EXKURSION, KEY_AIOU)
 # `tests/test_eigenhand_pfad.py` against every key the traffic light reads.
 STORED_SENSORS = (*FOLLOWER_SENSORS, *MEASURED_SENSORS)
 
+# The two ways stage 3 can run (`--register-seed {k,ky}`): the x scale alone,
+# or the x scale on top of the registered x-height and baseline.
+SEED_REGISTRATIONS = ("k", "ky")
+
+# What a word case cut from a Bogen strip carries as its `origin` (a plate case
+# says ``fixture:`` or ``live:``). Stage 3 runs only behind it — R-gate,
+# messjournal §14 „Stufe 3 gezielt `sep24b`" — so the plate path stays
+# byte-identical by construction instead of by measurement.
+STRIP_ORIGIN_PREFIX = "eigenhand:"
+
 
 @dataclass(frozen=True)
 class FollowerInput:
@@ -245,22 +259,35 @@ class FollowerInput:
     With all three off `follow_row` does not even call `adapt_case`: that is
     the path every Bahn stored before that date was made on, and it has to
     stay reachable byte for byte.
+
+    `register_seed` names HOW MUCH of stage 3 runs, or None for none of it
+    (R-split, messjournal §14 „Stufe 3 gezielt `sep24b`"): ``"k"`` scales
+    the seed's x alone against the case's own lineature, ``"ky"`` is the
+    whole anisotropic registration — x-height, baseline and then k against
+    the registered x-height, as `sep24` measured it.
     """
 
     mask_labels: bool = True
     resample_plate: bool = False
-    register_seed: bool = False
+    register_seed: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.register_seed not in (None, *SEED_REGISTRATIONS):
+            raise ValueError(f"register_seed is one of {SEED_REGISTRATIONS} or None, not {self.register_seed!r}")
 
     @property
     def active(self) -> bool:
-        return self.mask_labels or self.resample_plate or self.register_seed
+        return self.mask_labels or self.resample_plate or self.register_seed is not None
 
     def konfiguration(self) -> dict[str, Any]:
         """The stages as the stored row names them — the resampling target spelled out, not a bool."""
         return {
             "mask_labels": self.mask_labels,
             "resample_xh_px": PLATE_XH_PX if self.resample_plate else None,
-            "register_seed": self.register_seed,
+            # False rather than None when off: every row stored since the mask
+            # became the default (2026-09-24) says False here, and a default
+            # run has to keep storing the same bytes.
+            "register_seed": self.register_seed or False,
         }
 
 
@@ -322,6 +349,11 @@ def adapt_case(
 
     `calibration` and `bounds` are stage 3's (see `register_seed`); a caller
     other than this tool passes them only to reproduce a registered experiment.
+
+    Stage 3 runs only on a case cut from a Bogen strip (`origin` starting with
+    `STRIP_ORIGIN_PREFIX`); any other case skips it, and the reason stands in
+    `readings`. Stages 1 and 2 need no such gate — on a plate crop they are
+    no-ops by construction — so a plate case comes back unchanged.
     """
     readings: dict[str, Any] = {}
     fx = fy = 1.0
@@ -352,10 +384,27 @@ def adapt_case(
                 width_map=width_map,
             )
         readings["scale"] = [round(fx, 6), round(fy, 6)]
-    if stages.register_seed:
-        seed = register_seed(
-            case.skel, case.baseline_y, case.midband_y, case.rect[1], _composed_width_units(case), calibration, bounds
-        )
+    if stages.register_seed is not None and not str(case.origin).startswith(STRIP_ORIGIN_PREFIX):
+        # A registration moves every seed it touches, so on the plate it would
+        # be measured against the plate's own ruler, not proven harmless; the
+        # gate keeps it off the plate rather than asking the ruler to forgive it.
+        readings["seed"] = {
+            "applied": False,
+            "reason": f"not strip input (origin {case.origin!r}): stage 3 runs only on a Bogen box",
+        }
+    elif stages.register_seed is not None:
+        if stages.register_seed == "k":
+            seed = register_seed_width(case.skel, case.baseline_y, case.midband_y, _composed_width_units(case), bounds)
+        else:
+            seed = register_seed(
+                case.skel,
+                case.baseline_y,
+                case.midband_y,
+                case.rect[1],
+                _composed_width_units(case),
+                calibration,
+                bounds,
+            )
         if seed.applied:
             case = replace(case, baseline_y=seed.baseline_y, midband_y=seed.midband_y, seed_x_scale=seed.x_scale)
         readings["seed"] = {
@@ -555,7 +604,7 @@ def _case_for_box(prior: dict, plane: np.ndarray, frame: dict, word: str, form: 
             style_ratio=manifest.get("style_ratio") or [1, 1, 1],
             width_resolver=manifest.get("width_resolver") or "pressure",
             nib_units=manifest.get("constant_nib_units"),
-            origin=f"eigenhand:live:{prior['source_id']}",
+            origin=f"{STRIP_ORIGIN_PREFIX}live:{prior['source_id']}",
             scorable=not missing,
             rect=[x0, y0, x1, y1],
             baseline_y=int(round(frame["baseline_row"])),
@@ -898,9 +947,12 @@ def _input_line(adapted: AdaptedCase) -> str:
         parts.append(f"Maßstab ×{adapted.fy:.4f}" if adapted.fy != 1.0 else "Maßstab wie Tafel")
     seed = readings.get("seed")
     if seed is not None:
-        parts.append(
-            f"Saat sy {seed['sy']:.3f} k {seed['k']:.3f}" if seed["applied"] else f"Saat unverändert ({seed['reason']})"
-        )
+        if not seed["applied"]:
+            parts.append(f"Saat unverändert ({seed['reason']})")
+        else:
+            # `--register-seed k` reads no sy: the x-height stays the case's.
+            scales = " ".join(f"{key} {seed[key]:.3f}" for key in ("sy", "k") if key in seed)
+            parts.append(f"Saat {scales}")
     return " · ".join(parts)
 
 
@@ -1283,8 +1335,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     stage.add_argument(
         "--register-seed",
-        action="store_true",
-        help="lay the seed on the hand's own x-height, baseline and width, measured off the ink",
+        choices=SEED_REGISTRATIONS,
+        default=None,
+        help=(
+            "lay the seed on the hand's own proportions, measured off the ink: 'k' its width alone, "
+            "'ky' its x-height and baseline too (off without the flag)"
+        ),
     )
     args = ap.parse_args(argv)
     stages = FollowerInput(
@@ -1292,7 +1348,7 @@ def main(argv: list[str] | None = None) -> int:
         args.resample_plate,
         args.register_seed,
     )
-    named_stages = args.mask_labels is not None or args.resample_plate or args.register_seed
+    named_stages = args.mask_labels is not None or args.resample_plate or args.register_seed is not None
 
     if args.spans and args.replace_authored:
         # Not a compatibility detail: `--spans` is the mode that cannot lose a
@@ -1461,7 +1517,7 @@ def main(argv: list[str] | None = None) -> int:
                     else (" --mask-labels" if stages.mask_labels else " --no-mask-labels")
                 )
                 + (" --resample-plate" if stages.resample_plate else "")
-                + (" --register-seed" if stages.register_seed else "")
+                + (f" --register-seed {stages.register_seed}" if stages.register_seed else "")
             )
             unreached = [other["fassung"] for other in rows[position + 1 :]]
             raise SystemExit(
