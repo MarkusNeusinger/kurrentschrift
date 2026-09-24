@@ -610,9 +610,24 @@ WIDEST = {
 # inherits real room and the duty to spend it carefully: `kurzglossar.md` is now
 # 12 678 tokens and its own Stand block already warns that the next entry should
 # be paid for by one falling below the threshold.
+#
+# `mess-runde` (43 761 → 48 475) raised 2026-09-24 by the own-hand follower
+# input ladder („Folger-Eingabe-Leiter `sep24`"). The path stood at FOUR tokens
+# of room — every round since `sep11` had landed on it — so no register row
+# could have passed, and a round without one fails `docs_register` instead.
+# This one owes a register row and two `tintenfolger.md` §7.11 rows (the
+# R-gate/R-split arm it leaves open, and R-price on the strip). All three were
+# cut before this raise: the register row from two findings and three caveats
+# to the one number pair that decides it, the §7.11 rows to one clause each;
+# the detail lives in the entry and in §7.9, which no reading path carries
+# whole. The same PR then lands the pre-registration „Stufe 3 gezielt:
+# R-gate + R-split `sep24b`" as its own commit before any arm runs — one more
+# register row and a Stand update of the same §7.11 row — and that is meant to
+# fit inside this ceiling, not to raise it again. Re-measured at 44 068, plus
+# the documented 10 %.
 BUDGETS: dict[str, int] = {
     "mandatory": 74_325,
-    "mess-runde": 43_761,
+    "mess-runde": 48_475,
     "mess-runde-route": 10_487,
     "mess-runde-eintrag": 5_584,
     "glyph-optimierung": 8_504,

@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-24): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **122
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **123
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -724,6 +724,14 @@ freien `meta`): die Indizes werden gegen die Zuglängen geprüft, und eine von
 Hand korrigierte Grenze ist FELDWEISE geschützt — ein gewöhnliches
 Neu-Folgen desselben Kastens geht durch, solange es sie mitbringt.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.3
+
+**Eingabestufen (Streifen-Folger)** — was der Tintenpfad auf einem
+Eigenhand-Streifen BEKOMMT, nie sein Dekoder (der bleibt A45):
+Beschriftungszonen (Vorgabe seit 2026-09-24, aus mit `--no-mask-labels`),
+Plattenmaßstab (`--resample-plate`) und Saat-Registrierung
+(`--register-seed`), die beiden letzten aus. Jede Stufe muss den Plattenpfad
+stehen lassen (Platten-Wächter). `core/eigenhand/follower_input.py`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · messjournal.md §14 „Folger-Eingabe-Leiter `sep24`"
 
 **Span-Zuordner** — setzt die Buchstabengrenzen einer Bahn, hinter der keine
 Dekodierung steht (A48: für von Hand nachgefahrene Bahnen ist die Zuordnung

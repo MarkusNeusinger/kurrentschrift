@@ -248,9 +248,11 @@ die DB) — mit seiner Bedingung.
 | sep12 | Tintenpfad/Kette | [Tintenpfad-Adoption — die formale Runde auf der frischen Wurzel (A45)](#tintenpfad-adoption-sep12--die-formale-runde-auf-der-frischen-wurzel-der-tintenpfad-wird-standard-folger-a45) | Adoption · **adoptiert (A45)** · dazu eine Wurzel-Zeile ohne bewegte Headline | Ein Knopf: Folger-Wechsel Kette v5 → Tintenpfad mit den acht erklärten Schaltern, vorregistriert vor der ersten Zahl, BLAS gepinnt, Wurzel `c7f2efd9cf37…` (2026-09-12T21:33:43+00:00). Die Wurzel reproduziert die `sep10`-Headline ziffernidentisch (0,108339 / 0,148236) — neue Identität, keine Re-Baseline; der Substrat-Pin der 13 Schleifenzeilen kommt unverändert heraus. dev-19: Basis (neu gemessen) 0,045772 · 0,088356 · 0,7660 gegen Arm **0,038351 · 0,048012 · 0,7929**, gepaart **15 : 4** (Δ-Median −0,008311, p 0,019); die Vorgabe ohne die acht (`--legacy-p6`) 0,045033 · 0,090673 · 0,7867 und 7 : 12 — die Schalter SIND der Unterschied. Zähler: `cross_spurious` 10 → 3, `retrace_missing` 7 → 0, `lift_delta_total` 6 → 0, `overlap_cand` 4 → 0, Absorption 89 → 35; dagegen `cross_missing` 12 → 13. Sensoren über 63, gegen die BASIS: Papier-Umkehrungen Maske 44 → **0** (grau 49 → 3), Papier-Strecke Maske 55,57 → 1,20 xh, schlimmster Ausflug 0,323 → 0,091 xh; gegen die VORGABE, weil die Kette den Zähler gar nicht führt: Roh-Knick 10,24° → 8,17°. k0: Soll-Abstand 81 → 80, aiou-Median +0,0520 über 63 bewegte Wörter, **Gate (4) aber nicht verwertbar** — die Stack-Warnung fällt, weil der Tintenpfad keinen Struktur-Wächter hat, der Sensor auf einem Folger-PAAR also konstruktionsbedingt blind ist; das Kill-Kriterium war so zu weit geschrieben, das Verdikt hängt an den Gates (1)–(3), und die strenge Lesart liegt beim Autor. Nebenbei: `ink_bridge_xh=1.0` testet 7 Lücken und brückt **null** — auf dieser Wurzel inert, bleibt als Lesung |
 | sep13 | Tintenpfad | [Laufform A48 — die Saat-Korrespondenz](#laufform-a48-sep13--die-saat-korrespondenz-die-zuordnung-trägt-die-zeile-nicht) | Pre-Reg + gemessen · **ehrliches Negativ** an Gate (G) · Mechanismus bestätigt, nichts adoptiert | Weg (1) der §7.11-Zeile „Vorkommen aus der Tintenpfad-Bahn" (Autor-Entscheid **A48**): die Anker über die SAAT zuordnen statt über die Bogenlänge. Ein Knopf `harvest --occurrences {fit,tintenpfad}`, Vorgabe `fit` (ausgelieferter Stand byte-gleich, Wort-Records bis auf `seconds`). **Die Zuordnung trägt:** Gate (K), wie vorregistriert über die KÖRPER-ITEMS gelesen, steht bei **328 von 334 = 98,2 %** (Schranke 80 %; durchgehend bewiesen 88,9 %, über die Item-Punkte 98,8 %, Beweis-Reste Median 8,0e-15 je Slot, max 1,03e-13) — das dritte Glied der Kette ist das einzige, über das `core/compose.py` nicht Buch führt, und es wird je Punkt BEWIESEN statt geschätzt, lokal, weil der `d`-Anstieg stückweise affin ist. Daneben, und KEINE Gate-Zahl: die Identifikation greift auf **277 von 277** Slots, gesetzt werden **92,5 %** aller Anker (30 736 / 33 240) — die Anker-Quote zählt eine andere Frage, und die 2 504 fehlenden sind nachgezählt: **85,2 %** liegen gar nicht erst im komponierten Item (weggeschnitten), 14,5 % sind beweis-bedingt, **0,3 %** scheitern an der Saat. (G) fällt damit an der Schere, nicht am Beweis und nicht an der Saat. **Die Zeile trägt nicht:** die Komposition schneidet die Kopplungs-Enden weg, es fehlen **7,5 %** aller Anker (2 504 / 33 240; Median-Slot 7 von 120, die 212 unvollständigen 9), nur 65 Slots sind vollständig, und die Ganz-oder-gar-nicht-Regel lässt **58 von 277** Vorkommen übrig (Fit-Kontrolle desselben Laufs 227), Zeilen mit n ≥ 4 **5 statt 16**. Gate (F) grün (zwei Ernten byte-gleich, Diagnose nur in `seconds` verschieden), (J) grün (`core/` unberührt, 2 903 Tests mit den lokalen Fixtures, 2 892 ohne). Gate (H): Anker-Abstand zur schlüsselgleichen Kontrollkarte Median **0,0523 xh** (p90 0,1328, max 0,2891), auf den 58 gemeinsamen Vorkommen 0,0542 / 0,1436 / 0,5235 — weit über dem Ableseboden. Gate (I) asymmetrisch: gegen die stehende Karte Wörter **0,104883** (−0,003456, grün) und Paare 0,149306 (+0,001070, **rot** bei Schranke +0,0005, kein Kill); gegen die KONTROLLE auf gleicher Schlüsselmenge (0,108951 / 0,148119) Wörter −0,004068 bei **31 : 21 : 44** gepaart — mit dem Vorbehalt, dass die Arm-Zeilen auf viel weniger Vorkommen stehen (`e` n = 3 gegen 30). Rettungswege: die geschnittenen Enden fitten (Weg 2), oder `core/compose.py` einen Abtastindex mitführen lassen (Autor-Entscheid) |
 | sep20 | Eigenhand | [Tintentreue — vorläufige Schwellen](#tintentreue-sep20--vorregistrierung-der-vorläufigen-schwellen-je-kasten) | Pre-Reg · **nichts adoptiert** | Die Ampel je Wortkasten (`core/eigenhand/tintentreue.py`): drei gemessene Stufen, ein grauer Zustand mit Grund, der schlechteste Sensor entscheidet (`severity = max` + `SENSOR_ORDER`, nicht `_summarise`). Acht Startwerte samt Herkunft, alle an der PLATTE bzw. dev-19 geborgt und als „vorläufig" etikettiert, bis die EINE blinde Kalibrierung je Hand läuft (Q10 b); Format-1-Zeilen bleiben grau, `jumps`/`hairpins` bewerten mangels Anker nicht. Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile; kein Lineal bewegt, keine Wurzel angefasst |
-| sep20 | Eigenhand | [Trainingssatz — zwei Rückhaltemengen](#trainingssatz-sep20--vorregistrierung-der-zwei-rückhaltemengen) | Pre-Reg · **nichts gezogen, nichts gemessen** | Die Ziehung, nach der `tools/eigenhand/training_set.py` die von Hand nachgefahrenen Bahnen teilt: `practice` + ZWEI getrennte Rückhaltemengen (`holdout-follower`, `holdout-release`) — Autor-Entscheid vom 2026-09-20 gegen die Plan-Empfehlung, und damit zugleich FM3 (b). Einheit ist der STREIFEN (Fassungen sind Wiederholungen, Kästen einer Zeile ein Zug); die Zugehörigkeit ist eine reine Funktion aus Schlüssel, Hand und Streifen-ID, gezogen über den EINGEFRORENEN Plan — ohne Netz, ohne eine einzige Bahn, ein zweites Ziehen verweigert, ein später angehängter Streifen wird mit Datum nachgetragen. Fünf Gates für den Tag der ersten Zahl (eigene Vorregistrierung · einmaliger Verbrauch · die beiden Mengen sehen einander nicht · keine Bench-Berührung · kein Byte im Repo). Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
+| sep20 | Eigenhand | [Trainingssatz — zwei Rückhaltemengen](#trainingssatz-sep20--vorregistrierung-der-zwei-rückhaltemengen) | Pre-Reg · **gezogen 2026-09-21, nichts gemessen** | **Nachtrag 2026-09-24:** gezogen am 2026-09-21, Schlüssel `mn-suetterlin-2026-09-21`, 265 Streifen — `practice` 160 · `holdout-follower` 49 · `holdout-release` 56, maßgeblich die Kartei im Archiv-Schnappschuss `2026-09-21-0928` (`kurrentschrift-data` `9efe356`); hier stand bis dahin „nichts gezogen", weil der lokale Datenbestand veraltet war. Die Ziehung, nach der `tools/eigenhand/training_set.py` die von Hand nachgefahrenen Bahnen teilt: `practice` + ZWEI getrennte Rückhaltemengen (`holdout-follower`, `holdout-release`) — Autor-Entscheid vom 2026-09-20 gegen die Plan-Empfehlung, und damit zugleich FM3 (b). Einheit ist der STREIFEN (Fassungen sind Wiederholungen, Kästen einer Zeile ein Zug); die Zugehörigkeit ist eine reine Funktion aus Schlüssel, Hand und Streifen-ID, gezogen über den EINGEFRORENEN Plan — ohne Netz, ohne eine einzige Bahn, ein zweites Ziehen verweigert, ein später angehängter Streifen wird mit Datum nachgetragen. Fünf Gates für den Tag der ersten Zahl (eigene Vorregistrierung · einmaliger Verbrauch · die beiden Mengen sehen einander nicht · keine Bench-Berührung · kein Byte im Repo). Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
 | sep20 | Eigenhand | [Tintentreue-Kalibrierung — die blinde Runde](#tintentreue-kalibrierung-sep20--vorregistrierung-der-blinden-runde-je-hand) | Pre-Reg · **nichts beurteilt, nichts adoptiert** | Die Runde, die die acht geborgten Schwellen ersetzt (Q10 b, gebaut als letzter Posten der Phase 2 — Frage F): 30 Kästen einer Hand, blind in **drei Stufen plus vier Merkmale** beurteilt, Abbildung nicht interpretativ (die gesetzte Stufe IST die Stufe, je Merkmal genau ein Sensor). Nachbau statt Konfiguration — `humanbench` liest eingefrorene Fixture-Crops und hat sechs Fit-Kategorien —, geteilt wird nur die SEITE (`STRIP_CATEGORIES`), der Bauer wohnt bei den Pixeln (`tools/eigenhand/tintentreue_calibration.py`); Verfahren in [`menschliche-bewertung.md`](menschliche-bewertung.md) §8b, vor dem Code geschrieben. Ziehung nach der VORLÄUFIGEN Stufe geschichtet (Prävalenz damit keine Aussage über die Hand), Auswerteplan mit Verlässlichkeits-Schranke, Mindestbesetzung, Quantil-Schnitt und Rundung in die strengere Richtung. Gates (F)–(H) neben den Adoptions-Gates (A)–(E) von „Tintentreue `sep20`"; `VORLAEUFIG` unberührt, das Etikett bleibt stehen. Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
 | sep20 | Eigenhand | [Span-Zuordner — Grenzen ohne Dekodierung](#span-zuordner-sep20--die-zuordnung-über-eine-nachgefahrene-bahn-gegen-die-dekodierung-gemessen) | Pre-Reg (geschwächt) + gemessen · **adoptiert: `dtw`** | Die Buchstabengrenzen einer Bahn, hinter der keine Dekodierung steht (A48: für authored-Bahnen ist die Zuordnung neue Arbeit). Ein Knopf, zwei Arme — monotone Ausrichtung gegen ordnungslos-nächster Saat-Punkt —, gemessen gegen die Zuordnung des Folgers auf 63 Wörtern der eingefrorenen Wurzel `5d4556b87573`, BLAS gepinnt. Beide Arme halten beide Schranken; die Entscheidung fällt am Maximum: die ordnungslose Basis legt ihre schlechteste Naht 2,16 xh daneben (ein ganzer Buchstabe), die monotone 0,34 xh. Ausdrücklich benannte Grenze: die Referenzbahn wurde gegen genau diese Saat dekodiert, die Zahl ist eine obere Schranke — die Messung, die das bricht, läuft auf den nachgefahrenen Bahnen des Autors und bekommt ihre eigene Vorregistrierung. Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
+| sep24 | Eigenhand/Tintenpfad | [Folger-Eingabe-Leiter](#folger-eingabe-leiter-sep24--die-eigene-hand-in-drei-sprossen-a1-und-a2-nicht-besser-a3-raus-am-platten-wächter) | Pre-Reg + gemessen (explorativ, n = 7) · **A1/A2 nicht besser, A3 raus** · Beschriftungszonen per Autor-Entscheid Vorgabe | A3 (Saat-Registrierung) hebt die Hand 7 von 7 (cov-Median 0,736 → 0,959) und reißt den dev-19-aiou 0,7929 → 0,7895; Vorregistrierung ohne Vor-Arm-Hash |
+| sep24 | Eigenhand/Tintenpfad | [Stufe 3 gezielt: R-gate + R-split `sep24b`](#stufe-3-gezielt-r-gate--r-split-sep24b--vorregistrierung-bevor-ein-arm-läuft) | Pre-Reg · **keine Zahl** (Fassung 3a) | C0 → R-k → R-ky, Stufe 3 nur auf Bogen-Eingabe; (a) die 7 Kästen, (b) 7 `practice`-Kästen der Ziehung vom 2026-09-21 (`mn-suetterlin-2026-09-21`) ab S0182 vom nächsten Bogen B0005 — nichts mehr zu ziehen; Bahn-Unstetigkeit + Kurzsehnen nur berichtend |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -17790,6 +17792,26 @@ Streifens, der Statusfilter und die Trennung von den Bench-Wurzeln — gegen
 lauffähig: er zieht reservierte Pixel aus der geteilten Datenbank, und es
 gibt noch keine einzige Bahn, die er ziehen könnte.
 
+**Nachtrag 2026-09-24 — gezogen ist am 2026-09-21.** Schlüssel
+`mn-suetterlin-2026-09-21`, über 265 Streifen (der Plan einschließlich der
+Alltagswelle bis `S0265`): `practice` 160 · `holdout-follower` 49 ·
+`holdout-release` 56. Maßgeblich ist die Kartei im Archiv-Schnappschuss
+`own-hand/mn-suetterlin/2026-09-21-0928` in `kurrentschrift-data` (Commit
+`9efe356`), am 2026-09-24 nur lesend geprüft. Wo bis dahin „nicht gezogen"
+stand, ist es berichtigt: die Registerzeile dieses Eintrags und der
+Stand-Block von `eigenhand-erfassung.md` — am 2026-09-20 richtig und danach
+nicht nachgezogen — und `sep24b` in den Fassungen 1 und 2, gestützt auf den
+lokalen Datenbestand `data/samples/own-hand/mn-suetterlin`. Der war
+veraltet: seine Kartei stammt vom 2026-09-09 und trägt keinen
+`holdout`-Satz, weil die Sitzung vom 2026-09-21 in einem anderen
+Datenbestand gearbeitet hatte. Die Eigenhand-Werkzeuge laden `.env` nicht,
+sehen das Archiv also nur mit `--archive` (oder exportiertem
+`$KURRENTSCHRIFT_ARCHIVE`) — ohne es hätte ein lokales `--draw` die
+Verweigerung des zweiten Ziehens umgangen. Es wurde nicht aufgerufen, und es
+wird für diese Hand nie wieder aufgerufen. Welcher Streifen in welcher Menge
+liegt, steht bewusst in keinem Dokument und keinem Commit: der Autor bleibt
+dafür blind.
+
 ### Tintentreue-Kalibrierung `sep20` — Vorregistrierung der blinden Runde je Hand
 
 Vorregistrierung VOR der Runde (die §11b-Praxis). Gegenstand ist die EINE
@@ -18054,3 +18076,425 @@ reproduzierbar:
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run python -m tools.eigenhand.spans \
   --check --expect-root 5d4556b87573 --json <bericht.json>
 ```
+
+### Folger-Eingabe-Leiter `sep24` — die eigene Hand in drei Sprossen: A1 und A2 nicht besser, A3 raus am Platten-Wächter
+
+Vorregistrierung und Messung einer **explorativen** Leiter (n = 7, kein
+Adoptionsanspruch). Gegenstand ist, was der Streifen-Folger BEKOMMT
+(`tools/eigenhand/pfad.py`, Rechenhälfte `core/eigenhand/follower_input.py`),
+nicht der Folger: der Dekoder ist in jedem Arm der A45-Stand
+(`TintenpfadWeights(**KONFIGURATION)`). Anlass war die Eigenhand-Diagnose vom
+2026-09-24: keine der sieben gespeicherten Bahnen brauchbar (drei teilweise),
+die Beschriftung als Tinte gefahren, die Pixelpreise mit 0,44× ihrer Plattenreichweite, die
+Saat auf der gedruckten statt der geschriebenen Lineatur.
+
+**Route und Buchführung.** Die Arme bewegen die Eingabe des Tintenpfads, und
+A3 ist am dev-19 der Platte gemessen — die Route-Spalte trägt darum
+„Eigenhand/Tintenpfad", `verfahren-tintenpfad.md` ihre Ledger-Zeile. Der
+Headline-Ledger bleibt unberührt, keine Wort- oder Paarzahl bewegt sich.
+
+**Frage.** Folgt der Tintenpfad mehr von der Tinte der eigenen Hand, ohne sie
+zu verlassen, wenn seine Eingabe angepasst und sein Dekoder gelassen wird?
+
+**Satz.** Hand `mn-suetterlin`, Fassung F01, Bogen B0001, eine Sitzung:
+S0002 #0–2 (*immediately* · *things* · *doctor*), S0003 #0–2 (*verbleibe* ·
+*gefährlich* · *ehedem*), S0181 #0 (*Kurrentschrift*). Drei Streifen sind
+drei Cluster, selbst 7 : 0 trägt nur p ≈ 0,25; alle sieben hatte die
+Diagnose schon im Detail gesehen. *immediately* ist mit m̄ geschrieben, die
+Formung setzt `mm`.
+
+**Vorregistrierung.** Stempel `2026-09-24T00:43:57+02:00` auf `main` @
+`d79440f`, Arbeitsbaum sauber; die Datei lag im Scratch (`folger-arms/PREREG.md`,
+im Endstand samt Korrekturen und Lauflog sha256 `e49ec791…`). Eingefroren und
+einmal per GET geholt: Streifenebenen, Bogen-Layout, Streifenliste und die Saat
+(22 Chart-, 15 Laufform-Schlüssel); jeder Arm liest denselben Cache. Die
+Stilkonstanten und der Platten-Wächter stehen auf der Wurzel `c7f2efd9cf37…`
+(`exported_at` 2026-09-12T21:33:43+00:00), BLAS gepinnt
+(`OPENBLAS/OMP/MKL_NUM_THREADS=1`). Zwei datierte Korrekturen vor dem ersten
+Arm: (1) Zonen-Rechtecke skalieren als Pixelkanten, Zeilen und Bahnpunkte mit
+der Pixelmitte; (2) die Arme laufen über die Repo-Schalter von
+`exp/eigenhand-folger-eingabe` @ `13fdbd7` statt über den Scratch-Läufer —
+vorher mit `--check-impl` als fall-gleich gezeigt (7 Kästen × A1–A3, 63
+Plattenwörter) —, und A3 bleibt ungeklemmt (`bounds=None`).
+
+**Die Leiter** — kumulativ, ein Knopf je Sprosse, jede gegen ihre Vorgängerin:
+
+| Sprosse | Knopf |
+|---|---|
+| **B0** | der Stand, neu gelaufen (`_case_for_box` + `follow_case`) — die Basis |
+| **A1** | + Beschriftungszonen: Streifen-ID, Herkunftszeile und Wort-Beschriftungen NACH der Binarisierung aus Maske und Skelett gelöscht |
+| **A2** | + Plattenmaßstab: der Kasten von 70,86 auf 31 px/xh umgetastet, die Bahn exakt zurück |
+| **A3** | + Saat-Registrierung, anisotrop: sy und Grundlinie aus Skelett-Moden (an den 63 Plattenwörtern kalibriert, R = 9/14, O = −1/6), sx = k aus Tinten- gegen Kompositionsbreite |
+
+**Maße** (`score.py`, sha256 `6531a729…`, über die Runde unverändert), in
+Streifenpixeln des Kastens und NUR gegen die Handschrift: H ist die A1-Maske in
+voller Auflösung, für JEDEN Arm, auch B0 — das Lineal wandert nicht mit dem
+Arm —, xh die gedruckte x-Höhe (70,86 px). **cov** ↑ Anteil der Skelettlänge
+von H binnen 0,12 xh an der Bahn · **off** ↓ Anteil der Bahnlänge weiter als
+0,12 xh von H · **runs** ↓ Züge · **chords** ↓ Strecken > 1,5 px neben H, länger
+als 0,2 xh. AIoU auf H und die Tintentreue-Ampel nur berichtet.
+
+**Regel.** Eine Sprosse schlägt ihre Vorgängerin genau dann, wenn (i) in ≥ 5
+von 7 Kästen cov steigt UND off fällt (off = 0 auf beiden Seiten zählt als
+fallend), (ii) der Median von Δcov ≥ +0,10 ist und (iii) kein Kasten mehr als
+0,05 cov verliert. **Platten-Wächter:** A1 und A2 lassen die dev-19-Folgerausgabe
+byte-gleich (63 Plattenwörter Array-gleich, 19 dev-Wörter Folger-JSON-gleich);
+A3 verschlechtert den dev-19-Median nicht (dtw ≤ 0,038351, aiou ≥ 0,7929, die
+Zeile `sep12`, auf diesem Stack ziffernidentisch nachgemessen), ohne Toleranz.
+Ein gerissener Wächter nimmt die Sprosse heraus.
+
+**Ergebnis** (Stack `13fdbd7`, bei jedem Lauf 0 geänderte Dateien; B0
+reproduziert die registrierte B0 von `d79440f` und die am 2026-09-13
+gespeicherten Format-1-Bahnen Byte für Byte, 7 von 7). cov je Kasten:
+
+| Kasten | B0 | A1 | A2 | A3 |
+|---|---|---|---|---|
+| immediately | 0,6725 | 0,6393 | 0,6408 | 0,9127 |
+| things | 0,6435 | 0,6435 | 0,6950 | 0,9432 |
+| doctor | 0,8101 | 0,8101 | 0,8473 | 0,9070 |
+| verbleibe | 0,6901 | 0,7144 | 0,7358 | 0,9844 |
+| gefährlich | 0,7536 | 0,7559 | 0,7471 | 0,9589 |
+| ehedem | 0,8469 | 0,8625 | 0,8862 | 0,9838 |
+| Kurrentschrift | 0,6345 | 0,6447 | 0,7290 | 0,9810 |
+| **Median** | 0,6901 | 0,7144 | 0,7358 | **0,9589** |
+| Züge / Sehnen gesamt | 61 / 2 | 58 / 0 | 42 / 0 | 25 / 0 |
+| AIoU auf H, Median | 0,520 | 0,545 | 0,563 | 0,758 |
+
+off ist 0 in allen Kästen außer B0 *immediately* (0,0024) und B0
+*Kurrentschrift* (0,0226 — der Zug, der „S0181" fährt). Die Tintentreue
+(Format 2, geborgte Schwellen) sagt für B0, A1 und A2 in 7 von 7 Kästen
+„folgt nicht", für A3 2 „folgt" · 3 „folgt teils" · 2 „folgt nicht"; die
+Absetzer des Folgers fallen über die Leiter 52 → 49 → 36 → 10.
+
+**Verdikt je Sprosse, wörtlich nach der Regel.**
+**A1 schlägt B0 nicht:** (i) 4 von 7, (ii) +0,0023, (iii) schlechtester
+−0,0332 (*immediately*, das m̄-Wort); *things* und *doctor* sind mit Δ = 0 keine
+Gewinne. Wächter bestanden (63/63, 19/19).
+**A2 schlägt A1 nicht:** (i) 6 von 7 (nur *gefährlich* −0,0088), (ii) +0,0237
+— unter der Schranke. Wächter bestanden (63/63, 19/19).
+**A3 ist raus und bekommt kein Verdikt:** auf der Hand hält es alle drei
+Bedingungen (7 von 7, **+0,2481**, schlechtester +0,0597), aber der
+Platten-Wächter reißt — dtw-Median 0,038351 → **0,036680** (bestanden),
+aiou-Median 0,7929 → **0,7895** (gerissen); p90 0,048012 → 0,048630,
+`marks_missing` 0 → 1, `retrace_missing` 0 → 2, `lift_delta_total` 0 → 6.
+Keine Sprosse besteht beides: kein Blindlauf fällig, nichts für die
+Bestätigung nominiert.
+
+**Ein Blindvergleich, der nicht der vorregistrierte ist.** Ein Beurteiler
+ohne Zugriff auf Zahlen und Vorregistrierung hat B0 gegen A3 je Kasten
+verglichen: **7 : 0 : 0 für A3**, ein Strukturunterschied — A3 fährt jedes
+Wort in ein bis zwei Hauptzügen und reitet die Schleifen, B0 zerfällt in 3 bis
+20 Stücke; nur *doctor* war eng. Die Fable-Zweitmeinung teilt die Richtung,
+bucht es aber NICHT als §7-Lauf: das registrierte Paar wäre A3 gegen A2, die
+Seiten folgten einer Paritätsregel statt dem gesäten `blind.py`, der Lauf fand
+statt, obwohl keiner fällig war, und das 7 : 0 vermengt A1 + A2 + A3. Beide
+sahen denselben Restmangel: A3 **zittert fein und sägezahnartig entlang jedes
+Schafts**, zieht **kurze Sehnen über das Weiß** zwischen parallelen Schäften
+und setzt Sporne an Kreuzungen — die „unmotivierten Änderungen" des Autors,
+für cov/off/chords unsichtbar (Radius 8,5 px bei 8–10 px Strichbreite, eine
+Sehne unter 0,2 xh zählt nicht).
+
+**Beobachtungen außerhalb der Regel** (keine ändert ein Verdikt):
+
+1. **sy ist vermutlich Schätzer-Rauschen, k trägt den Gewinn.** Auf
+   Plattenwörtern, deren sy per Definition 1,0 ist, liest der Moden-Schätzer
+   0,13–1,37 (`mit` 0,13 bei k 7,7 und `mit-2` 0,57, die beiden Wörter, an
+   denen die Bereichsgrenzen des Werkzeugs feuern würden; ohne sie
+   0,74–1,37); auf dem Bogen 0,74 (*verbleibe*, *ehedem*)
+   neben 1,00 (*things*, *doctor*) — in EINER Sitzung schwankt eine x-Höhe
+   nicht um 26 %. Die Kalibrierung R = 9/14 ist selbst ein Warnzeichen. k ist
+   direkt gemessen und liegt in jedem Kasten bei 0,70–0,98: die Saat von 1922
+   ist für diese Hand überall zu breit. Ob ein hohes sy den Platten-Median
+   kostet, ist offen: von den acht Wörtern mit sy > 1,15 fallen vier
+   (`die-2`, `das`, `laden` bei 1,35; `will`) und steigen vier (`zwei` bei
+   1,37, `die`, `Wer`, `Galoppieren`). Beides prüft erst R-split.
+2. **Die Registrierung steht auf dem Streifen am Anschlag.** ty ±4 px der
+   eingefrorenen Registrierung (`core/word_metric.py`) sitzt in 12 von 14
+   B0/A1-Zeilen am Rand, in 4 von 7 A2- und 1 von 7 A3-Zeilen; bei 31 px/xh
+   sind 4 px 0,13 statt 0,056 xh. Ein Teil des A2-Gewinns kann also diese
+   Pixel-Konstante sein (R-price), nicht das Umtasten selbst.
+3. **A1 wirkt über die Registrierung, nicht über den Folger:** die
+   Beschriftungstinte zieht tx (*Kurrentschrift* 68 → 236 px, *immediately*
+   −42 → −8); wo tx und ty bleiben (*things*, *doctor*), bleibt die Bahn.
+4. **Der Wächter reißt am Medianwort, nicht an der Katastrophe.** `mit` wird
+   von der ungeklemmten Registrierung zerlegt (k 7,71, sy 0,129; dtw 0,0405 →
+   0,3186), verschiebt aber nur Ränge; der Median ist danach `die-2`, selbst
+   0,7929 → 0,7895. Je Wort steigt aiou in 8, fällt in 10, 1 gleich: auf der
+   Platte ist A3 etwa neutral, leicht schlechter. Die Bereichsgrenzen des
+   Werkzeugs retten den Wächter nicht (`mit` und `mit-2` auf der Basis:
+   0,038371 / 0,7895).
+5. **Nach A1 prüft Regel (i) praktisch nur cov** — off ist überall 0.
+6. **Der Absetzer-Befund der Diagnose war falsch, darum fällt ihr Fix (b)
+   weg.** Sie las den Absetzer-Soll als „nur Körperzüge, 5 von 7 Wörtern
+   erreichen nie grün" und schlug vor, i-Punkt, ä-Punkte und u-Bogen in den
+   Soll zu zählen, als datierte Korrektur von „Tintentreue `sep20`". Der
+   Sensor liest aber `paper_lifts + 1`, und `paper_lifts` zählt nur die
+   Absetzer, die der Folger SELBST macht; ein Absetzer, den die Saat vorsieht —
+   genau die Marken —, beendet den Zug ungezählt (`seed_lifts`, getrennt
+   geführt). Beleg: A3 *Kurrentschrift* mit 3 Zügen (Körper, u-Bogen,
+   i-Punkt), `paper_lifts` 0, `seed_lifts` 2 → „folgt". Mit Fix (b) läse jedes
+   richtig gefolgte Wort mit Punkten Züge zu wenig. Berichtigt ist nur der
+   Docstring von `sensoren_of` (`core/eigenhand/tintentreue.py`), die Rechnung
+   nicht; benannt bleibt die echte Grenze: Wörter mit Ziffern oder
+   Satzzeichen (`body_runs_expected` > 1) lesen auch bei perfekter Bahn zu
+   wenig Züge — Sache der Kalibrierrunde.
+
+**Eine Prozesslücke, benannt statt beschönigt.** Die Vorregistrierung trug
+keinen Vor-Arm-Hash und keinen Commit. Sie wurde um 01:51 fortgeschrieben,
+nach den Arm-Verzeichnissen (01:48), mit Korrektur 2 und dem Lauflog, und die
+Prüfsumme in `results.json` ist die der fortgeschriebenen Datei. Dass die
+Regel vor den Armen stand, ist damit nicht prüfbar; der Inhalt spricht dafür,
+sie lässt A1 und A2 durchfallen. **Konsequenz:** die nächste Vorregistrierung
+(„Stufe 3 gezielt: R-gate + R-split `sep24b`") ist ein eigener Commit im Repo,
+BEVOR ein Arm läuft — ihr Commit-Hash ist der Vor-Arm-Hash.
+
+**Autor-Entscheid vom 2026-09-24: die Beschriftungszonen werden trotzdem
+Vorgabe** — nicht als gemessener Gewinn, sondern als Korrektur der Eingabe.
+Eine Maske kann keine Tinte zum Decken hinzufügen, sie nimmt fremde weg (off
+0,0226 → 0 auf *Kurrentschrift*, Sehnen 2 → 0); `--no-mask-labels` schaltet sie
+ab. Plattenmaßstab und Saat-Registrierung bleiben aus. Die Beweise auf dem
+Commit der Vorgabe (`14e5164`, BLAS gepinnt): der Standard-Plattenpfad
+(`tools.pairlab.tintenpfad --all --set words`) ist gegen den gespeicherten
+Basis-Kandidaten 63 von 63 Zeilen byte-gleich (ohne Uhrzeitfelder), dev-19
+ziffernidentisch 0,038351 · 0,048012 · 0,7929; die Stufe auf jedem Plattenfall
+63/63 Array-gleich, 19/19 Folger-JSON-gleich; und der Vorgabe-Lauf von
+`follow_row` über die 7 Kästen ist die registrierte Sprosse A1, 7 von 7
+(Züge, Registrierung, x-Höhe, Sensoren, Eingabe-Lesung).
+
+**Rettungswege** (§7.9): stehend aus der Vorregistrierung R-price · R-reach ·
+R-slant · R-grid · R-truth · R-forms · R-loops; neu **R-gate** — Stufe 3 NUR
+auf Bogen-Eingabe, der Platten-Wächter wird Byte-Identität per Konstruktion,
+mit der ehrlichen Kehrseite, dass Stufe 3 dem Platten-Lineal entzogen statt
+dort als harmlos bewiesen wird (Beobachtung 4: etwa neutral, −0,0034 am
+Medianwort) — und **R-split**: k allein, dann sy + Grundlinie als eigene
+Sprosse (ob ein hohes sy den Platten-Median kostet, ist nach Beobachtung 1
+eine Hypothese: vier der acht Wörter mit sy > 1,15 fallen, vier steigen);
+dazu ein Sensor für den Restmangel als Berichtsgröße. Beide stehen im
+nächsten Eintrag vorregistriert.
+
+**Welche eingefrorenen Lineale sich nicht bewegt haben.** Kein Edit an
+`core/word_metric.py`, `core/quality*.py`, `tools/pairlab/tintenpfad.py` oder
+`tools/tracebench`; keine Fixture-Wurzel geschrieben; gegen die API nur GET,
+nichts nach `data/samples/own-hand` oder ins Archiv. Läufer, Bahnen und
+Übersichten liegen im Scratch (`folger-arms/`) — die Pixel sind reserviert.
+
+### Stufe 3 gezielt: R-gate + R-split `sep24b` — Vorregistrierung, bevor ein Arm läuft
+
+**Status: vorregistriert, keine Zahl.** Geschrieben am
+`2026-09-24T08:34+02:00` auf `exp/eigenhand-folger-eingabe` @ `e6e7fea`
+(Fassung 1, Commit `6a59436`); nach einer Durchsicht und noch vor jedem Arm
+überarbeitet am `2026-09-24T08:53+02:00` (Fassung 2, Commit `95b481a`:
+Paket-Nominierung, Berichtslauf ohne Tor, Beweislast G1/G2, Schalterform,
+Rückhalte-Wortlaut, Blindlauf-Skript, maßgebliche Referenz); noch immer vor
+jedem Arm berichtigt am `2026-09-24T09:05+02:00` (**Fassung 3**). Fassung 3
+hat einen einzigen Anlass: Fassung 1 und 2 behaupteten, es sei nicht gezogen,
+und ließen den Autor darum ziehen. Das war falsch — gezogen ist seit dem
+2026-09-21 (Nachtrag unter „Trainingssatz `sep20`"); die Behauptung stützte
+sich auf einen veralteten lokalen Datenbestand. Fassung 3 ersetzt darum
+Zulässigkeit und Autorenschritte von Stufe (b), liest das Auffüllen am
+nachprüfbaren Einlesedatum und benennt, was der Blindlauf über die
+Zugehörigkeit verrät; jede Änderung trägt die Marke *Fassung 3*, alles andere
+steht wie in Fassung 2. Noch immer vor jedem Arm berichtigt am
+`2026-09-24T09:14+02:00` (**Fassung 3a**, nach einer Fable-Durchsicht): Sie nimmt
+die Lage der drei Diagnose-Streifen wieder heraus, die Fassung 3 genannt hatte,
+denn Zugehörigkeit steht in keinem Dokument. Außerdem legt sie die
+Auffüll-Reihenfolge fest. Die Änderungen tragen die Marke *Fassung 3a*.
+Arbeitsbaum jeweils sauber. Der
+**Vor-Arm-Hash** — der, der `sep24` fehlte — ist der letzte Commit, der
+diesen Eintrag ändert: kein Arm läuft auf einem Stand ohne ihn, und ab ihm
+steht jede Abweichung als datierter Nachtrag UNTER diesem Eintrag — der
+Text darüber wird nicht mehr editiert. Der Arm-Code entsteht erst danach,
+in einem eigenen Commit und in einem eigenen PR, nicht in diesem.
+
+**Maßgebliche Referenz.** Der Autor squash-merged; danach löst `git log
+main` den Branch-Hash nicht mehr auf, er bleibt nur in der Commit-Liste des
+PRs. Maßgeblich ist darum der **Squash-Commit dieses PRs auf `main`**: ein
+datierter Nachtrag nach dem Merge nennt ihn, den Branch-Hash und die
+PR-Nummer. Weil der Arm-Code nicht in diesem PR liegt, ist der Squash-Commit
+selbst Vor-Arm. Läuft ein Arm vor dem Merge, nennt sein Lauflog den
+Branch-Hash.
+
+**Frage.** Trägt Stufe 3 den Gewinn der eigenen Hand aus `sep24`, wenn sie
+nur auf Bogen-Eingabe läuft (**R-gate**) und in ihre zwei Skalen zerlegt
+wird (**R-split**) — und welche der beiden trägt ihn?
+
+**Die Leiter** — ein Knopf je Sprosse, jede gegen ihre Vorgängerin:
+
+| Sprosse | Knopf |
+|---|---|
+| **C0** (Basis) | Beschriftungszonen (Vorgabe seit `14e5164`) + Plattenmaßstab (`--resample-plate`) — der Stand, auf dem `sep24` den A3-Gewinn gemessen hat. A2 wird damit NICHT adoptiert, seine eigene Frage ist R-price |
+| **R-k** | + nur die x-Skala der Saat: k = Tintenbreite / (Kompositionsbreite · x-Höhe des Falls), Breiten wie in `register_seed` (x-Ausdehnung des beschriftungsfreien Skeletts gegen die der komponierten Saat-Items), die x-Höhe die des Falls nach Stufe 2; Grundlinie und x-Höhe bleiben gedruckt. Außerhalb von `SEED_SCALE_BOUNDS` Identität mit Grund, nie geklemmt |
+| **R-ky** | + sy und Grundlinie aus den Skelett-Moden (`PLATE_MODE_CALIBRATION`, R = 9/14, O = −1/6), k dann gegen die registrierte x-Höhe — Stufe 3 wie in `sep24`, mit den Bereichsgrenzen des Werkzeugs |
+
+Schalter (gebaut im Arm-Commit): `--register-seed {k,ky}`, ohne Wert
+aus. Heute ist `--register-seed` ein Bool-Schalter (Stufe 3 wie `sep24`,
+ohne Tor); der Arm-Commit ändert seine Form, und `werkzeuge.md`, Glossar,
+Kurzglossar und Changelog-Fragment ziehen im selben Commit nach.
+
+**Das Tor, und sein Beweis (R-gate).** Stufe 3 läuft nur auf einem Fall,
+dessen `origin` mit `eigenhand:` beginnt — so setzt ihn `_case_for_box`, ein
+Plattenfall trägt `fixture:`; jeder andere Fall kommt aus `adapt_case`
+unverändert zurück, mit dem Grund in `readings`. Ein Test pinnt das. Der
+Platten-Wächter ist damit Byte-Identität per Konstruktion, bewiesen auf dem
+Arm-Commit, BLAS gepinnt, bevor ein Arm-Ergebnis angesehen wird:
+**(G1)** der Standard-Plattenpfad (`tools.pairlab.tintenpfad --all --set
+words --jobs 2 --expect-root c7f2efd9cf37`) ist 63 von 63 Zeilen byte-gleich
+(ohne Uhrzeitfelder) zum gespeicherten Basis-Kandidaten
+(`folger-arms/plate/base-cand.json`, sha256 `c6e78cc4…`), dev-19
+ziffernidentisch 0,038351 · 0,048012 · 0,7929; **(G2)** `adapt_case` mit den
+Stufen von C0, R-k und R-ky gibt jeden der 63 Plattenfälle Array-gleich
+zurück (Maske, Skelett, Breite, Rechteck, Lineatur, `seed_x_scale`), und
+`follow_case` auf den 19 dev-Wörtern ist Folger-JSON-gleich. Reißt G1 oder
+G2, ist das ein Fehler im Tor — als datierter Nachtrag behoben, die Sprosse
+neu gelaufen —, kein Befund über Stufe 3. **Die Beweislast trägt G2:** G1
+hält schon heute, weil der Plattenpfad `adapt_case` gar nicht aufruft
+(`tools/pairlab/tintenpfad.py` kennt die Stufen nicht, und `derive_word`
+streckt nur bei `seed_x_scale` ≠ 1,0) — G1 zeigt nur, dass der Arm-Commit
+daran nichts ändert; dass das Tor Plattenfälle wirklich abweist, zeigt G2.
+
+**Ehrlichkeitsklausel.** Das Tor nimmt Stufe 3 aus dem Platten-Lineal,
+statt sie dort als harmlos zu beweisen. `sep24` hat sie auf der Platte
+gemessen und etwa neutral gefunden: dtw-Median 0,038351 → 0,036680,
+aiou-Median 0,7929 → 0,7895 (**−0,0034** am Medianwort `die-2`), je Wort 8
+besser, 10 schlechter, 1 gleich. Darum laufen R-k und R-ky ZUSÄTZLICH
+ungetort auf der Platte, als Berichtszeile neben dem Wächter und nie als
+Wächter (dev-19 über `tracebench --compare` gegen die Basis): sie
+beantwortet R-split auch dort — kostet k allein den Median, oder sy?
+**Der Mechanismus ist kein Schalter im Repo**, damit das Tor keine Hintertür
+bekommt: der Scratch-Läufer (`folger-arms/sep24b/run_arm.py`, sha256 im
+Lauflog vor C0) reicht jeden der 63 Plattenfälle mit dem `origin`
+`eigenhand:ungated-report:` + dem Fixture-`origin` an `adapt_case` — `origin`
+ist ein Etikett, das der Folger nicht liest, und nur dieser Läufer setzt das
+Präfix auf einen Plattenfall. Die Zeilen gehen in eigene Kandidatendateien
+(`plate/ungated-<Sprosse>-cand.json`), nie in die Wächter-Dateien.
+
+**Maße.** Das Lineal von `sep24` unverändert (`folger-arms/score.py`, sha256
+`6531a7293c1d358c489bbefb93bec3a7d9278b4edc3c7a5f880e73577e9df95c`): cov ·
+off · runs · chords · AIoU auf H, H die beschriftungsfreie Maske in voller
+Auflösung, xh die gedruckte x-Höhe. **Neu und NUR berichtend**, in dieser
+Runde nie entscheidend — der Restmangel, den das Blindurteil an A3 sah:
+
+1. **Bahn-Unstetigkeit.** Die ausgelieferte Bahn, in Streifenpixel
+   abgebildet wie in `score.py`, je Zug durch die gedruckte x-Höhe geteilt
+   (ein Rahmen für jeden Arm), ungeglättet — der Treppenstufen-Verlauf IST,
+   was das Auge sieht. Darauf die eingefrorene Arithmetik von
+   `core/continuity.py` (#558) unverändert: `stroke_profile` je Zug, gemessen
+   an den Punkten im Rand-Band `inside`, die weiter als eine Feder
+   (`LANDMARK_RADIUS_UNITS`, 0,145 xh) von einer Umkehrecke der Bahn liegen
+   (`corner`: Drehung ≥ 75° über 0,12 xh, die Probe der Ableitung selbst) —
+   Zugenden und Umkehrecken sind die Duktus-Ereignisse. Nicht die Saat:
+   R-k und R-ky bewegen sie, und ein Lineal, das an ihr hängt, wanderte mit
+   dem Arm. Gelesen: **Knick-Dichte** = `kink_events` (Schwelle 11,54°) je
+   xh gemessener Bahnlänge, **Wackler** = RMS von `wobble` über die
+   gemessenen, `wobble_valid` Punkte, in Grad.
+2. **Kurzsehnen.** Maximale Strecken eines Zuges mit Proben weiter als
+   1,5 px von H (das Prädikat von `chords`), deren Bogenlänge wie dort
+   gemessen zwischen 0,05 und 0,2 xh liegt — die Sehnen, die `chords` nicht
+   zählt; Anzahl je Kasten.
+
+Das Skript (`folger-arms/sep24b/unstetigkeit.py`) entsteht nach dem
+Vor-Arm-Hash; seine sha256 steht im Lauflog, bevor C0 läuft, und es wird zur
+Einordnung auch über die gespeicherten `sep24`-Bahnen B0–A3 gerechnet.
+
+**Regel** — die von `sep24`, Wort für Wort: eine Sprosse schlägt ihre
+Vorgängerin genau dann, wenn (i) in ≥ 5 von 7 Kästen cov steigt UND off fällt
+(off = 0 auf beiden Seiten zählt als fallend), (ii) der Median von Δcov
+≥ +0,10 ist und (iii) kein Kasten mehr als 0,05 cov verliert. Bekannt und
+nicht geändert: ab C0 prüft (i) praktisch nur cov (`sep24`, Beobachtung 5).
+
+**Zwei Stufen.**
+**(a) explorativ** auf denselben 7 Kästen wie `sep24` (derselbe Cache,
+dieselbe Saat, dieselbe Wurzel `c7f2efd9cf37`). Vorab zwei
+Konstruktionsproben: C0 reproduziert `sep24`-A2 und R-ky `sep24`-A3 Byte für
+Byte (dort feuerte keine Bereichsgrenze). Die einzige NEUE Zahl von (a) ist
+also R-k; R-ky gegen R-k ist dort eine Zerlegung, keine Bestätigung. Die
+7 Kästen sind **vorbelastet** (Diagnose, `sep24`, jetzt `sep24b`): gleich, in
+welchen Satz die Ziehung ihre Streifen legt, zählen sie für keine
+Rückhalte-Messung. *Fassung 3a:* In welchem Satz die drei liegen, steht
+bewusst nicht hier; die Regel gilt unabhängig davon und bleibt für jede
+spätere Runde stehen.
+**(b) Bestätigung** auf ungesehenen Kästen, EINMAL, mit derselben Regel.
+Welche Kästen dürfen, regelt `tools/eigenhand/training_set.py` (#647, §14
+„Trainingssatz `sep20`"): die Ziehung legt jeden Streifen per Schlüssel in
+`practice`, `holdout-follower` oder `holdout-release`. *Fassung 3:* **gezogen
+ist** — am 2026-09-21, Schlüssel `mn-suetterlin-2026-09-21`, über 265
+Streifen `practice` 160 · `holdout-follower` 49 · `holdout-release` 56,
+maßgeblich die Kartei im Archiv-Schnappschuss
+`own-hand/mn-suetterlin/2026-09-21-0928` (`kurrentschrift-data`, Commit
+`9efe356`). Fassung 1 und 2 sagten „nicht gezogen", weil sie den veralteten
+lokalen Datenbestand lasen (Kartei vom 2026-09-09, ohne `holdout`-Satz).
+Daraus folgt:
+
+1. **Nichts ist zu ziehen.** Die Ziehung fiel vor Fassung 1 dieses Eintrags
+   und bevor ein Kasten von S0182–S0188 geschrieben war; die Zuordnung ist
+   eine reine Funktion des Schlüssels, niemand konnte sie am Material
+   ausrichten. `training_set --draw` wird für diese Hand nie wieder
+   aufgerufen — lokal ohne `--archive` hätte es die Verweigerung des zweiten
+   Ziehens umgangen. Die Zugehörigkeit liest der Läufer von (b) aus der
+   Kartei des Archivs (dieser Schnappschuss oder ein jüngerer, `--archive`),
+   nie aus einem lokalen Datenbestand, der sie nicht trägt. Der einzige
+   Autorenschritt: **B0005** im Admin erzeugen, schreiben und einlesen
+   (`tintenfolger.md` §7.11, Autorenschritte).
+2. Zulässig für (b) sind genau die Kästen von S0182–S0188 (je ein Wort:
+   *lesen* · *denen* · *Wer* · *die* · *laden* · *unter* · *will*), deren
+   Streifen DIESE Ziehung in **`practice`** gelegt hat, erste angenommene
+   Fassung. Die sieben stehen auf dem nächsten Bogen, **B0005** (angeheftet;
+   B0002–B0004 sind seit dem 2026-09-08 gedruckt und unterwegs, ohne sie).
+   Ein Streifen in `holdout-follower` (der EINE referenzgebundene Folger-Test
+   gegen nachgefahrene Bahnen, einmal verbrauchbar, Gate (B) von `sep20`)
+   oder `holdout-release` wird von keinem Arm dieser Runde gefolgt, nicht
+   gewertet, nicht angesehen; der Standard-Folgelauf der Erfassungskette
+   (`tools.eigenhand.pfad` mit der Vorgabe-Eingabe, für Bestand und
+   Tintentreue) bleibt davon unberührt. Welche der sieben zulässig sind,
+   steht nicht in diesem Eintrag, sondern nur im Lauflog von (b) — der Autor
+   bleibt blind dafür, welcher Streifen zurückgehalten ist.
+3. Bei 160 von 265 Streifen in `practice` (rund 60 %) sind im Erwartungswert
+   rund vier der sieben zulässig; die tatsächliche Zahl wird hier bewusst
+   nicht genannt. Aufgefüllt wird mit den Kästen der nächsten
+   `practice`-Streifen DIESER Ziehung, die der Autor nach Fassung 1 dieses
+   Eintrags schreibt und einliest, bis es genau 7 sind — nie S0002, S0003,
+   S0181, nie ein Kasten, den eine Folger-Runde schon gewertet hat. „Nach
+   Fassung 1 geschrieben und eingelesen" liest sich am Einlesedatum der
+   Fassung in der Kartei, dem einzigen, das sich nachprüfen lässt.
+   *Fassung 3a:* Die Reihenfolge ist die des Einlesens: Einlesedatum, dann
+   Streifen-ID, dann Kasten. Ein Streifen von B0002–B0004 (S0001, S0004–S0011),
+   der vor dem nächsten Bogen eingelesen wird, füllt also zuerst auf, obwohl
+   seine ID kleiner ist. Sind keine 7 da, wartet (b).
+
+**Das Auge.** Vor jeder Adoption der **Blindlauf des Autors** über
+`folger-arms/blind.py` (sha256 `e303fea3…`), erweitert um Kasten-Liste und
+Arm-Verzeichnis, sonst unverändert (datierter Nachtrag, die Seitenwahl
+bleibt `random.Random(seed).random() < 0.5` je Kasten in Listenfolge; die
+sha256 der erweiterten Datei steht im Lauflog vor dem Blindlauf), auf dem
+registrierten Paar — die Sprosse, die in (b) Regel und Wächter besteht,
+gegen ihre Vorgängerin. Samen jetzt fest: (a) `2409241`, (b) `2409242`;
+`key.json` sieht der Beurteiler nicht. *Fassung 3, eine benannte Grenze:*
+der Blindlauf über (b) zeigt dem Autor die zulässigen Kästen, und wer die
+sieben Referenzwörter kennt, kann an den fehlenden ablesen, welche von
+S0182–S0188 zurückgehalten sind. Das ist die einzige Stelle, an der diese
+Runde Zugehörigkeit preisgibt, und sie betrifft höchstens diese sieben
+Streifen; ob der Autor das hinnimmt oder den Blindlauf anders zuschneidet,
+ist sein Entscheid (*Fassung 3a*). Prüfliste: die Klassen von `sep24` §7
+plus Zittern und Kurzsehnen. Das Urteil des Autors ist letztinstanzlich, eine
+Zahl überstimmt es nicht; auch Regel + Wächter + Auge zusammen sind eine
+Nominierung, **die Adoption ist ein Autor-Entscheid**.
+
+**Was die Runde antwortet.** Besteht R-k und R-ky schlägt R-k nicht, trägt k
+den Gewinn und sy bleibt aus. Besteht R-k nicht, R-ky aber gegen R-k, trägt
+das Paar und die Frage ist, ob sy allein oder nur mit k wirkt — eine eigene
+Runde. Besteht in (b) keine Sprosse: ehrliches Negativ mit benannten
+Rettungswegen (§7.9: R-price · R-reach · R-slant · R-grid · R-truth · R-forms ·
+R-loops). **Was eine bestandene Sprosse nominiert:** C0 trägt Stufe 2, die
+in `sep24` ihre eigene Regel nicht bestanden hat. Besteht R-k oder R-ky,
+nominiert die Runde darum das **Paket** Stufe 2 + diese Sprosse: Stufe 2
+fährt mit als der Maßstab, auf dem Stufe 3 gemessen ist, nicht als eigener
+Gewinn. Ihre eigene Frage bleibt R-price; ersetzt ein späterer Arm das
+Umtasten, muss die Stufe-3-Sprosse auf dem neuen Maßstab neu bestehen. **Nicht** beantwortet: die Kalibrierung der Tintentreue; Hand,
+Maßstab, Feder und Sitzung bleiben verschränkt; die Saat bleibt die Form von
+1922.
+
+**Welche Lineale sich nicht bewegen dürfen.** `score.py` und der Cache von
+`sep24`; `core/word_metric.py` (ty ±4 px bleibt), `core/continuity.py`,
+`tools/pairlab/tintenpfad.py`, `tools/tracebench`; die Wurzel
+`c7f2efd9cf37`. Gegen die API nur GET; nichts nach `data/samples/own-hand`
+oder ins Archiv.

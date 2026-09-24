@@ -1,6 +1,6 @@
 # Eigenhand-Erfassung: Wortvorrat, Streifen, Bögen
 
-> **Status (2026-09-21): teil-umgesetzt.** Seit dem Autor-Entscheid vom
+> **Status (2026-09-24): teil-umgesetzt.** Seit dem Autor-Entscheid vom
 > 2026-09-07 ist der Bestand nicht mehr nur Datenquelle: die Eigenhand
 > **wird die ausgelieferte Schreibhand der Seite**, sobald sie Alphabet und
 > Übergänge deckt (§2; die bindende Rollenteilung Tafel · Platte ·
@@ -63,8 +63,21 @@
 > [Freigabe-Maschine](freigabe-maschine.md) beantwortet. Die Ziehung ist ein
 > eigener, einmaliger Akt über den eingefrorenen Streifenplan; vorregistriert
 > in [`../reference/messjournal.md`](../reference/messjournal.md) §14
-> „Trainingssatz `sep20`". **Gezogen ist noch nichts** — es gibt bis heute
-> keine einzige von Hand nachgefahrene Bahn.
+> „Trainingssatz `sep20`". **Gezogen ist seit dem 2026-09-21** (berichtigt
+> 2026-09-24): Schlüssel `mn-suetterlin-2026-09-21`, über 265 Streifen —
+> `practice` 160 · `holdout-follower` 49 · `holdout-release` 56; maßgeblich
+> ist die Kartei im Archiv-Schnappschuss
+> `own-hand/mn-suetterlin/2026-09-21-0928` (`kurrentschrift-data`, Commit
+> `9efe356`). Hier stand bis zum 2026-09-24 „Gezogen ist noch nichts": der
+> lokale Datenbestand war veraltet (Kartei vom 2026-09-09, ohne
+> `holdout`-Satz), weil die Sitzung vom 2026-09-21 in einem anderen
+> gearbeitet hatte. Die Eigenhand-Werkzeuge laden `.env` nicht und sehen
+> das Archiv nur mit `--archive` — ohne es hätte ein lokales `--draw` eine
+> ZWEITE Ziehung zugelassen. Welcher Streifen in welcher Menge liegt, steht
+> in keinem Dokument; der Autor bleibt dafür blind.
+> **Seit dem 2026-09-24 passt der Streifen-Folger seine Eingabe an**
+> (Autor-Entscheid, §7.5): die gedruckten Beschriftungen sind vor dem
+> Folgen aus der Tinte gelöscht, der Dekoder bleibt der A45-Stand.
 
 ## 1 Anlass
 
@@ -1603,6 +1616,33 @@ sich jederzeit neu folgen, und ein Archivfeld für eine reproduzierbare
 Ableitung wäre genau die zweite Wahrheit, die das Archiv nicht haben will.
 Was NICHT ableitbar ist, bleibt weiterhin dort: Bild, Verdikt, Maske — und
 seit dem 2026-09-20 die nachgefahrene Bahn.
+
+**Der Folger darf seine EINGABE anpassen, nie seinen Dekoder**
+(**Autor-Entscheid vom 2026-09-24**, nach der Leiter §14
+„Folger-Eingabe-Leiter `sep24`" in
+[`../reference/messjournal.md`](../reference/messjournal.md)). Der Dekoder
+des Streifen-Folgers bleibt der A45-Stand der Platte. Was er auf einem
+Streifen BEKOMMT, darf sich ändern: Beschriftungszonen, Plattenmaßstab,
+Saat-Registrierung (`core/eigenhand/follower_input.py`, Glossar
+„Eingabestufen"). Dafür gelten drei Regeln:
+
+- **Jede Stufe ist platten-neutral.** Sie lässt die dev-19-Folgerausgabe
+  der Platte Byte für Byte stehen: per Konstruktion, am Commit bewiesen
+  (19 von 19 Wörtern Folger-JSON gleich, 63 von 63 Fällen Array-gleich).
+  Eine Stufe, die das nur über ein Tor erreicht, weil sie nie auf einem
+  Plattenwort läuft, sagt das dazu und berichtet ihre Plattenwirkung
+  trotzdem.
+- **Die Beschriftungszonen sind seit diesem Tag die Vorgabe.**
+  `--no-mask-labels` schaltet sie ab. Die Leiter hat sie nicht als Gewinn
+  gebucht, eine Maske kann keine Tinte zum Decken hinzufügen. Sie nimmt
+  fremde weg: die gedruckte Streifen-ID, die eine Bahn als ersten Zug
+  gefahren war, und den Zug der Beschriftung an der Saat-Registrierung.
+  Plattenmaßstab und Saat-Registrierung bleiben aus, bis eine
+  vorregistrierte Runde sie trägt.
+- **Ableitbar bleibt der gefolgte Pfad trotzdem.** Die gespeicherte Zeile
+  nennt ihre Stufen (`konfiguration.input`), und eine Zeile ohne diesen
+  Eintrag folgt `--no-mask-labels` Byte für Byte nach. Eine von Hand
+  gezeichnete Bahn berührt keine Stufe.
 
 **Verworfen:** den Pfad serverseitig rechnen (das Abbild hat den Folger
 nicht, und `api`↛`tools` ist per Test festgehalten); ihn in

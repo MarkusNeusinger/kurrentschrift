@@ -69,6 +69,11 @@ class WordCase:
     # is what `tools.pairlab.zweizuege` deconvolves — and re-binarising the crop
     # here would move goalposts the metric holds fixed.
     mask: np.ndarray | None = None  # bool, the frozen ink mask (same frame as `crop`/`skel`)
+    # The horizontal scale `derive_word` stretches the COMPOSED word by before it
+    # is registered — the own-hand seed registration's sx
+    # (`core.eigenhand.follower_input.register_seed`). 1.0 composes as the bench
+    # always has; nothing that reads a fixture ever sets it.
+    seed_x_scale: float = 1.0
     extra: dict = field(default_factory=dict)  # updated_at, … (informational)
 
     @property

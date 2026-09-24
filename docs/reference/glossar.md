@@ -58,24 +58,24 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
 - **A** — `add_header`-Vererbungsfalle §2 · Alltagswelle (Eigenhand) §5 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Abzugs-Linse §5 · Abzugsstelle §5 · Abzugs-Token §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Span-Herkunft) §5
-- **B** — Bahn §5 · Bahn-Archivkette §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Bahn-Marke §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn §5
+- **B** — Bahn §5 · Bahn-Archivkette §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Bahn-Marke §5 · Bahn-Unstetigkeit (vorregistriert) §4 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Beschriftungszonen (→ Eingabestufen) §5 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
-- **E** — Ebenen-Token §5 · Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
+- **E** — Ebenen-Token §5 · Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Eingabestufen (Streifen-Folger) §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fokusring (`focusRing`) §5 · Fixture-Wurzel §4 · Folger-Schalter der Ernte (`--follower`) §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Freigabe-Maschine (geplant) §5 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — Gate-Status (geplant) §5 · Gauß-Verschiebung §3 · G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grauwert-Stopp (→ Strang-Dekodierung) §3 · Grundstrich/Haarstrich §1 · Grundtafel §7 · Grundwortschatz (Eigenhand) §5 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Haken-Spitze (→ Strang-Dekodierung) §3 · Hand §2 · Hand-Stil-Kopplung §5 · Hand-Überschuss §4 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
-- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kreuzungsflucht §4 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5 · Kurztasten-Schalter §5
+- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kreuzungsflucht §4 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5 · Kurzsehne (→ Bahn-Unstetigkeit) §4 · Kurztasten-Schalter §5
 - **L** — Labs §4 · Landmarken-Auftrag §5 · Landmarken-Erkennung §5 · Landmarken-Linse §5 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Stand (geplant) §5 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
 - **N** — Nachbarbindung §4 · Nachfahr-Liste §5 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nicht-Hover-Regel §5 · Normalen-Fit (→ Strang-Dekodierung) §3 · Nullprobe §4
 - **O** — Offen (Streifen-Kasten) §5 · Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · ohne Ort (Abzugs-Linse) §5 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
-- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
+- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Plattenmaßstab (→ Eingabestufen) §5 · Platten-Wächter §5 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Rollen-Token §5 · Route G §4 · Roving-Liste §5 · Rückgabe an Autor §5 · Rückhaltemenge §4 · Rückhaltemenge (Eigenhand) §5
-- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Skip-Eintrag §5 · Slant-Spalte §4 · Slot §2 · Span-Herkunft §5 · Span-Zuordner §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifen-Editor §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Subjekt-Stepper §5 · Sütterlin §1
+- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Registrierung, Streifen (→ Eingabestufen) §5 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Skip-Eintrag §5 · Slant-Spalte §4 · Slot §2 · Span-Herkunft §5 · Span-Zuordner §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifen-Editor §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Subjekt-Stepper §5 · Sütterlin §1
 - **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue §5 · Tintentreue-Kalibrierung §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) §5 · Trainingssatz (Eigenhand) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unteransicht (Eigenhand) §5 · Unvollständige Wortprobe §5
 - **Ü** — Übergabekarte §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
@@ -2602,6 +2602,25 @@ nie Teil des Loss. *Technisch:*
 `BOW_CHORD_UNITS` · `LANDMARK_RADIUS_UNITS` · `KINK_THRESHOLD_DEG` →
 messjournal.md §14 („Übergänge S2")
 
+**Bahn-Unstetigkeit · Kurzsehne** *(vorregistriert `sep24b`, nur
+berichtend)* — der Unstetigkeits-Sensor auf einer GEFOLGTEN Bahn statt auf
+der komponierten Mittellinie: die Größe, die das Blindurteil der
+Folger-Eingabe-Leiter an der besten Sprosse fand und die kein Lineal sah —
+feines Sägezahn-Zittern entlang der Schäfte und kurze Sehnen über das Weiß
+zwischen parallelen Schäften. **Bahn-Unstetigkeit:** die ausgelieferte Bahn,
+ungeglättet (der Treppenstufen-Verlauf ist, was das Auge sieht), durch die
+gedruckte x-Höhe in Einheiten gebracht und mit der eingefrorenen Arithmetik
+von `core/continuity.py` gelesen; Duktus-Ereignisse sind die Zugenden und die
+Umkehrecken der Bahn selbst (Probe der Ableitung, ≥ 75°), je eine Feder
+Radius, nicht die Saat — die bewegt der Arm. Gelesen: **Knick-Dichte**
+(Knick-Ereignisse je x-Höhe Bahnlänge) und **Wackler** (RMS in Grad).
+**Kurzsehne:** eine Strecke eines Zuges mehr als 1,5 px neben der Tinte,
+0,05–0,2 xh lang — genau die Sehnen, die das `chords`-Maß der Leiter unter
+seiner 0,2-xh-Schwelle nicht zählt. Beide entscheiden in `sep24b` nichts;
+ob sie dem Auge folgen, zeigt erst der Vergleich mit dem Blindlauf.
+→ Unstetigkeits-Sensor; Knick; Wackler; messjournal.md §14 „Stufe 3
+gezielt: R-gate + R-split `sep24b`"
+
 **Knick** *(`kink_max_deg`, `kink_count`)* — eine Richtungsänderung, die
 an EINEM Punkt sitzt, obwohl dort kein Duktus-Ereignis ist: der Weg läuft
 gerade, springt von 30° auf 40° Steigung und läuft gerade weiter. Gemessen
@@ -4466,6 +4485,61 @@ Angabe die Nummer dieses Abbilds behaupten.
 `app/src/sections/admin/shell/PathOverlay.tsx`.
 → Skip-Eintrag; Span-Herkunft; Bahn-Archivkette;
 proposals/eigenhand-erfassung.md §7.5
+
+**Eingabestufen (Streifen-Folger)** *(follower input stages)* — die drei
+schaltbaren Stufen, die ändern, was der Tintenpfad auf einem
+Eigenhand-Streifen BEKOMMT, nie den Folger selbst (der Dekoder bleibt der
+A45-Standard der Platte): **Beschriftungszonen** (die gedruckte Streifen-ID,
+Herkunftszeile und Wort-Beschriftungen, aus denselben Seitenprimitiven wie
+das Bogen-PDF, werden NACH der Binarisierung aus Maske und Skelett
+gelöscht — der Graupegel bleibt, also verrückt sich die adaptive Schwelle
+nicht), **Plattenmaßstab** (der Kasten wird auf die 31 px je x-Höhe der
+Platte umgetastet, nur außerhalb ihres Bereichs 28–33, und die Bahn exakt
+auf die Streifenpixel zurückgebildet) und **Saat-Registrierung, anisotrop**
+(sy und Grundlinie aus den Moden der spaltenweisen Skelett-Extreme, an den
+63 Plattenwörtern kalibriert — der Schätzer liest dort 0,643 der Lineatur —,
+sx getrennt aus Tinten- gegen Kompositionsbreite; unlesbare Moden oder ein
+Maß jenseits der x-Höhen-Toleranz der API lassen die Saat stehen, nie
+geklemmt). Nicht zu verwechseln mit der Saat-Registrierung der Kette
+(`--chain-seed grid`, → Saat-Abstand), die je Buchstaben-Slot sucht; diese
+hier registriert das ganze Wort auf die Lineatur der Hand. Die ersten beiden
+sind auf jedem Plattenwort No-ops per Konstruktion, die dritte ist eine
+Registrierung und bewegt jede Saat (→ Platten-Wächter).
+Anlass war die Eigenhand-Diagnose vom 2026-09-24: Beschriftung als Tinte
+gefahren, Pixelpreise mit 0,44× ihrer Plattenreichweite, die Saat auf der
+gedruckten statt der geschriebenen Lineatur. Die Beschriftungszonen sind
+seit dem Autor-Entscheid vom 2026-09-24 die VORGABE (messjournal.md §14
+„Folger-Eingabe-Leiter `sep24`": die Deckungsregel schrieb ihnen nichts gut,
+aber eine Maske kann keine Tinte hinzufügen — sie nimmt fremde weg); die
+anderen beiden bleiben aus, bis eine vorregistrierte Runde sie trägt. Alle
+drei aus ist der Lauf, mit dem jede Bahn vor diesem Tag gefolgt wurde.
+*Technisch:* `core/eigenhand/follower_input.py` (`label_zones_px` ·
+`ink_of` · `resample_to_plate` · `CropToStrip` · `register_seed` ·
+`PLATE_MODE_CALIBRATION` · `scale_composed_x`), `tools/eigenhand/pfad.py`
+(`FollowerInput` · `STANDARD_INPUT` · `adapt_case`, `--mask-labels` /
+`--no-mask-labels` · `--resample-plate` · `--register-seed`),
+`WordCase.seed_x_scale`; im gespeicherten Eintrag
+`konfiguration.input` + `meta.input`.
+→ Streifen-Pfad; Schnittband; Saat-Abstand; Platten-Wächter
+
+**Platten-Wächter** *(plate guard)* — die Bedingung, unter der eine Stufe
+für den Eigenhand-Streifen den Plattenpfad nicht bewegen darf, gleich was
+sie auf der eigenen Hand gewinnt. Zwei Formen: **Byte-Identität**, wo die
+Stufe per Konstruktion nichts an einem Plattenwort ändert (63 Plattenwörter
+Array-gleich, die 19 dev-Wörter Folger-JSON-gleich ohne Uhrzeitfelder), und
+**kein schlechterer dev-19-Median**, wo sie jede Saat bewegt (dtw und aiou
+gegen die Ledger-Zeile, ohne Toleranz). Ein gerissener Wächter nimmt die
+Stufe heraus und lässt ihr kein Verdikt. Eingeführt mit der
+Folger-Eingabe-Leiter: die Saat-Registrierung riss ihn am aiou-Median
+(0,7929 → 0,7895), am Medianwort und nicht an der Katastrophe. Eine Stufe,
+die ihn nur über ein TOR hält (sie läuft nie auf einem Plattenwort), sagt
+das dazu und berichtet ihre Plattenwirkung trotzdem.
+*Technisch:* der Beweis läuft über die Standard-Plattenroute
+(`tools.pairlab.tintenpfad --all --set words` gegen den gespeicherten
+Kandidaten, `tools.tracebench --split dev`) und über die Stufen mit leeren
+Beschriftungszonen auf jedem Plattenfall.
+→ Eingabestufen (Streifen-Folger); messjournal.md §14
+„Folger-Eingabe-Leiter `sep24`"
 
 **Skip-Eintrag** — ein Eintrag der Pfad-Liste, der sagt, dass ein Wortkasten
 KEINE Bahn hat, und warum: `status: "skipped"` plus ein `grund` aus einer

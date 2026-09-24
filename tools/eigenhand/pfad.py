@@ -100,6 +100,25 @@ THE CONFIGURATION is the one the campaign settled on for the reversal corners
 · ``edt_upsample=4`` · ``ink_bridge_xh=1.0`` · ``hairpin_tip`` · ``ride_back``
 · ``tip_grey_stop`` · ``self_jump``. It travels INTO the stored row, so a path
 says out of itself what produced it.
+
+THE INPUT STAGES are three switches on what the follower is HANDED, never on
+the follower itself — the decoder stays the plate's A45 standard. The first is
+ON by default since the author's decision of 2026-09-24; the other two are
+opt-in until a pre-registered round carries them:
+
+    --mask-labels      clear the printed strip id, provenance line and word
+                       labels from the ink after binarisation (the default;
+                       --no-mask-labels reads them as ink again)
+    --resample-plate   follow the crop at the plate's 31 px per x-height and
+                       map the Bahn back into strip pixels
+    --register-seed    lay the seed on the hand's own x-height, baseline and
+                       width, measured off the ink, instead of the printed ruling
+
+With all three off (``--no-mask-labels`` and neither of the others) the run is
+the one every Bahn stored before that date was made on, byte for byte. The
+arithmetic is `core.eigenhand.follower_input`; why each exists is there too. A
+run with any of them on says so in the stored row (``konfiguration.input``,
+and what they measured in ``meta.input``).
 """
 
 from __future__ import annotations
@@ -118,7 +137,8 @@ for _var in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
 import argparse  # noqa: E402
 import json  # noqa: E402
 import shlex  # noqa: E402
-from collections.abc import Mapping  # noqa: E402
+from collections.abc import Mapping, Sequence  # noqa: E402
+from dataclasses import dataclass, field, replace  # noqa: E402
 from datetime import date as date_cls  # noqa: E402
 from pathlib import Path  # noqa: E402
 from typing import Any  # noqa: E402
@@ -127,6 +147,22 @@ from urllib.parse import quote  # noqa: E402
 import numpy as np  # noqa: E402
 
 from core.database.models import LAUFFORM_VARIANT  # noqa: E402
+from core.eigenhand.follower_input import (  # noqa: E402
+    PLATE_MODE_CALIBRATION,
+    PLATE_XH_PX,
+    SEED_SCALE_BOUNDS,
+    CropToStrip,
+    ModeCalibration,
+    SeedRegistration,
+    Zone,
+    ink_of,
+    label_zones_px,
+    register_seed,
+    resample_to_plate,
+    scale_index,
+    scale_zones,
+    zones_in_crop,
+)
 from core.eigenhand.ids import style_of_hand  # noqa: E402
 from core.eigenhand.pfad import (  # noqa: E402
     FIELD_SPANS,
@@ -187,6 +223,151 @@ MEASURED_SENSORS = (KEY_EXKURSION, KEY_AIOU)
 # database — indistinguishable afterwards from „measured 0". Pinned by
 # `tests/test_eigenhand_pfad.py` against every key the traffic light reads.
 STORED_SENSORS = (*FOLLOWER_SENSORS, *MEASURED_SENSORS)
+
+
+@dataclass(frozen=True)
+class FollowerInput:
+    """Which input stages a run adapts the word crop with (`core.eigenhand.follower_input`).
+
+    Three independent switches, applied in this order when several are on:
+    the labels are cleared, then the crop is resampled (the zones with it),
+    then the seed is registered on whatever ink the first two left.
+
+    Label masking is ON by default — the author's decision of 2026-09-24,
+    after that night's ladder round (messjournal §14 „Folger-Eingabe-Leiter
+    `sep24`"). The round's coverage rule did not credit it (4 of 7 boxes,
+    median +0.002): a mask cannot add ink to cover. What it does is take away
+    ink that is not the hand's — the printed id a Bahn rode as its first run,
+    and the pull the label ink had on the seed registration — and a plate
+    crop carries no printed text, so on the plate it has nothing to clear.
+    The other two stay opt-in until a pre-registered round carries them.
+
+    With all three off `follow_row` does not even call `adapt_case`: that is
+    the path every Bahn stored before that date was made on, and it has to
+    stay reachable byte for byte.
+    """
+
+    mask_labels: bool = True
+    resample_plate: bool = False
+    register_seed: bool = False
+
+    @property
+    def active(self) -> bool:
+        return self.mask_labels or self.resample_plate or self.register_seed
+
+    def konfiguration(self) -> dict[str, Any]:
+        """The stages as the stored row names them — the resampling target spelled out, not a bool."""
+        return {
+            "mask_labels": self.mask_labels,
+            "resample_xh_px": PLATE_XH_PX if self.resample_plate else None,
+            "register_seed": self.register_seed,
+        }
+
+
+STANDARD_INPUT = FollowerInput()
+
+
+@dataclass
+class AdaptedCase:
+    """A word case after the input stages, and what it takes to put its Bahn back on the strip.
+
+    `fx`/`fy` are the exact factors the crop was resampled by (1 without
+    resampling), `seed` the stage-3 registration when it ran, and `readings`
+    the compact record the stored row carries in `meta.input`.
+    """
+
+    case: Any
+    fx: float = 1.0
+    fy: float = 1.0
+    seed: SeedRegistration | None = None
+    readings: dict[str, Any] = field(default_factory=dict)
+
+    def mapping(self, rect_px: Sequence[int]) -> CropToStrip:
+        return CropToStrip(int(rect_px[0]), int(rect_px[1]), self.fx, self.fy)
+
+
+def _composed_width_units(case: Any) -> float:
+    """The x-extent of the composed seed in x-heights — exactly the items the follower seeds from.
+
+    Composed unscaled whatever the case carries: this is the width stage 3
+    measures the ink AGAINST, so a scale already on the case would measure
+    the correction instead of the composition.
+    """
+    from tools.pairlab.tintenpfad import seed_items
+    from tools.wordlab.derive import derive_word
+
+    items = seed_items(derive_word(replace(case, seed_x_scale=1.0)))
+    if not items:
+        return 0.0
+    xs = np.concatenate([np.asarray(item["centerline"], dtype=float)[:, 0] for item in items])
+    return float(xs.max() - xs.min())
+
+
+def adapt_case(
+    case: Any,
+    stages: FollowerInput,
+    *,
+    xh_px: float,
+    zones: Sequence[Zone] = (),
+    calibration: ModeCalibration = PLATE_MODE_CALIBRATION,
+    bounds: tuple[float, float] | None = SEED_SCALE_BOUNDS,
+) -> AdaptedCase:
+    """The word case as the switched-on input stages hand it to the follower.
+
+    `xh_px` is the box's PRINTED x-height (the frame's, unrounded) — the only
+    scale the resampling may key on, since the hand's own is what stage 3
+    measures afterwards. `zones` are the printed-label rectangles in the
+    CASE's own crop pixels (`zones_in_crop`); they matter only to stage 1, and
+    stage 2 carries them into the resampled crop rather than dropping them.
+
+    `calibration` and `bounds` are stage 3's (see `register_seed`); a caller
+    other than this tool passes them only to reproduce a registered experiment.
+    """
+    readings: dict[str, Any] = {}
+    fx = fy = 1.0
+    seed: SeedRegistration | None = None
+    zones = list(zones) if stages.mask_labels else []
+    if stages.mask_labels:
+        readings["label_zones"] = len(zones)
+        if zones:
+            mask, skel, width_map = ink_of(case.crop, zones)
+            case = replace(case, mask=mask, skel=skel, width_map=width_map)
+    if stages.resample_plate:
+        scaled = resample_to_plate(case.crop, xh_px)
+        if scaled is not None:
+            small, fx, fy = scaled
+            # Re-binarised on the resampled plane rather than the mask shrunk:
+            # the follower is meant to read ink at the plate's scale, and a
+            # downsampled binary mask is not what a plate crop's mask looks like.
+            mask, skel, width_map = ink_of(small, scale_zones(zones, fx, fy))
+            top = case.rect[1]
+            case = replace(
+                case,
+                rect=[0, 0, small.shape[1], small.shape[0]],
+                baseline_y=int(round(scale_index(case.baseline_y - top, fy))),
+                midband_y=int(round(scale_index(case.midband_y - top, fy))),
+                crop=small,
+                mask=mask,
+                skel=skel,
+                width_map=width_map,
+            )
+        readings["scale"] = [round(fx, 6), round(fy, 6)]
+    if stages.register_seed:
+        seed = register_seed(
+            case.skel, case.baseline_y, case.midband_y, case.rect[1], _composed_width_units(case), calibration, bounds
+        )
+        if seed.applied:
+            case = replace(case, baseline_y=seed.baseline_y, midband_y=seed.midband_y, seed_x_scale=seed.x_scale)
+        readings["seed"] = {
+            "applied": seed.applied,
+            "reason": seed.reason,
+            **{
+                key: round(float(seed.readings[key]), 4)
+                for key in ("sy", "k", "baseline_shift_px", "xh_hand")
+                if key in seed.readings and np.isfinite(seed.readings[key])
+            },
+        }
+    return AdaptedCase(case, fx, fy, seed, readings)
 
 
 def _strip_rows(base: str, token: str, hand: str, strip: str, fassung: str | None) -> list[dict]:
@@ -450,7 +631,23 @@ def _paper_sensors(mask: np.ndarray, info: dict) -> dict[str, float | None]:
     }
 
 
-def _entry(info: dict, frame: dict, flecken_n: int | None, today: str, sensors: Mapping[str, float | None]) -> dict:
+def _konfiguration(stages: FollowerInput | None) -> dict[str, Any]:
+    """The configuration a row stores — the input stages named only when one was on."""
+    if stages is None or not stages.active:
+        return dict(KONFIGURATION)
+    return {**KONFIGURATION, "input": stages.konfiguration()}
+
+
+def _entry(
+    info: dict,
+    frame: dict,
+    flecken_n: int | None,
+    today: str,
+    sensors: Mapping[str, float | None],
+    *,
+    adapted: AdaptedCase | None = None,
+    stages: FollowerInput | None = None,
+) -> dict:
     """One followed word as the row the API stores.
 
     The follower registers against the CROP it was handed; the stored frame is
@@ -474,33 +671,52 @@ def _entry(info: dict, frame: dict, flecken_n: int | None, today: str, sensors: 
     boundary is a derivation the next run makes again — that is what makes
     dropping it acceptable, and what the author corrected BY HAND unthinkable
     (carried through untouched by `_carry_spans`).
+
+    `adapted` is the case the input stages handed the follower, when any were
+    on. A RESAMPLED crop registers in its own pixels, so the frame goes back
+    through the exact inverse (`CropToStrip.stored_frame`) rather than a plain
+    offset — the stored row always speaks strip pixels, whatever the follower
+    was shown.
     """
-    reg = info["registration_px"]
-    x0, y0 = frame["rect_px"][0], frame["rect_px"][1]
+    mapping = adapted.mapping(frame["rect_px"]) if adapted is not None else CropToStrip(*frame["rect_px"][:2])
+    strokes, reg, xh_px = mapping.stored_frame(info["strokes"], info["registration_px"], info["xh_px"])
     diagnosis = info.get("meta", {}).get("tintenpfad", {})
     readings = {**{key: diagnosis.get(key) for key in FOLLOWER_SENSORS}, **sensors}
-    spans = flat_spans(info.get("meta", {}).get(FIELD_SPANS) or [], info["strokes"])
+    spans = flat_spans(info.get("meta", {}).get(FIELD_SPANS) or [], strokes)
+    meta: dict[str, Any] = {"tintenpfad": {key: readings.get(key) for key in STORED_SENSORS}}
+    if adapted is not None and adapted.readings:
+        meta["input"] = adapted.readings
     return {
         "box_index": frame["index"],
         "word": frame["word"],
         "status": STATUS_OK,
-        "strokes": info["strokes"],
+        "strokes": strokes,
         FIELD_SPANS: spans,
         "registration_px": {
-            "tx": round(float(reg["tx"]) + x0, 2),
-            "ty": round(float(reg.get("ty", 0.0)), 2),
-            "baseline_row": round(float(reg["baseline_row"]) + y0, 2),
+            "tx": round(reg["tx"], 2),
+            "ty": round(reg["ty"], 2),
+            "baseline_row": round(reg["baseline_row"], 2),
         },
-        "xh_px": float(info["xh_px"]),
+        "xh_px": xh_px,
         "verfahren": VERFAHREN,
-        "konfiguration": dict(KONFIGURATION),
-        "meta": {"tintenpfad": {key: readings.get(key) for key in STORED_SENSORS}},
+        "konfiguration": _konfiguration(stages),
+        "meta": meta,
         "erzeugt_am": today,
         "flecken_n": flecken_n,
     }
 
 
-def _skip(index: int, word: str, grund: str, detail: str, flecken_n: int | None, today: str, *, ran: bool) -> dict:
+def _skip(
+    index: int,
+    word: str,
+    grund: str,
+    detail: str,
+    flecken_n: int | None,
+    today: str,
+    *,
+    ran: bool,
+    stages: FollowerInput | None = None,
+) -> dict:
     """One box this run could not follow, as the entry that says why.
 
     A Skip-Eintrag, not an absence: the same list, one state per box (author
@@ -525,23 +741,24 @@ def _skip(index: int, word: str, grund: str, detail: str, flecken_n: int | None,
         "detail": detail[:MAX_DETAIL] or None,
         "strokes": [],
         "verfahren": VERFAHREN,
-        "konfiguration": dict(KONFIGURATION) if ran else {},
+        "konfiguration": _konfiguration(stages) if ran else {},
         "meta": {},
         "erzeugt_am": today,
         "flecken_n": flecken_n,
     }
 
 
-def _row_context(base: str, token: str, hand: str, row: dict) -> tuple[dict, np.ndarray]:
-    """The printed row and the strip plane — what any reading of one Fassung stands on.
+def _row_context(base: str, token: str, hand: str, row: dict) -> tuple[dict, dict, np.ndarray]:
+    """The Bogen layout, its printed row and the strip plane — what any reading of one Fassung stands on.
 
     Held in one place because the two passes over a Fassung need exactly the
-    same two things: the follow, and the boundary assignment over the Bahnen it
+    same things: the follow, and the boundary assignment over the Bahnen it
     already holds. A second copy would be a second chance to read the layout row
-    off a different index.
+    off a different index. The whole layout comes back beside the row because
+    the printed labels are drawn from the whole page (`label_zones_px`).
     """
     layout = request_json("GET", f"{base}/eigenhand/sheets/{hand}/{row['sheet']}/layout", token) or {}
-    return (layout.get("rows") or [])[row["row_index"]], _strip_plane(base, token, hand, row)
+    return layout, (layout.get("rows") or [])[row["row_index"]], _strip_plane(base, token, hand, row)
 
 
 def _refuse_unknown_boxes(row: dict, boxes: list[int] | None) -> None:
@@ -563,7 +780,15 @@ def _refuse_unknown_boxes(row: dict, boxes: list[int] | None) -> None:
         )
 
 
-def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: list[int] | None) -> list[dict]:
+def follow_row(
+    base: str,
+    token: str,
+    hand: str,
+    row: dict,
+    prior: dict,
+    boxes: list[int] | None,
+    stages: FollowerInput = STANDARD_INPUT,
+) -> list[dict]:
     """Follow every asked-for word of one Fassung. One bad word is not a bad row.
 
     A box that could not be followed comes back as a Skip-Eintrag naming its
@@ -576,6 +801,10 @@ def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: 
     replacement: declaring them skipped would make a one-word re-follow overwrite
     the rest of the row with „not selected". A box nothing has ever followed
     carries no entry, which is the same statement without the damage.
+
+    `stages` picks the input stages (`FollowerInput`); the default clears the
+    printed labels and nothing else. With every stage off no stage function
+    is even called — the follow every Bahn before 2026-09-24 was made with.
     """
     _refuse_unknown_boxes(row, boxes)
 
@@ -586,10 +815,17 @@ def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: 
     from tools.pairlab.tintenpfad import TintenpfadWeights, follow_case
 
     plan = load_plan()
-    layout_row, plane = _row_context(base, token, hand, row)
+    layout, layout_row, plane = _row_context(base, token, hand, row)
     weights = TintenpfadWeights(**KONFIGURATION)
     flecken_n = len(row["flecken"]) if row.get("flecken") is not None else None
     today = date_cls.today().isoformat()
+    # Once per row, in STRIP pixels: the labels are printed per row, and each
+    # box only shifts them into its own crop.
+    label_zones = (
+        label_zones_px(layout, layout_row, row["crop_origin_mm"], row["width_px"], row["height_px"])
+        if stages.mask_labels
+        else []
+    )
 
     entries: list[dict] = []
     for box in row.get("boxes", []):
@@ -624,23 +860,48 @@ def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: 
             print(f"  {case_id:<18} skipped   unauthored: {' '.join(missing)}", flush=True)
             entries.append(_skip(index, frame["word"], SKIP_UNAUTHORED, " ".join(missing), flecken_n, today, ran=False))
             continue
+        adapted = None
+        if stages.active:
+            adapted = adapt_case(
+                case, stages, xh_px=float(frame["xh_px"]), zones=zones_in_crop(label_zones, frame["rect_px"])
+            )
+            case = adapted.case
         info = follow_case(case, weights)
         if info["status"] != FOLLOWER_OK:
             print(f"  {case_id:<18} {info['status']:<9} {info['detail']}", flush=True)
             detail = f"{info['status']}: {info['detail']}" if info.get("detail") else str(info["status"])
-            entries.append(_skip(index, frame["word"], SKIP_GAVE_UP, detail, flecken_n, today, ran=True))
+            entries.append(_skip(index, frame["word"], SKIP_GAVE_UP, detail, flecken_n, today, ran=True, stages=stages))
             continue
-        entry = _entry(info, frame, flecken_n, today, _paper_sensors(case.mask, info))
+        # The sensors grade the Bahn against the ink the follower was SHOWN —
+        # labels cleared, at the resampled scale — in that crop's own frame.
+        entry = _entry(info, frame, flecken_n, today, _paper_sensors(case.mask, info), adapted=adapted, stages=stages)
         readings = entry["meta"]["tintenpfad"]
         print(
             f"  {case_id:<18} ok        {box['word']:<14} {len(entry['strokes']):2d} Züge · "
             f"{_reading(readings['paper_lifts'], 0)} Absetzer · "
             f"unvisited {_reading(readings['ink_unvisited_share'], 2)} · "
-            f"Exkursion {_reading(readings[KEY_EXKURSION])} xh · AIoU {_reading(readings[KEY_AIOU])}",
+            f"Exkursion {_reading(readings[KEY_EXKURSION])} xh · AIoU {_reading(readings[KEY_AIOU])}"
+            + (f" · Eingabe {_input_line(adapted)}" if adapted is not None else ""),
             flush=True,
         )
         entries.append(entry)
     return entries
+
+
+def _input_line(adapted: AdaptedCase) -> str:
+    """What the input stages did to one box, in one terminal line."""
+    parts = []
+    readings = adapted.readings
+    if "label_zones" in readings:
+        parts.append(f"{readings['label_zones']} Beschriftungszonen")
+    if "scale" in readings:
+        parts.append(f"Maßstab ×{adapted.fy:.4f}" if adapted.fy != 1.0 else "Maßstab wie Tafel")
+    seed = readings.get("seed")
+    if seed is not None:
+        parts.append(
+            f"Saat sy {seed['sy']:.3f} k {seed['k']:.3f}" if seed["applied"] else f"Saat unverändert ({seed['reason']})"
+        )
+    return " · ".join(parts)
 
 
 def _wants_spans(entry: Mapping[str, Any]) -> bool:
@@ -707,7 +968,7 @@ def assign_row_spans(
         return list(stored)
 
     plan = load_plan()
-    layout_row, plane = _row_context(base, token, hand, row)
+    _layout, layout_row, plane = _row_context(base, token, hand, row)
     weights = TintenpfadWeights(**KONFIGURATION)
     by_box = {entry["box_index"]: entry for entry in wanted}
     out: list[dict] = []
@@ -998,7 +1259,40 @@ def main(argv: list[str] | None = None) -> int:
         choices=list(METHODS),
         help="the matching rule of --spans; the default is the one the §14 round of 2026-09-20 measured",
     )
+    stage = ap.add_argument_group(
+        "input stages",
+        "what the follower is handed — label masking on by default (2026-09-24), the other two opt-in; "
+        "all three off is the follow every Bahn before that date was made with",
+    )
+    stage.add_argument(
+        "--mask-labels",
+        # None rather than the default itself: `--spans` refuses a stage the
+        # operator NAMED, and only an unset flag can tell that apart from the
+        # default riding along.
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help=(
+            "clear the printed strip id, provenance line and word labels from the ink after binarisation "
+            "(the default; --no-mask-labels reads them as ink again)"
+        ),
+    )
+    stage.add_argument(
+        "--resample-plate",
+        action="store_true",
+        help=f"follow the crop at the plate's {PLATE_XH_PX:g} px per x-height, and map the Bahn back into strip pixels",
+    )
+    stage.add_argument(
+        "--register-seed",
+        action="store_true",
+        help="lay the seed on the hand's own x-height, baseline and width, measured off the ink",
+    )
     args = ap.parse_args(argv)
+    stages = FollowerInput(
+        STANDARD_INPUT.mask_labels if args.mask_labels is None else args.mask_labels,
+        args.resample_plate,
+        args.register_seed,
+    )
+    named_stages = args.mask_labels is not None or args.resample_plate or args.register_seed
 
     if args.spans and args.replace_authored:
         # Not a compatibility detail: `--spans` is the mode that cannot lose a
@@ -1007,6 +1301,13 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(
             "--spans never touches a path, so --replace-authored has nothing to give up — drop one of them"
         )
+    if args.spans and named_stages:
+        # Refused rather than ignored: `--spans` follows nothing, so a stage
+        # named beside it — switched on or off — would be a setting the
+        # operator believes was applied and that no line of the run ever read.
+        # Only a NAMED one, though: the default mask is part of every follow,
+        # not something a `--spans` run was asked for.
+        raise SystemExit("--spans follows nothing, so the input stages have no crop to adapt — drop them")
 
     hand = check_hand_id(args.hand)
     style = style_of_hand(hand) or ""
@@ -1019,6 +1320,8 @@ def main(argv: list[str] | None = None) -> int:
     # in a way the stored row does not record. Say which inventory this run
     # saw, so a log is enough to tell two runs apart.
     print(f"seed: {len(seed.have)} authored glyph keys, live off {constants['source_id']}", flush=True)
+    if stages.active:
+        print(f"input stages: {json.dumps(stages.konfiguration())}", flush=True)
 
     # Read once, and only where it can matter: the Kartei is what the archive
     # chain files, so it is also what `--replace-authored` is held against.
@@ -1062,7 +1365,7 @@ def main(argv: list[str] | None = None) -> int:
                 continue
             body, handed_over = assigned, False
         else:
-            entries = follow_row(base, token, hand, row, prior, args.box)
+            entries = follow_row(base, token, hand, row, prior, args.box, stages)
             # The body is assembled BEFORE the two paths part ways: the dry run
             # is the surface an operator reviews before deciding on `--apply`,
             # so the file it writes has to be the list that would be stored,
@@ -1149,6 +1452,16 @@ def main(argv: list[str] | None = None) -> int:
                 "".join(f" --box {index}" for index in args.box or [])
                 + (" --spans" if args.spans else "")
                 + (f" --spans-method {args.spans_method}" if args.spans and args.spans_method != DEFAULT_METHOD else "")
+                # The deviations from the default, as for `--spans-method`: the
+                # mask rides along unnamed, and spelling it out would make the
+                # line a `--spans` run hands back refuse itself.
+                + (
+                    ""
+                    if stages.mask_labels == STANDARD_INPUT.mask_labels
+                    else (" --mask-labels" if stages.mask_labels else " --no-mask-labels")
+                )
+                + (" --resample-plate" if stages.resample_plate else "")
+                + (" --register-seed" if stages.register_seed else "")
             )
             unreached = [other["fassung"] for other in rows[position + 1 :]]
             raise SystemExit(

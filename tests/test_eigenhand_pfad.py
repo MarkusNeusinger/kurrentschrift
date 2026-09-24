@@ -9,7 +9,8 @@ that seam used to refuse the author's own hand (`TestDuctusSeed`). The fourth
 is the rule that a hand-drawn path outranks a followed one
 (`displaced_authored`, `TestAuthoredRule`). Since the per-box write there is a
 fifth: the content token the two write doors are held against (`pfad_etag`,
-`TestPfadEtag`).
+`TestPfadEtag`). And since the input stages a sixth: how the tool wires them
+between the case and the stored row (`TestInputStages`).
 """
 
 from __future__ import annotations
@@ -1155,6 +1156,16 @@ class TestSkipEntries:
     follower work.
     """
 
+    @pytest.fixture(autouse=True)
+    def _a_row_without_a_printed_page(self, monkeypatch):
+        # Label masking is the default since 2026-09-24, and the stub layout
+        # below is one printed ROW, not a page `page_primitives` could draw.
+        # No zones is what a page without printed text gives; the zones
+        # themselves are pinned in `TestInputStages`.
+        from tools.eigenhand import pfad as tool
+
+        monkeypatch.setattr(tool, "label_zones_px", lambda *_a: [])
+
     ROW_IN = {
         "strip": "S0001",
         "fassung": "F01",
@@ -1368,7 +1379,7 @@ class TestSpanAssignment:
         """`assign_row_spans` with the ink, the network and the seed stubbed out."""
         from tools.eigenhand import pfad as tool
 
-        monkeypatch.setattr(tool, "_row_context", lambda *_a: (ROW, np.zeros((HEIGHT_PX, WIDTH_PX))))
+        monkeypatch.setattr(tool, "_row_context", lambda *_a: ({"rows": [ROW]}, ROW, np.zeros((HEIGHT_PX, WIDTH_PX))))
         monkeypatch.setattr(tool, "load_plan", lambda: {})
         monkeypatch.setattr(tool, "shaping_form_of", lambda *_a: "lesen")
         monkeypatch.setattr(tool, "_case_for_box", lambda *_a: (SimpleNamespace(), []))
@@ -1433,7 +1444,7 @@ class TestSpanAssignment:
         from tools.eigenhand import pfad as tool
 
         seen: dict = {}
-        monkeypatch.setattr(tool, "_row_context", lambda *_a: (ROW, np.zeros((HEIGHT_PX, WIDTH_PX))))
+        monkeypatch.setattr(tool, "_row_context", lambda *_a: ({"rows": [ROW]}, ROW, np.zeros((HEIGHT_PX, WIDTH_PX))))
         monkeypatch.setattr(tool, "load_plan", lambda: {})
         monkeypatch.setattr(tool, "shaping_form_of", lambda *_a: "lesen")
         monkeypatch.setattr(tool, "_case_for_box", lambda *_a: (SimpleNamespace(), []))
@@ -1678,3 +1689,331 @@ class TestDuctusSeed:
         monkeypatch.setattr(cases, "fixture_root_for", lambda **_kwargs: root)
         with pytest.raises(SystemExit, match="names no source_id"):
             _style_constants("suetterlin")
+
+
+class TestInputStages:
+    """The three input stages as the tool wires them (`FollowerInput`, `adapt_case`).
+
+    The arithmetic itself is pinned in `tests/test_eigenhand_follower_input.py`;
+    here it is the seam: that the default follow clears the labels and does
+    nothing else, that with every stage off no stage is even touched, that a
+    switched-on stage reaches the follower and comes back on the strip, and
+    that the stored row says which stages produced it.
+    """
+
+    # A follower that got through: the delivered row, registered on its crop.
+    OK_INFO = {**_INFO, "status": "ok"}
+
+    @staticmethod
+    def _word_case(crop: np.ndarray, baseline: int, waist: int, rect: list[int]):
+        from core.extract import binarize_adaptive, skeleton_and_width
+        from core.word_metric import despeckle
+        from tools.wordlab.cases import WordCase
+
+        mask = despeckle(binarize_adaptive(crop))
+        skel, width_map = skeleton_and_width(mask)
+        return WordCase(
+            id="S0001/F01#0",
+            word="lesen",
+            kind="word",
+            slots=[],
+            templates={},
+            style_ratio=[1, 1, 1],
+            width_resolver="constant",
+            nib_units=None,
+            rect=rect,
+            baseline_y=baseline,
+            midband_y=waist,
+            crop=crop,
+            skel=skel,
+            width_map=width_map,
+            mask=mask,
+        )
+
+    def test_label_masking_is_the_default_and_the_other_two_are_not(self):
+        # Author decision of 2026-09-24 (§14 „Folger-Eingabe-Leiter `sep24`"):
+        # the mask is a correction of the input, resampling and the seed
+        # registration wait for a pre-registered round of their own.
+        from tools.eigenhand import pfad as tool
+
+        assert tool.FollowerInput() == tool.STANDARD_INPUT
+        assert (tool.STANDARD_INPUT.mask_labels, tool.STANDARD_INPUT.resample_plate) == (True, False)
+        assert tool.STANDARD_INPUT.register_seed is False
+        assert tool.STANDARD_INPUT.konfiguration() == {
+            "mask_labels": True,
+            "resample_xh_px": None,
+            "register_seed": False,
+        }
+
+    def test_the_default_follow_clears_the_labels_and_nothing_else(self, monkeypatch):
+        import tools.pairlab.tintenpfad as follower
+        from tools.eigenhand import pfad as tool
+
+        seen: dict = {}
+
+        def _zones(*_a):
+            seen["zones_read"] = True
+            return [(0, 0, 4, 4)]
+
+        def _adapt(case, stages, **kwargs):
+            seen["stages"], seen["zones"] = stages, kwargs["zones"]
+            return tool.AdaptedCase(case, readings={"label_zones": len(kwargs["zones"])})
+
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: {"rows": [ROW]})
+        monkeypatch.setattr(tool, "_strip_plane", lambda *_a: np.zeros((HEIGHT_PX, WIDTH_PX)))
+        monkeypatch.setattr(tool, "_paper_sensors", lambda *_a: {})
+        monkeypatch.setattr(tool, "_case_for_box", lambda *_a: (SimpleNamespace(mask=None), []))
+        monkeypatch.setattr(follower, "follow_case", lambda *_a: self.OK_INFO)
+        monkeypatch.setattr(tool, "label_zones_px", _zones)
+        monkeypatch.setattr(tool, "adapt_case", _adapt)
+        row = {**TestSkipEntries.ROW_IN}
+        entry = tool.follow_row("https://example.invalid", "t", "mn-suetterlin", row, {}, None)[0]
+        assert seen["zones_read"] and seen["stages"] == tool.FollowerInput(mask_labels=True)
+        # The strip-pixel zone reaches the stage in the box's own crop pixels.
+        x0, y0 = _frame(0)["rect_px"][:2]
+        assert seen["zones"] == [(-x0, -y0, 4 - x0, 4 - y0)]
+        assert entry["konfiguration"] == {**tool.KONFIGURATION, "input": tool.STANDARD_INPUT.konfiguration()}
+        assert entry["meta"]["input"] == {"label_zones": 1}
+
+    def test_with_every_stage_off_no_stage_is_touched(self, monkeypatch):
+        # The pre-2026-09-24 follow — every Bahn stored before that date — has
+        # to stay reachable byte for byte, stored row included.
+        import tools.pairlab.tintenpfad as follower
+        from tools.eigenhand import pfad as tool
+
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: {"rows": [ROW]})
+        monkeypatch.setattr(tool, "_strip_plane", lambda *_a: np.zeros((HEIGHT_PX, WIDTH_PX)))
+        monkeypatch.setattr(tool, "_paper_sensors", lambda *_a: {})
+        monkeypatch.setattr(tool, "_case_for_box", lambda *_a: (SimpleNamespace(mask=None), []))
+        monkeypatch.setattr(follower, "follow_case", lambda *_a: self.OK_INFO)
+        monkeypatch.setattr(tool, "adapt_case", lambda *_a, **_k: pytest.fail("an unstaged follow adapted the case"))
+        monkeypatch.setattr(tool, "label_zones_px", lambda *_a: pytest.fail("an unstaged follow read the labels"))
+        row = {**TestSkipEntries.ROW_IN}
+        off = tool.FollowerInput(mask_labels=False)
+        assert not off.active
+        entry = tool.follow_row("https://example.invalid", "t", "mn-suetterlin", row, {}, None, off)[0]
+        assert entry["konfiguration"] == tool.KONFIGURATION
+        assert set(entry["meta"]) == {"tintenpfad"}
+
+    def test_the_command_line_switches_the_default_mask_off_and_on(self, tmp_path, monkeypatch):
+        from tools.eigenhand import pfad as tool
+
+        used: list = []
+        _stub_run(monkeypatch, fresh=[], stored=[])
+        monkeypatch.setattr(tool, "follow_row", lambda *args: used.append(args[-1]) or [])
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("a dry run must not write"))
+        out = str(tmp_path / "pfade.json")
+        for flags in ([], ["--mask-labels"], ["--no-mask-labels"], ["--no-mask-labels", "--register-seed"]):
+            assert tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--out", out, *flags]) == 0
+        assert used == [
+            tool.STANDARD_INPUT,
+            tool.STANDARD_INPUT,
+            tool.FollowerInput(mask_labels=False),
+            tool.FollowerInput(mask_labels=False, register_seed=True),
+        ]
+
+    def test_cleared_labels_are_what_the_follower_is_handed(self, monkeypatch):
+        # End to end over a REAL composed Bogen: the printed id, provenance and
+        # word labels sit inside the strip, the follower is handed a mask
+        # without a single pixel of them, and the handwriting is untouched.
+        import tools.pairlab.tintenpfad as follower
+        from core.eigenhand import bogen
+        from core.eigenhand.follower_input import ink_of, label_zones_px, zones_in_crop
+        from core.eigenhand.kartei import empty_kartei
+        from core.eigenhand.plan import load_plan
+        from tools.eigenhand import pfad as tool
+
+        layout = bogen.compose_sheet(
+            plan=load_plan(),
+            kartei=empty_kartei("mn-suetterlin", "suetterlin"),
+            hand="mn-suetterlin",
+            style="suetterlin",
+            date="2026-08-24",
+            rows=1,
+            repeat=1,
+            strips=["S0001"],
+            hints=True,
+        )["layout"]
+        printed_row = layout["rows"][0]
+        x0, y0, x1, y1 = printed_row["cut_mm"]
+        width, height = int(round((x1 - x0) * 10)), int(round((y1 - y0) * 10))
+        zones = label_zones_px(layout, printed_row, [x0, y0], width, height)
+        hand = np.ones((height, width))
+        waist, baseline = (int(round((printed_row["band_mm"][k] - y0) * 10)) for k in ("waist", "baseline"))
+        for k in range(8):
+            hand[waist:baseline, 70 + 40 * k : 73 + 40 * k] = 0.1
+            hand[baseline - 3 : baseline, 70 + 40 * k : 113 + 40 * k] = 0.1
+        printed = hand.copy()
+        for zx0, zy0, zx1, zy1 in zones:
+            for x in range(zx0 + 6, zx1 - 6, 9):
+                printed[zy0 + 7 : zy1 - 7, x : x + 3] = 0.35
+
+        row = {
+            "strip": "S0001",
+            "fassung": "F01",
+            "sheet": "B0001",
+            "row_index": 0,
+            "crop_origin_mm": [x0, y0],
+            "width_px": width,
+            "height_px": height,
+            "flecken": [],
+            "boxes": [{"index": 0, "word": printed_row["boxes"][0]["word"]}],
+        }
+        prior = {
+            "seed": SimpleNamespace(have=set(), rows_for=lambda keys: ({key: {} for key in keys}, {})),
+            "manifest": {},
+            "source_id": "suetterlin-1922",
+        }
+        handed: list = []
+
+        def _follow(case, _weights):
+            handed.append(case)
+            return {"status": "failed", "detail": "stubbed"}
+
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: layout)
+        monkeypatch.setattr(tool, "_strip_plane", lambda *_a: printed)
+        monkeypatch.setattr(follower, "follow_case", _follow)
+
+        unmasked = tool.follow_row(
+            "https://example.invalid", "t", "mn-suetterlin", row, prior, None, tool.FollowerInput(mask_labels=False)
+        )
+        masked = tool.follow_row("https://example.invalid", "t", "mn-suetterlin", row, prior, None)  # the default
+
+        rect = handed[0].rect
+        inside = np.zeros(handed[0].mask.shape, dtype=bool)
+        for zx0, zy0, zx1, zy1 in zones_in_crop(zones, rect):
+            inside[max(0, zy0) : max(0, zy1), max(0, zx0) : max(0, zx1)] = True
+        assert inside.any()
+        assert (handed[0].mask & inside).any()  # what the unmasked follow still reads as ink
+        assert not (handed[1].mask & inside).any() and not (handed[1].skel & inside).any()
+        hand_only, _skel, _width = ink_of(hand[:, rect[0] : rect[2]])
+        assert np.array_equal(handed[1].mask, hand_only)
+        # Same crop, same frame: only the ink changed.
+        assert handed[1].rect == rect and handed[1].baseline_y == handed[0].baseline_y
+        # And a box the follower gave up on still names the stages it ran with.
+        assert "input" not in unmasked[0]["konfiguration"]
+        assert masked[0]["konfiguration"]["input"] == {
+            "mask_labels": True,
+            "resample_xh_px": None,
+            "register_seed": False,
+        }
+
+    def test_a_resampled_bahn_is_stored_on_the_strip_pixels_it_was_followed_at(self):
+        from core.eigenhand.follower_input import PLATE_XH_PX
+        from tools.eigenhand import pfad as tool
+
+        frame = _frame(0)  # printed x-height 120 px — far outside the plate's range
+        x0, y0, x1, y1 = frame["rect_px"]
+        crop = np.ones((y1 - y0, x1 - x0))
+        crop[200:244, 60:64] = 0.1
+        case = self._word_case(crop, int(frame["baseline_row"]), int(frame["waist_row"]), frame["rect_px"])
+        stages = tool.FollowerInput(resample_plate=True)
+        adapted = tool.adapt_case(case, stages, xh_px=float(frame["xh_px"]))
+        small = adapted.case
+        assert adapted.fy == pytest.approx(PLATE_XH_PX / frame["xh_px"], rel=1e-2)
+        assert small.rect == [0, 0, small.crop.shape[1], small.crop.shape[0]]
+        assert small.baseline_y - small.midband_y == pytest.approx(PLATE_XH_PX, abs=1)
+
+        xh = float(small.baseline_y - small.midband_y)
+        registration = {"tx": 5.0, "ty": -1.0, "baseline_row": small.baseline_y}
+        info = {**self.OK_INFO, "registration_px": registration, "xh_px": xh}
+        entry = tool._entry(info, frame, None, "2026-09-24", {}, adapted=adapted, stages=stages)
+        mapping = adapted.mapping(frame["rect_px"])
+        for mine, followed in zip(entry["strokes"], info["strokes"], strict=True):
+            on_strip = tool._crop_px(mine, entry["registration_px"], entry["xh_px"])
+            expected = mapping.to_strip(tool._crop_px(followed, info["registration_px"], xh))
+            # The registration is stored at two decimals, as it always was.
+            assert np.abs(on_strip - expected).max() < 0.011
+        assert entry["konfiguration"]["input"]["resample_xh_px"] == PLATE_XH_PX
+        assert entry["meta"]["input"]["scale"] == [round(adapted.fx, 6), round(adapted.fy, 6)]
+        # The API takes it: an x-height in strip pixels, a frame on this strip.
+        assert check_paths([entry], ROW, WIDTH_PX, HEIGHT_PX, ["lesen", "das"], PFAD_FORMAT)
+
+    def test_at_the_plates_scale_resampling_hands_over_the_very_case(self):
+        from tools.eigenhand import pfad as tool
+
+        crop = np.ones((90, 120))
+        crop[40:70, 30:33] = 0.1
+        case = self._word_case(crop, 70, 39, [0, 0, 120, 90])  # 31 px per x-height
+        adapted = tool.adapt_case(case, tool.FollowerInput(mask_labels=True, resample_plate=True), xh_px=31.0)
+        assert adapted.case is case and (adapted.fx, adapted.fy) == (1.0, 1.0)
+        assert not adapted.mapping([40, 0, 160, 90]).resampled
+        # And the stored frame is then exactly the standard one.
+        plain = tool._entry(_INFO, _frame(0), None, "2026-09-24", {})
+        staged = tool._entry(_INFO, _frame(0), None, "2026-09-24", {}, adapted=adapted)
+        assert (staged["strokes"], staged["registration_px"], staged["xh_px"]) == (
+            plain["strokes"],
+            plain["registration_px"],
+            plain["xh_px"],
+        )
+
+    def test_the_seed_registration_moves_the_case_and_carries_its_x_scale(self, monkeypatch):
+        from core.eigenhand.follower_input import ModeCalibration
+        from tools.eigenhand import pfad as tool
+
+        skel_crop = np.ones((160, 240))
+        for x in range(20, 220, 20):  # a garland: feet on 96, tops on 70, 3 px ink
+            skel_crop[70:97, x : x + 3] = 0.1
+            skel_crop[94:97, x : x + 13] = 0.1
+            skel_crop[70:73, x + 10 : x + 23] = 0.1
+            skel_crop[70:97, x + 10 : x + 13] = 0.1
+        case = self._word_case(skel_crop, 100, 60, [0, 0, 240, 160])
+        monkeypatch.setattr(tool, "_composed_width_units", lambda _case: 8.0)
+        stages = tool.FollowerInput(register_seed=True)
+        adapted = tool.adapt_case(case, stages, xh_px=40.0, calibration=ModeCalibration(1.0, 0.0))
+        moved = adapted.case
+        assert adapted.seed.applied
+        assert (moved.baseline_y, moved.midband_y) == (adapted.seed.baseline_y, adapted.seed.midband_y)
+        assert moved.baseline_y < case.baseline_y and moved.baseline_y - moved.midband_y < 40
+        assert moved.seed_x_scale == adapted.seed.x_scale != 1.0
+        assert adapted.readings["seed"]["applied"] is True
+        # The ink the follower reads is not what stage 3 changes.
+        assert moved.mask is case.mask and moved.rect == case.rect
+
+    def test_an_unreadable_seed_registration_hands_over_the_case_unchanged(self, monkeypatch):
+        from tools.eigenhand import pfad as tool
+
+        crop = np.ones((160, 240))
+        crop[2:6, 20:200] = 0.1  # ink nowhere near the printed band
+        case = self._word_case(crop, 100, 60, [0, 0, 240, 160])
+        monkeypatch.setattr(tool, "_composed_width_units", lambda _case: 8.0)
+        adapted = tool.adapt_case(case, tool.FollowerInput(register_seed=True), xh_px=40.0)
+        assert adapted.case is case and adapted.case.seed_x_scale == 1.0
+        assert adapted.readings["seed"]["applied"] is False and "unreadable" in adapted.readings["seed"]["reason"]
+
+    @pytest.mark.parametrize("named", ["--mask-labels", "--no-mask-labels", "--resample-plate"])
+    def test_the_spans_mode_refuses_a_stage_it_would_never_apply(self, named):
+        # Switched on or off, a NAMED stage beside `--spans` is a setting no
+        # line of the run reads. The default mask alone is not refused — the
+        # `--spans` runs of `TestSpanAssignment` go through with it.
+        from tools.eigenhand import pfad as tool
+
+        with pytest.raises(SystemExit, match="input stages"):
+            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--spans", named])
+
+    @pytest.mark.parametrize(
+        ("flags", "line"),
+        [
+            (["--no-mask-labels", "--resample-plate"], "--fassung F01 --no-mask-labels --resample-plate --apply"),
+            (["--mask-labels", "--register-seed"], "--fassung F01 --register-seed --apply"),
+            ([], "--fassung F01 --apply"),
+        ],
+    )
+    def test_the_re_run_line_after_a_moved_list_keeps_the_stages(self, monkeypatch, flags, line):
+        # The line the terminal hands back has to store what THIS run would
+        # have stored — a re-run with other stages would follow a different
+        # input and push a different Bahn under the operator's nose. The
+        # default mask needs no flag to come back, and spelling it out is what
+        # a `--spans` re-run would refuse.
+        from tools.eigenhand import pfad as tool
+
+        _stub_run(monkeypatch, fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}], stored=[])
+
+        def _refuse(*_args, **_kwargs):
+            raise StaleRead("PUT … → 412: the stored paths have moved on since this was read")
+
+        monkeypatch.setattr(tool, "request_json", _refuse)
+        with pytest.raises(SystemExit) as refused:
+            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", *flags, "--apply"])
+        assert line in str(refused.value)
+        assert "-mask-labels" not in str(refused.value) or "--no-mask-labels" in flags
