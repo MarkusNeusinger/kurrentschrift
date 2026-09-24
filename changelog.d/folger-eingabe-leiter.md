@@ -39,7 +39,10 @@
   boolean `--register-seed` into `--register-seed {k,ky}`. The metrics and
   the decision rule are unchanged. A jitter and short-chord sensor, built
   on the frozen continuity arithmetic, is reported and never decides. The
-  confirmation runs on unseen boxes from S0182 on, and only on strips the
-  hold-out draw puts into practice; the draw comes first. The author's
-  seeded blind pass comes before any adoption, and adoption stays the
-  author's decision.
+  confirmation runs on unseen boxes from S0182 on, which the next sheet,
+  B0005, carries, and only on strips that the hold-out draw put into
+  practice. That draw already exists: it was made on 2026-09-21 under the
+  key `mn-suetterlin-2026-09-21` and is filed in the private archive. The
+  earlier wording, that the draw had still to come first, rested on a
+  stale local data root. The author's seeded blind pass comes before any
+  adoption, and adoption stays the author's decision.
