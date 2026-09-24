@@ -2017,3 +2017,262 @@ class TestInputStages:
             tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", *flags, "--apply"])
         assert line in str(refused.value)
         assert "-mask-labels" not in str(refused.value) or "--no-mask-labels" in flags
+
+
+class TestMessen:
+    """The `--messen` mode (V21): a hand-drawn Bahn measured, and not moved.
+
+    The property that carries the mode is measure-only — the strokes, the
+    registration and the letter boundaries of an authored box are the same
+    bytes before and after, only `meta` gains a block. So that is asserted on
+    a synthetic strip with real ink, next to the rest: authored boxes only, a
+    measured box is left alone unless `--neu`, the write is the per-box PATCH
+    with a chained `If-Match` and never the full push, and the traffic light
+    reads the result like any followed Bahn.
+    """
+
+    LAYOUT_ROW = {**TestSkipEntries.ROW_IN, "boxes": [{"index": 0, "word": "lesen"}, {"index": 1, "word": "das"}]}
+
+    @staticmethod
+    def _drawing(**overrides) -> dict:
+        """An authored Bahn on box 0 as the editor stores it — `meta` empty, one corrected boundary."""
+        frame = _frame(0)
+        x0 = frame["rect_px"][0]
+        return {
+            "box_index": 0,
+            "word": "lesen",
+            "status": "ok",
+            "grund": None,
+            "detail": None,
+            "strokes": [[[0.0, 0.0], [0.8, 0.0], [1.6, 0.0]]],
+            FIELD_SPANS: [_span(herkunft=AUTHORED)],
+            "registration_px": {"tx": float(x0 + 50), "ty": 0.0, "baseline_row": float(frame["baseline_row"])},
+            "xh_px": float(frame["xh_px"]),
+            "verfahren": AUTHORED,
+            "konfiguration": {},
+            "meta": {},
+            "erzeugt_am": "2026-09-24",
+            # `null`, as the editor stores it: a drawing carries no numbers.
+            "flecken_n": None,
+            **overrides,
+        }
+
+    @staticmethod
+    def _plane() -> np.ndarray:
+        """The strip: one horizontal pen line along box 0's baseline, where `_drawing` lies."""
+        frame = _frame(0)
+        x0, baseline = frame["rect_px"][0], int(round(frame["baseline_row"]))
+        plane = np.ones((HEIGHT_PX, WIDTH_PX))
+        plane[baseline - 2 : baseline + 2, x0 + 50 : x0 + 243] = 0.1
+        return plane
+
+    def _measure(self, monkeypatch, stored: list[dict], *, boxes=None, neu=False, row=None) -> dict[int, dict]:
+        """`measure_row` over the synthetic strip — the network and the plate stubbed, the ink real."""
+        from tools.eigenhand import pfad as tool
+        from tools.pairlab.tintenpfad import strands_of
+
+        monkeypatch.setattr(tool, "_row_context", lambda *_a: ({"rows": [ROW]}, ROW, self._plane()))
+        monkeypatch.setattr(tool, "label_zones_px", lambda *_a: [])
+        monkeypatch.setattr(tool, "load_plan", lambda: {})
+        monkeypatch.setattr(tool, "shaping_form_of", lambda _plan, word: word)
+
+        # The follower's strands on the case's real ink; only the composition
+        # (a synthetic strip has no plate behind it) is replaced by its answer.
+        def _ink(case, weights):
+            xh = float(_frame(0)["xh_px"])
+            return strands_of(np.asarray(case.skel, dtype=bool), xh, weights, {}), 0, xh
+
+        monkeypatch.setattr(tool, "ink_and_seed", _ink)
+        prior = {
+            "seed": SimpleNamespace(have=set(), rows_for=lambda keys: ({key: {} for key in keys}, {})),
+            "manifest": {},
+            "source_id": "suetterlin-1922",
+        }
+        return tool.measure_row(
+            "https://example.invalid", "t", "mn-suetterlin", row or dict(self.LAYOUT_ROW), prior, stored, boxes, neu=neu
+        )
+
+    def test_a_drawing_is_measured_and_not_moved(self, monkeypatch):
+        from tools.eigenhand import pfad as tool
+
+        drawing = self._drawing()
+        before = json.dumps(drawing, sort_keys=True)
+        measured = self._measure(monkeypatch, [drawing])[0]
+        # The stored entry the pass read is not mutated either.
+        assert json.dumps(drawing, sort_keys=True) == before
+        for key in tool.UNTOUCHED_BY_MEASURING:
+            assert json.dumps(measured[key], sort_keys=True) == json.dumps(drawing[key], sort_keys=True), key
+        assert set(measured) == set(drawing)
+        # The one field besides `meta` it sets: the mask the NUMBERS were taken
+        # under, which is what the light's „Maske geändert" holds them against.
+        assert tool.UNTOUCHED_BY_MEASURING == tuple(key for key in drawing if key not in ("meta", "flecken_n"))
+        assert measured["flecken_n"] == 0
+        block = measured["meta"][tintentreue.META_BLOCK]
+        assert set(block) == set(tool.STORED_SENSORS)
+        assert (block["runs"], block["paper_lifts"], block["ink_unvisited_share"]) == (1, 0, 0.0)
+        assert block[tintentreue.KEY_EXKURSION] < 0.05 and block[tintentreue.KEY_AIOU] > 0.5
+        assert block["jumps"] is None and block["hairpins"] is None
+        assert measured["meta"]["messung"]["gemessen_von"] == "messen"
+        assert measured["meta"]["messung"]["herkunft"] == AUTHORED
+        # The default stage ran, as it does for a follow.
+        assert measured["meta"]["messung"]["eingabe"] == tool.STANDARD_INPUT.konfiguration()
+        assert measured["meta"]["input"] == {"label_zones": 0}
+
+    def test_the_traffic_light_grades_a_measured_drawing(self, monkeypatch):
+        # V21's point: grey „von Hand gezeichnet" while unmeasured, the same
+        # Ampel as any followed Bahn afterwards — and the Herkunft unchanged.
+        drawing = self._drawing()
+        grey = tintentreue.tintentreue(drawing, hand="mn-suetterlin", pfade_format=PFAD_FORMAT, maske_n=0)
+        assert (grey.stufe, grey.grund) == (tintentreue.STUFE_UNGEMESSEN, tintentreue.GRUND_VON_HAND)
+        measured = self._measure(monkeypatch, [drawing])[0]
+        light = tintentreue.tintentreue(measured, hand="mn-suetterlin", pfade_format=PFAD_FORMAT, maske_n=0)
+        # One run on a one-run word, every skeleton strand ridden, on the ink.
+        assert light.gemessen and light.stufe == tintentreue.STUFEN[0]
+        assert measured["verfahren"] == AUTHORED
+
+    def test_the_api_takes_the_measured_entry(self, monkeypatch):
+        # The checked fields unchanged and the free `meta` carrying no boundary
+        # copy — so the PATCH's `check_paths` stores it as it is.
+        measured = self._measure(monkeypatch, [self._drawing()])[0]
+        assert check_paths([measured], ROW, WIDTH_PX, HEIGHT_PX, ["lesen", "das"], PFAD_FORMAT)[0][FIELD_SPANS] == [
+            _span(herkunft=AUTHORED)
+        ]
+
+    def test_a_followed_box_is_not_this_modes_business(self, monkeypatch, capsys):
+        followed = _path(box_index=1, word="das")
+        out = self._measure(monkeypatch, [self._drawing(), followed])
+        assert list(out) == [0]
+
+    def test_naming_a_box_that_holds_no_drawing_is_refused(self, monkeypatch):
+        # Measuring nothing and reporting the row done would be the quiet
+        # version of a typo — and a followed Bahn brings its own measurement.
+        with pytest.raises(SystemExit, match="carries no hand-drawn Bahn"):
+            self._measure(monkeypatch, [self._drawing(), _path(box_index=1, word="das")], boxes=[1])
+
+    def test_a_measured_drawing_is_left_alone_unless_asked_again(self, monkeypatch, capsys):
+        once = self._measure(monkeypatch, [self._drawing()])[0]
+        assert self._measure(monkeypatch, [once]) == {}
+        assert "already measured, --neu measures again" in capsys.readouterr().out
+        again = self._measure(monkeypatch, [once], neu=True)[0]
+        assert again["meta"][tintentreue.META_BLOCK] == once["meta"][tintentreue.META_BLOCK]
+
+    def test_a_measurement_under_an_older_mask_is_taken_again(self, monkeypatch, capsys):
+        # The numbers describe ink the author has since brushed; the light
+        # greys the box for it, and measuring on today's ink lifts that grey —
+        # without `--neu`, because this is not a repetition.
+        once = self._measure(monkeypatch, [self._drawing()])[0]
+        row = {**self.LAYOUT_ROW, "flecken": [{"x": 1}]}
+        stale = tintentreue.tintentreue(once, hand="mn-suetterlin", pfade_format=PFAD_FORMAT, maske_n=1)
+        assert stale.grund == tintentreue.GRUND_MASKE
+        again = self._measure(monkeypatch, [once], row=row)[0]
+        assert "taken under another Fleckenmaske" in capsys.readouterr().out
+        assert again["flecken_n"] == 1
+        light = tintentreue.tintentreue(again, hand="mn-suetterlin", pfade_format=PFAD_FORMAT, maske_n=1)
+        assert light.gemessen
+
+    def test_the_guard_refuses_a_measurement_that_moved_the_drawing(self):
+        from tools.eigenhand import pfad as tool
+
+        drawing = self._drawing()
+        assert tool._untouched(drawing, {**drawing, "meta": {"x": 1}}) == []
+        moved = {**drawing, "strokes": [[[0.0, 0.0], [1.6, 0.01]]]}
+        assert tool._untouched(drawing, moved) == [FIELD_PATH]
+        # Canonical bytes, not Python equality: 240 and 240.0 are equal and not the same row.
+        assert tool._untouched(drawing, {**drawing, "xh_px": int(drawing["xh_px"])}) == ["xh_px"]
+
+    # ---------------------------------------------------------- the CLI half
+
+    def _main(self, monkeypatch, *, stored: list[dict], measured: dict[int, dict], patch=None, fmt=PFAD_FORMAT):
+        """`main` with `--messen`, the read and `measure_row` stubbed; the PATCHes recorded."""
+        from tools.eigenhand import pfad as tool
+
+        _stub_run(monkeypatch, fresh=[], stored=stored)
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("--messen never uses the full push"))
+        monkeypatch.setattr(tool, "follow_row", lambda *_a: pytest.fail("--messen follows nothing"))
+        monkeypatch.setattr(tool, "measure_row", lambda *_a, **_k: measured)
+        calls: list[dict] = []
+
+        def _request(method, url, token, body=None, allow_404=False, *, if_match=None):
+            calls.append({"method": method, "url": url, "body": body, "if_match": if_match})
+            if method == "GET":
+                return {"format": fmt, "pfade": stored}, STUB_TAG
+            assert method == "PATCH", method
+            answered = patch(body) if patch else body["pfad"]
+            return {"format": fmt, "pfade": [answered]}, f'"after-{len(calls)}"'
+
+        monkeypatch.setattr(tool, "request_json_with_etag", _request)
+        return calls
+
+    def test_a_dry_run_files_the_whole_list_and_writes_nothing(self, tmp_path, monkeypatch):
+        from tools.eigenhand import pfad as tool
+
+        drawing, followed = self._drawing(), _path(box_index=1, word="das")
+        measured = {0: {**drawing, "meta": {"messung": {"gemessen_von": "messen"}}}}
+        calls = self._main(monkeypatch, stored=[drawing, followed], measured=measured)
+        out = tmp_path / "gemessen.json"
+        assert tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--messen", "--out", str(out)]) == 0
+        assert [call["method"] for call in calls] == ["GET"]
+        body = json.loads(out.read_text())
+        assert body["format"] == PFAD_FORMAT
+        assert body["pfade"] == [measured[0], followed]
+
+    def test_apply_patches_box_by_box_on_a_chained_token(self, monkeypatch):
+        from tools.eigenhand import pfad as tool
+
+        first, second = self._drawing(), self._drawing(box_index=1, word="das")
+        measured = {index: {**entry, "meta": {"messung": {}}} for index, entry in ((0, first), (1, second))}
+        calls = self._main(monkeypatch, stored=[first, second], measured=measured, fmt=1)
+        assert tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--messen", "--apply"]) == 0
+        patches = [call for call in calls if call["method"] == "PATCH"]
+        assert [call["url"].rsplit("/", 2)[-2:] for call in patches] == [["pfade", "0"], ["pfade", "1"]]
+        # The first on the read's token, the second on the first PATCH's answer.
+        assert [call["if_match"] for call in patches] == [STUB_TAG, '"after-2"']
+        # The ROW's format, whatever this image writes.
+        assert {call["body"]["format"] for call in patches} == {1}
+        assert patches[0]["body"]["pfad"] == measured[0]
+
+    def test_a_drawing_that_came_back_moved_stops_the_run(self, monkeypatch):
+        from tools.eigenhand import pfad as tool
+
+        first, second = self._drawing(), self._drawing(box_index=1, word="das")
+        measured = {0: first, 1: second}
+
+        def _moved(body):
+            return {**body["pfad"], "strokes": [[[0.0, 0.0], [9.0, 9.0]]]}
+
+        calls = self._main(monkeypatch, stored=[first, second], measured=measured, patch=_moved)
+        with pytest.raises(SystemExit, match="must not move the drawing"):
+            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--messen", "--apply"])
+        assert len([call for call in calls if call["method"] == "PATCH"]) == 1
+
+    def test_a_moved_list_hands_back_the_measuring_line(self, monkeypatch):
+        from tools.eigenhand import pfad as tool
+
+        calls = self._main(monkeypatch, stored=[self._drawing()], measured={0: self._drawing()})
+
+        def _refuse(method, *args, **kwargs):
+            if method == "GET":
+                return {"format": PFAD_FORMAT, "pfade": [self._drawing()]}, STUB_TAG
+            raise StaleRead("PATCH … → 412: the stored paths have moved on since this was read")
+
+        monkeypatch.setattr(tool, "request_json_with_etag", _refuse)
+        with pytest.raises(SystemExit) as refused:
+            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--messen", "--neu", "--box", "0", "--apply"])
+        assert "--fassung F01 --messen --box 0 --neu --apply" in str(refused.value)
+        assert calls == []
+
+    @pytest.mark.parametrize(
+        ("flags", "match"),
+        [
+            (["--neu"], "only means something beside --messen"),
+            (["--messen", "--spans"], "only measures"),
+            (["--messen", "--replace-authored"], "only measures"),
+            (["--messen", "--register-seed"], "adapt the decode"),
+            (["--messen", "--resample-plate"], "adapt the decode"),
+        ],
+    )
+    def test_the_mode_refuses_what_would_not_be_a_measurement(self, flags, match):
+        from tools.eigenhand import pfad as tool
+
+        with pytest.raises(SystemExit, match=match):
+            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", *flags])

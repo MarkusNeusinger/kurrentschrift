@@ -50,6 +50,23 @@ work. A box whose boundaries the author corrected is left alone WHOLE, and the
 run names it; ``--replace-authored`` is refused beside this mode, because there
 is nothing here to give up.
 
+A THIRD MODE, ``--messen``, measures the Bahnen the author DREW (V21 of
+``docs/proposals/admin-redesign.md`` §12.4) —
+
+    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pfad --hand mn-suetterlin --strip S0001 --messen --apply
+
+— and like ``--spans`` it follows nothing. The Streifen-Editor saves a drawing
+with an empty ``meta``, so the Tintentreue light has nothing to grade and greys
+the box („von Hand gezeichnet"). This mode computes the same sensor block the
+follower stores for its own Bahn, on the same ink the follower is handed (the
+label mask by default), and writes it into ``meta`` — the strokes, the
+registration and the letter boundaries go back exactly as they were read
+(``tools.eigenhand.messen`` says which readings are the follower's own code and
+which are the drawing's reading of a decode count). It touches authored boxes
+only, skips a box that already carries a measurement unless ``--neu``, and
+writes through the per-box ``PATCH`` with ``If-Match``, never the full
+replacement: a measurement is one box's business.
+
 WHAT IT READS. Everything over the admin API, nothing off a local scan: the
 strip listing (geometry, words, box rectangles), the Bogen layout (the printed
 ruling), the strip PNG itself — served with the Fleckenmaske applied and, for
@@ -165,8 +182,10 @@ from core.eigenhand.follower_input import (  # noqa: E402
 )
 from core.eigenhand.ids import style_of_hand  # noqa: E402
 from core.eigenhand.pfad import (  # noqa: E402
+    FIELD_PATH,
     FIELD_SPANS,
     MAX_DETAIL,
+    PFAD_FORMAT,
     SKIP_GAVE_UP,
     SKIP_NO_GEOMETRY,
     SKIP_UNAUTHORED,
@@ -178,7 +197,13 @@ from core.eigenhand.pfad import (  # noqa: E402
     push_body,
 )
 from core.eigenhand.plan import load_plan, shaping_form_of  # noqa: E402
-from core.eigenhand.tintentreue import KEY_AIOU, KEY_EXKURSION  # noqa: E402
+from core.eigenhand.tintentreue import (  # noqa: E402
+    KEY_AIOU,
+    KEY_EXKURSION,
+    META_BLOCK,
+    VOLLSTAENDIG_AB_FORMAT,
+    rohzahlen,
+)
 from tools.eigenhand.apiclient import (  # noqa: E402
     StaleRead,
     admin_token,
@@ -188,6 +213,7 @@ from tools.eigenhand.apiclient import (  # noqa: E402
     request_json_with_etag,
 )
 from tools.eigenhand.kartei import archived_pfade, load_kartei  # noqa: E402
+from tools.eigenhand.messen import drawn_readings, ink_and_seed, messung  # noqa: E402
 from tools.eigenhand.spans import DEFAULT_METHOD, METHODS, assign, flat_spans  # noqa: E402
 from tools.eigenhand.store import check_hand_id, hand_dir  # noqa: E402
 
@@ -1012,9 +1038,246 @@ def assign_row_spans(
     return out
 
 
-def _local_path(hand: str, strip: str, fassung: str) -> Path:
+# The fields of a stored entry a measuring pass hands back exactly as it read
+# them — everything except `meta` and `flecken_n`. Spelled as a list so the
+# guard below and the test pinning it read one statement of „measure-only".
+#
+# `flecken_n` is the one field besides `meta` a measurement sets, and on
+# purpose: it is the size of the Fleckenmaske the entry's NUMBERS were taken
+# under, which is what the light holds against today's mask („Maske
+# geändert"). The editor stores a drawing with `null` there because a drawing
+# carries no numbers; once it does, leaving it `null` would switch that grey
+# state off for good and keep a colour measured on ink the author has since
+# brushed over — the one wrong green `tintentreue` warns about.
+UNTOUCHED_BY_MEASURING = (
+    "box_index",
+    "word",
+    "status",
+    "grund",
+    "detail",
+    FIELD_PATH,
+    FIELD_SPANS,
+    "registration_px",
+    "xh_px",
+    "verfahren",
+    "konfiguration",
+    "erzeugt_am",
+)
+# The `meta` keys a measurement owns. A re-measurement (`--neu`) replaces all
+# three, so an `input` block left from an earlier run under other stages
+# cannot sit beside readings it did not produce.
+MEASUREMENT_META = (META_BLOCK, "messung", "input")
+
+
+def _untouched(before: Mapping[str, Any], after: Mapping[str, Any]) -> list[str]:
+    """The fields a measurement must not move that differ between the two — empty when none do.
+
+    Compared as canonical JSON rather than with `==`: `1` and `1.0` compare
+    equal in Python and are different bytes on the wire, and the promise is
+    about the stored row.
+    """
+
+    def canon(value: Any) -> str:
+        return json.dumps(value, sort_keys=True, ensure_ascii=False)
+
+    return [
+        key
+        for key in UNTOUCHED_BY_MEASURING
+        if (key in before) != (key in after) or canon(before.get(key)) != canon(after.get(key))
+    ]
+
+
+def _measured_entry(
+    entry: Mapping[str, Any], sensors: Mapping[str, Any], extra: Mapping[str, Any], flecken_n: int | None
+) -> dict:
+    """The stored entry with a measurement in its `meta` and the mask it was taken under — nothing else changed.
+
+    Built by copying the entry and replacing `meta` and `flecken_n` alone; the
+    guard afterwards is not decoration. Every other mode of this tool that can
+    reach an authored box either leaves it out of the write or is refused
+    beside it, and this is the one mode that writes one ON PURPOSE — so the
+    property that makes that safe is checked on the very object that is about
+    to be sent.
+    """
+    meta = {key: value for key, value in (entry.get("meta") or {}).items() if key not in MEASUREMENT_META}
+    measured = {**entry, "meta": {**meta, META_BLOCK: dict(sensors), **extra}, "flecken_n": flecken_n}
+    moved = _untouched(entry, measured)
+    if moved:
+        raise RuntimeError(
+            f"box {entry.get('box_index')}: a measurement moved {', '.join(moved)} — refusing to send it"
+        )
+    return measured
+
+
+def _mask_moved(entry: Mapping[str, Any], flecken_n: int | None) -> bool:
+    """Whether the entry's numbers were taken under another Fleckenmaske than the Fassung carries today.
+
+    The light's own test (`core.eigenhand.tintentreue`, „Maske geändert"), so
+    the two can only disagree where one of them does not know a size.
+    """
+    under = entry.get("flecken_n")
+    return isinstance(under, int) and not isinstance(under, bool) and flecken_n is not None and under != flecken_n
+
+
+def _measure_reason(entry: Mapping[str, Any], *, neu: bool, flecken_n: int | None) -> str | None:
+    """Why this stored entry is NOT measured — None where it is waiting for it.
+
+    A followed Bahn carries the follower's own measurement and is not this
+    mode's business. A drawing that already carries one keeps it unless
+    `--neu`: a measurement is a derivation, and repeating it without a reason
+    only churns the row. A changed Fleckenmaske IS a reason: the numbers
+    describe ink the author has since brushed, the light greys the box for it,
+    and measuring again on today's ink is exactly what lifts that grey.
+    """
+    if not is_authored(entry):
+        return "followed"
+    if entry.get("status", STATUS_OK) not in (None, STATUS_OK) or not entry.get(FIELD_PATH):
+        return "no Bahn"
+    if rohzahlen(entry).gemessen and not neu and not _mask_moved(entry, flecken_n):
+        return "measured"
+    return None
+
+
+def measure_row(
+    base: str,
+    token: str,
+    hand: str,
+    row: dict,
+    prior: dict,
+    stored: list[dict],
+    boxes: list[int] | None,
+    stages: FollowerInput = STANDARD_INPUT,
+    *,
+    neu: bool = False,
+) -> dict[int, dict]:
+    """The sensors of the Bahnen the author drew in one Fassung — box index → the entry to store.
+
+    V21: a drawn Bahn carries the same Ampel as a followed one once it is
+    measured, and nothing measured it. This pass does, and it is built so it
+    cannot do anything else. It reads the stored entry, cuts the box's ink
+    exactly as a follow would (`_case_for_box`, then the input stages — the
+    label mask by default), computes the follower's sensor block for the
+    DRAWN strokes (`tools.eigenhand.messen`, `_paper_sensors`) and hands the
+    entry back with that block in `meta`, today's mask size in `flecken_n`
+    (see `UNTOUCHED_BY_MEASURING` for why) and every other field as it was
+    read (`_measured_entry`).
+
+    Only authored boxes. A `--box` that names a followed box, a skip or an
+    empty box is refused before any work — the operator asked for something
+    this mode will not do, and quietly measuring nothing would read as done.
+    In a whole-row run the followed boxes are simply not candidates.
+
+    What comes back is only the boxes that were measured; the caller writes
+    each through the per-box PATCH.
+    """
+    _refuse_unknown_boxes(row, boxes)
+    by_box = {entry.get("box_index"): entry for entry in stored}
+    if boxes is not None:
+        # Asked with `--neu` assumed: an already measured drawing is a skip
+        # the run names below, not a box that was never the author's.
+        refused = sorted(
+            index
+            for index in boxes
+            if index not in by_box or _measure_reason(by_box[index], neu=True, flecken_n=None) is not None
+        )
+        if refused:
+            raise SystemExit(
+                f"{row['strip']}/{row['fassung']}: box {', '.join(str(index) for index in refused)} carries no "
+                "hand-drawn Bahn — --messen measures the author's drawings only (a followed Bahn brings its own "
+                "measurement); refusing to measure nothing and call it done"
+            )
+    flecken_n = len(row["flecken"]) if row.get("flecken") is not None else None
+    in_scope = [entry for entry in stored if boxes is None or entry.get("box_index") in boxes]
+    reasons = {entry.get("box_index"): _measure_reason(entry, neu=neu, flecken_n=flecken_n) for entry in in_scope}
+    done = sorted(index for index, why in reasons.items() if why == "measured")
+    if done:
+        print(
+            f"  leaving box {', '.join(str(i) for i in done)} alone — already measured, --neu measures again",
+            flush=True,
+        )
+    wanted = [entry for entry in in_scope if reasons[entry.get("box_index")] is None]
+    stale = sorted(
+        entry["box_index"] for entry in wanted if rohzahlen(entry).gemessen and _mask_moved(entry, flecken_n)
+    )
+    if stale and not neu:
+        print(
+            f"  measuring box {', '.join(str(i) for i in stale)} again — its numbers were taken under another "
+            "Fleckenmaske than the Fassung carries today",
+            flush=True,
+        )
+    if not wanted:
+        print("  no hand-drawn Bahn of this Fassung is waiting to be measured", flush=True)
+        return {}
+
+    from tools.pairlab.tintenpfad import TintenpfadWeights
+
+    plan = load_plan()
+    layout, layout_row, plane = _row_context(base, token, hand, row)
+    weights = TintenpfadWeights(**KONFIGURATION)
+    today = date_cls.today().isoformat()
+    label_zones = (
+        label_zones_px(layout, layout_row, row["crop_origin_mm"], row["width_px"], row["height_px"])
+        if stages.mask_labels
+        else []
+    )
+    out: dict[int, dict] = {}
+    for entry in wanted:
+        index = entry["box_index"]
+        case_id = f"{row['strip']}/{row['fassung']}#{index}"
+        try:
+            frame = frame_for_box(layout_row, row["crop_origin_mm"], row["width_px"], row["height_px"], index)
+        except ValueError as exc:
+            print(f"  {case_id:<18} no frame    {exc}", flush=True)
+            continue
+        case, missing = _case_for_box(prior, plane, frame, frame["word"], shaping_form_of(plan, frame["word"]), case_id)
+        if missing:
+            # The seed is what the Absetzer sensor counts the sanctioned lifts
+            # against; without it the block would be half a measurement, and a
+            # half-measured box reads as measured to `--neu`'s skip rule.
+            print(f"  {case_id:<18} unauthored  {' '.join(missing)} — no seed to count the lifts against", flush=True)
+            continue
+        adapted = None
+        if stages.active:
+            adapted = adapt_case(
+                case, stages, xh_px=float(frame["xh_px"]), zones=zones_in_crop(label_zones, frame["rect_px"])
+            )
+            case = adapted.case
+        built = ink_and_seed(case, weights)
+        if built is None:
+            print(f"  {case_id:<18} none        the composition could not be registered on this box's ink", flush=True)
+            continue
+        strands, seed_lifts, strand_xh = built
+        # The stored frame is the STRIP's; the ink is the crop's. The inverse
+        # of what `_entry` adds, exactly as `assign_row_spans` reads it.
+        stored_reg = entry["registration_px"]
+        reg = {
+            "tx": float(stored_reg["tx"]) - frame["rect_px"][0],
+            "ty": float(stored_reg.get("ty") or 0.0),
+            "baseline_row": float(stored_reg["baseline_row"]) - frame["rect_px"][1],
+        }
+        xh_px = float(entry["xh_px"])
+        drawn_px = [_crop_px(stroke, reg, xh_px) for stroke in entry[FIELD_PATH]]
+        info = {"strokes": entry[FIELD_PATH], "registration_px": reg, "xh_px": xh_px}
+        readings = {**drawn_readings(strands, drawn_px, strand_xh, seed_lifts), **_paper_sensors(case.mask, info)}
+        extra: dict[str, Any] = {"messung": messung(today, stages.konfiguration())}
+        if adapted is not None and adapted.readings:
+            extra["input"] = adapted.readings
+        measured = _measured_entry(entry, {key: readings.get(key) for key in STORED_SENSORS}, extra, flecken_n)
+        block = measured["meta"][META_BLOCK]
+        print(
+            f"  {case_id:<18} gemessen    {frame['word']:<14} {block['runs']:2d} Züge · "
+            f"{_reading(block['paper_lifts'], 0)} Absetzer · "
+            f"unvisited {_reading(block['ink_unvisited_share'], 2)} · "
+            f"Exkursion {_reading(block[KEY_EXKURSION])} xh · AIoU {_reading(block[KEY_AIOU])}",
+            flush=True,
+        )
+        out[index] = measured
+    return out
+
+
+def _local_path(hand: str, strip: str, fassung: str, suffix: str = "") -> Path:
     """Where a dry run files its result — under the gitignored own-hand root."""
-    return hand_dir(hand) / "pfade" / f"{strip}-{fassung}.json"
+    return hand_dir(hand) / "pfade" / f"{strip}-{fassung}{suffix}.json"
 
 
 def _spans_fit(spans: list[dict], strokes: list) -> bool:
@@ -1223,6 +1486,108 @@ def _merged(
     return sorted(entries + kept, key=lambda item: item["box_index"]), bool(hit and replace_authored), etag
 
 
+def _measure_fassung(
+    base: str,
+    token: str,
+    hand: str,
+    row: dict,
+    prior: dict,
+    url: str,
+    args: argparse.Namespace,
+    stages: FollowerInput,
+    unreached: list[dict],
+) -> int:
+    """One Fassung of a `--messen` run: read, measure, then file or PATCH box by box.
+
+    The write is the per-box PATCH, never the full push. A measurement is one
+    box's business, and the full replacement would restate every other box of
+    the row from this read — the window `If-Match` closes, but also a door
+    that stamps no Herkunft, where the PATCH stamps `authored` itself and so
+    cannot turn a drawing into anything else. The token CHAINS: every PATCH
+    answers with the list it produced, and the next box is written on that
+    answer's token rather than on the first read's, which would refuse the
+    second box of every row as stale.
+
+    The declared format is the ROW's, read off the same answer: the PATCH
+    refuses a format that would re-label the neighbours (409), and a
+    measurement has no business changing what the row is.
+
+    Returns how many boxes were stored.
+    """
+    answer, etag = request_json_with_etag("GET", url, token)
+    stored = (answer or {}).get("pfade") or []
+    if not stored:
+        print("  no stored path in this Fassung — nothing drawn to measure", flush=True)
+        return 0
+    row_format = int((answer or {}).get("format") or PFAD_FORMAT)
+    measured = measure_row(base, token, hand, row, prior, stored, args.box, stages, neu=args.neu)
+    if not measured:
+        return 0
+    if row_format < VOLLSTAENDIG_AB_FORMAT:
+        print(
+            f"  this Fassung's paths are stored as format {row_format} — the measurement is stored, and the light "
+            f"stays grey („Format {row_format}“) until the row is followed again under format {PFAD_FORMAT}",
+            flush=True,
+        )
+    if not args.apply:
+        out = args.out or _local_path(hand, row["strip"], row["fassung"], ".messen")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        body = [measured.get(entry.get("box_index"), entry) for entry in stored]
+        out.write_text(json.dumps({"format": row_format, "pfade": body}, ensure_ascii=False, indent=1) + "\n")
+        print(f"  dry run — {len(measured)} drawn Bahn(en) measured, written to {out}, nothing stored", flush=True)
+        return 0
+    done: list[int] = []
+    for index, entry in sorted(measured.items()):
+        try:
+            answer, etag = request_json_with_etag(
+                "PATCH", f"{url}/{index}", token, {"format": row_format, "pfad": entry}, if_match=etag
+            )
+        except StaleRead as exc:
+            # The same sentence the full push hands back, for the same reason:
+            # the server says what happened, only the terminal can say what to
+            # do. The boxes stored before the refusal are named — they are in,
+            # and a re-run skips them as measured.
+            narrowed = (
+                "".join(f" --box {box}" for box in args.box or [])
+                + (" --neu" if args.neu else "")
+                + ("" if stages.mask_labels == STANDARD_INPUT.mask_labels else " --no-mask-labels")
+            )
+            stored_note = (
+                f"  Box {', '.join(str(box) for box in done)} of {row['strip']}/{row['fassung']} was stored before "
+                "that; a re-run leaves it alone as measured.\n"
+                if done
+                else ""
+            )
+            rest = [other["fassung"] for other in unreached]
+            raise SystemExit(
+                f"{exc}\n"
+                f"{stored_note}"
+                f"  Box {index} of {row['strip']}/{row['fassung']} was not stored — the list moved since it was "
+                "read (a box drawn in the workbench, or another run). Run it again; the fresh read carries what "
+                "landed in between:\n"
+                f"    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pfad --api {shlex.quote(base)} "
+                f"--hand {hand} --strip {row['strip']} --fassung {row['fassung']} --messen{narrowed} --apply"
+                + (
+                    f"\n  This run stopped there: {', '.join(rest)} of {row['strip']} were not attempted."
+                    if rest
+                    else ""
+                )
+            ) from exc
+        # The promise, checked on what the server actually stored rather than
+        # on what was sent: a measurement that came back with a moved stroke
+        # stops the run before it touches another box.
+        written = next((item for item in (answer or {}).get("pfade") or [] if item.get("box_index") == index), None)
+        moved = _untouched(entry, written) if written is not None else ["the whole entry"]
+        if moved:
+            raise SystemExit(
+                f"  box {index} of {row['strip']}/{row['fassung']} came back with {', '.join(moved)} changed — "
+                "a measurement must not move the drawing; stopping before any further box"
+            )
+        done.append(index)
+    print(f"  stored the measurement of {len(done)} drawn Bahn(en) at {base}", flush=True)
+    return len(done)
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     ap.add_argument("--hand", required=True, help="hand id, e.g. mn-suetterlin")
@@ -1258,6 +1623,19 @@ def main(argv: list[str] | None = None) -> int:
         default=DEFAULT_METHOD,
         choices=list(METHODS),
         help="the matching rule of --spans; the default is the one the §14 round of 2026-09-20 measured",
+    )
+    ap.add_argument(
+        "--messen",
+        action="store_true",
+        help=(
+            "measure the Bahnen the author DREW instead of following — the Tintentreue sensors into `meta`, "
+            "strokes, registration and letter boundaries untouched; per-box PATCH with --apply (V21)"
+        ),
+    )
+    ap.add_argument(
+        "--neu",
+        action="store_true",
+        help="with --messen: measure a drawn Bahn again although it already carries a measurement",
     )
     stage = ap.add_argument_group(
         "input stages",
@@ -1308,6 +1686,21 @@ def main(argv: list[str] | None = None) -> int:
         # Only a NAMED one, though: the default mask is part of every follow,
         # not something a `--spans` run was asked for.
         raise SystemExit("--spans follows nothing, so the input stages have no crop to adapt — drop them")
+    if args.neu and not args.messen:
+        raise SystemExit("--neu repeats a measurement, so it only means something beside --messen")
+    if args.messen and (args.spans or args.replace_authored):
+        # The measuring mode is the other one that must not be able to lose a
+        # path: it writes INTO authored entries on purpose, so nothing that
+        # gives one up or re-derives its boundaries may ride along.
+        raise SystemExit("--messen only measures — it cannot be combined with --spans or --replace-authored")
+    if args.messen and (args.resample_plate or args.register_seed):
+        # Both adapt what the FOLLOWER is shown — a scale to decode at, a place
+        # to lay the seed. A drawing is not decoded; the one stage that says
+        # something about the ink it is measured on is the label mask.
+        raise SystemExit(
+            "--messen measures on the ink the follower is handed; --resample-plate and --register-seed adapt "
+            "the decode, not the ink — drop them (--no-mask-labels is the one stage that applies)"
+        )
 
     hand = check_hand_id(args.hand)
     style = style_of_hand(hand) or ""
@@ -1338,6 +1731,9 @@ def main(argv: list[str] | None = None) -> int:
     for position, row in enumerate(rows):
         print(f"{row['strip']}/{row['fassung']} ({row['sheet']} row {row['row_index']}):", flush=True)
         url = f"{base}/eigenhand/strips/{hand}/{row['strip']}/{row['fassung']}/pfade"
+        if args.messen:
+            written += _measure_fassung(base, token, hand, row, prior, url, args, stages, rows[position + 1 :])
+            continue
         if args.spans:
             # The read is the whole body here. A `--spans` run replaces the
             # stored list with the same list plus boundaries, so there is
@@ -1501,7 +1897,9 @@ def main(argv: list[str] | None = None) -> int:
         )
     if args.apply:
         print(
-            f"{written} box(es) with letter boundaries in the shared database — the workbench shows them in the editor"
+            f"{written} hand-drawn Bahn(en) measured in the shared database — the Nachfahr-Liste grades them now"
+            if args.messen
+            else f"{written} box(es) with letter boundaries in the shared database — the workbench shows them in the editor"
             if args.spans
             else f'{written} path(s) in the shared database — the workbench shows them under "Pfad zeigen"'
         )

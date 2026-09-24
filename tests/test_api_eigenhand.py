@@ -1949,6 +1949,37 @@ class TestPfadBoxes:
         assert "strokes" not in json.dumps(body)
 
     @pytest.mark.asyncio
+    async def test_a_drawing_measured_through_the_per_box_door_keeps_every_coordinate(self, api: Harness):
+        # V21 end to end on the real route: the editor's save, then what
+        # `pfad --messen --apply` sends for that box. The drawing comes back
+        # byte for byte — strokes, frame, the author's boundaries, `authored` —
+        # and the light that greyed it „von Hand gezeichnet" now grades it.
+        from tools.eigenhand.pfad import UNTOUCHED_BY_MEASURING, _measured_entry
+
+        stored = await _store_strip(api)
+        corrected = [{"stroke": 0, "slot": 0, "first": 0, "last": 2, "herkunft": "authored"}]
+        drawn = TestStreifenPfad._path(stored, verfahren="authored", letter_spans=corrected, meta={}, flecken_n=None)
+        read = await TestStreifenPfadKasten._read(api)
+        saved = await TestStreifenPfadKasten._patch(api, drawn, read.headers["etag"], format=2)
+        assert saved.status == 200, saved.body
+        grey = (await self._stand(api)).json()["fassungen"][0]["kaesten"][0]
+        assert grey["tintentreue"]["grund"] == "von Hand gezeichnet"
+
+        before = (await TestStreifenPfadKasten._read(api)).json()["pfade"][0]
+        sensors = {**self.GREEN, "runs": 1, "strands": 1, "jumps": None, "hairpins": None}
+        measured = _measured_entry(before, sensors, {"messung": {"gemessen_von": "messen"}}, 0)
+        written = await TestStreifenPfadKasten._patch(api, measured, saved.headers["etag"], format=2)
+        assert written.status == 200, written.body
+
+        after = (await TestStreifenPfadKasten._read(api)).json()["pfade"][0]
+        for key in UNTOUCHED_BY_MEASURING:
+            assert json.dumps(after[key], sort_keys=True) == json.dumps(before[key], sort_keys=True), key
+        assert after["meta"]["messung"]["gemessen_von"] == "messen" and after["flecken_n"] == 0
+        box = (await self._stand(api)).json()["fassungen"][0]["kaesten"][0]
+        assert box["verfahren"] == "authored"
+        assert (box["tintentreue"]["stufe"], box["tintentreue"]["gemessen"]) == ("folgt", True)
+
+    @pytest.mark.asyncio
     async def test_a_measured_box_carries_its_light_and_the_fassung_its_counter(self, api: Harness):
         # Author decision E of 2026-09-20: a Fassung gets a COUNTER („3 von 4
         # Kästen folgen"), never a colour — a second verdict beside the

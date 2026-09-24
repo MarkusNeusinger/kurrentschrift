@@ -835,6 +835,35 @@ Ablage — steht im Abschnitt darüber, die Doktrin in
   zurück"), und ein Lauf ohne neue Grenze schickt gar keinen Push — eine
   Voll-Ersetzung ist nie folgenlos, sie hebt die Inhaltsmarke und stempelt
   eine Format-1-Zeile auf 2.
+  **`--messen` ist der dritte Modus** (V21, seit 2026-09-25, → Nachmessung)
+  und folgt ebenfalls NICHTS: er misst die Bahnen, die der Autor im
+  Streifen-Editor GEZEICHNET hat — die speichert der Editor mit leerem
+  `meta`, und ohne Sensoren steht der Kasten in der Ampel grau „von Hand
+  gezeichnet". Der Lauf schneidet die Tinte des Kastens wie ein Folgen
+  (Vorgabe: Beschriftungsmaske an; `--no-mask-labels` ist die einzige
+  Eingabestufe, die er annimmt, `--resample-plate`/`--register-seed` passen
+  die Dekodierung an und sind verweigert) und schreibt denselben
+  Sensor-Block nach `meta.tintenpfad`: Papier-Exkursion und AIoU mit dem
+  Code des Folgers, „Tinte ohne Bahn" auf dessen Strängen (ein Strang gilt
+  als befahren, wenn die Hälfte seiner Länge innerhalb 0,10 x-Höhen der
+  Zeichnung liegt), die Absetzer als Züge − 1 − die Absetzer der Saat;
+  Sprünge und Haken bleiben `null` (`tools/eigenhand/messen.py`). Dazu
+  `meta.messung` (`gemessen_von: "messen"`, `herkunft: "authored"`, Datum,
+  Eingabestufen, Befahren-Regel) und `flecken_n` = die Maske, unter der die
+  Zahlen entstanden — sonst könnte „Maske geändert" eine gemessene
+  Zeichnung nie mehr grau stellen. **Züge, Registrierung und
+  Buchstabengrenzen gehen Byte für Byte zurück**, das Werkzeug prüft es vor
+  dem Senden und an der Antwort des Servers und bricht sonst ab. Nur
+  `authored`-Kästen: ein `--box`, der eine gefolgte Bahn, einen Skip oder
+  nichts nennt, wird verweigert; ein schon gemessener Kasten bleibt ohne
+  `--neu` stehen, außer seine Zahlen stammen unter einer älteren
+  Fleckenmaske. Trockenlauf legt die Liste als
+  `pfade/<Streifen>-<Fassung>.messen.json` ab; `--apply` schreibt **je
+  Kasten** über `PATCH …/pfade/{box}` mit `If-Match` (der ETag wandert von
+  Antwort zu Antwort) und deklariert das Format der ZEILE — nie die
+  Voll-Ersetzung. Eine gemessene Zeichnung, die der Autor später neu
+  speichert, verliert die Messung wieder (der Editor schreibt `meta: {}`)
+  und wird erneut gemessen.
   **Trockenlauf ist die Vorgabe** — ohne `--apply`
   landet das Ergebnis nur als JSON unter der lokalen Hand; `--apply` schreibt
   es über `PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade` in die
