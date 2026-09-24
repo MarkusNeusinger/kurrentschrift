@@ -874,12 +874,17 @@ Ablage — steht im Abschnitt darüber, die Doktrin in
   wird; Kasten-Rechteck und gespeicherter Rahmen bleiben, wie sie sind);
   `--resample-plate` folgt den Kasten bei den 31 px je x-Höhe der Platte
   (nur außerhalb ihres Bereichs 28–33, also auf keinem Plattenwort) und
-  bildet die Bahn exakt auf die Streifenpixel zurück; `--register-seed` legt
-  die Saat auf x-Höhe, Grundlinie und Breite der Hand statt auf die gedruckte
-  Lineatur — anisotrop, sy und Grundlinie aus den Moden der spaltenweisen
-  Skelett-Extreme (an der Platte kalibriert), sx aus Tinten- gegen
-  Kompositionsbreite; unlesbare Moden oder ein Maß jenseits der
-  x-Höhen-Toleranz der API lassen die Saat unverändert. Die Rechnung steht
+  bildet die Bahn exakt auf die Streifenpixel zurück; `--register-seed ky`
+  legt die Saat auf x-Höhe, Grundlinie und Breite der Hand statt auf die
+  gedruckte Lineatur — anisotrop, sy und Grundlinie aus den Moden der
+  spaltenweisen Skelett-Extreme (an der Platte kalibriert), sx aus Tinten-
+  gegen Kompositionsbreite —, `--register-seed k` nur die Breite (sx gegen
+  die x-Höhe des Falls, Grundlinie und x-Höhe bleiben gedruckt; seit
+  `sep24b`, R-split); ohne den Schalter ist die Stufe aus. Unlesbare Moden
+  oder ein Maß jenseits der x-Höhen-Toleranz der API lassen die Saat
+  unverändert. Die Saat-Registrierung läuft nur auf einem Fall aus einem
+  Bogen-Streifen (`origin` `eigenhand:`, das Stufe-3-Tor); ein Plattenfall
+  kommt unverändert zurück, den Grund in `meta.input`. Die Rechnung steht
   in `core/eigenhand/follower_input.py`; eine gespeicherte Zeile nennt die
   Stufen (`konfiguration.input`) und was sie gemessen haben (`meta.input`).
   Herkunft: die Eigenhand-Diagnose vom 2026-09-24 (Beschriftung als Tinte

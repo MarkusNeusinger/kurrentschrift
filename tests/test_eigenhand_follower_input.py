@@ -33,6 +33,7 @@ from core.eigenhand.follower_input import (
     mode_calibration,
     plate_factor,
     register_seed,
+    register_seed_width,
     resample_to_plate,
     scale_composed_x,
     scale_index,
@@ -316,6 +317,30 @@ class TestSeedRegistration:
         # Without bounds the reading is applied as measured.
         free = register_seed(_garland(), 100, 60, 0, composed_width_units=1.0, calibration=UNBIASED, bounds=None)
         assert free.applied and free.x_scale == pytest.approx(wild.readings["k"])
+
+    def test_the_x_scale_alone_reads_k_against_the_rows_it_was_handed(self):
+        # R-split (`sep24b`): the same ink width as the full registration, but
+        # measured against the case's own x-height, and the rows untouched.
+        cols = np.nonzero(_garland().any(axis=0))[0]
+        seed = register_seed_width(_garland(), 100, 60, composed_width_units=5.0)
+        assert seed.applied and seed.reason is None
+        assert (seed.baseline_y, seed.midband_y) == (100, 60)
+        assert seed.x_scale == pytest.approx((cols.max() - cols.min()) / (5.0 * 40))
+        assert "sy" not in seed.readings and seed.readings["xh_case"] == 40.0
+        # The full registration's k is the same width over a different x-height.
+        full = register_seed(_garland(), 100, 60, 0, composed_width_units=5.0, calibration=UNBIASED)
+        assert full.x_scale * full.readings["xh_registered"] == pytest.approx(seed.x_scale * 40.0)
+
+    def test_the_x_scale_alone_falls_back_rather_than_being_clamped(self):
+        wild = register_seed_width(_garland(), 100, 60, composed_width_units=0.5)
+        assert not wild.applied and "outside" in wild.reason
+        assert (wild.baseline_y, wild.midband_y, wild.x_scale) == (100, 60, 1.0)
+        free = register_seed_width(_garland(), 100, 60, composed_width_units=0.5, bounds=None)
+        assert free.applied and free.x_scale == pytest.approx(wild.readings["k"])
+        empty = register_seed_width(np.zeros((160, 240), dtype=bool), 100, 60, composed_width_units=5.0)
+        assert not empty.applied and empty.x_scale == 1.0
+        flat = register_seed_width(_garland(), 100, 60, composed_width_units=0.0)
+        assert not flat.applied and "width" in flat.reason
 
     def test_the_bounds_are_the_apis_own_x_height_tolerance(self):
         assert SEED_SCALE_BOUNDS == (1 / XH_NOMINAL_TOLERANCE, XH_NOMINAL_TOLERANCE)

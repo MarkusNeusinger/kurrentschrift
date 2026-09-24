@@ -27,7 +27,9 @@ byte for byte:
    plate, where the same estimator reads a known lineature), the horizontal
    scale from the ink's width against the composed word's. Two numbers, never
    one: a uniform fit absorbs the width and lifts the baseline as a side
-   effect, which is how the diagnosis first misread this hand.
+   effect, which is how the diagnosis first misread this hand. The x scale
+   also comes on its own (`register_seed_width`), so a round can tell which
+   of the two carries a gain (R-split, messjournal §14 `sep24b`).
 
 Stages 1 and 2 are no-ops on plate input by construction — a plate crop
 carries no printed text and lies inside the plate's range. Stage 3 is a
@@ -423,6 +425,47 @@ def register_seed(
         if not (lo <= readings["sy"] <= hi and lo <= k <= hi):
             return identity(f"sy {readings['sy']:.3f} or k {k:.3f} outside [{lo:g}, {hi:g}]", **readings)
     return SeedRegistration(registered_baseline, registered_midband, k, True, None, readings)
+
+
+def register_seed_width(
+    skel: np.ndarray,
+    baseline_y: int,
+    midband_y: int,
+    composed_width_units: float,
+    bounds: tuple[float, float] | None = SEED_SCALE_BOUNDS,
+) -> SeedRegistration:
+    """Stage 3 with its x scale alone: k against the case's OWN lineature, the rows untouched.
+
+    The R-split half of `register_seed` (messjournal §14 „Stufe 3 gezielt
+    `sep24b`"): `sep24` moved sy, the baseline and k in one step and could
+    not say which of them carried the gain. Here the baseline and the
+    x-height stay what the case carries — on a strip, the printed ruling after
+    any resampling — and only k = ink width / (composed width · that x-height)
+    is read, with the ink width taken exactly as `register_seed` takes it.
+
+    A k outside `bounds` falls back to the identity, never clamped, for the
+    reason `SEED_SCALE_BOUNDS` gives; `bounds=None` applies any reading.
+    """
+    xh_case = float(baseline_y - midband_y)
+    ink = np.asarray(skel, dtype=bool)
+
+    def identity(reason: str, **readings: float) -> SeedRegistration:
+        return SeedRegistration(baseline_y, midband_y, 1.0, False, reason, dict(readings))
+
+    if xh_case <= 0 or not ink.any():
+        return identity("no ink or no lineature to register against")
+    cols = np.nonzero(ink.any(axis=0))[0]
+    ink_width = float(cols.max() - cols.min())
+    readings = {"xh_case": xh_case, "ink_width_px": ink_width, "composed_width_units": float(composed_width_units)}
+    if ink_width <= 0 or not composed_width_units > 0:
+        return identity("no width to scale by", **readings)
+    k = ink_width / (composed_width_units * xh_case)
+    readings["k"] = k
+    if bounds is not None:
+        lo, hi = bounds
+        if not lo <= k <= hi:
+            return identity(f"k {k:.3f} outside [{lo:g}, {hi:g}]", **readings)
+    return SeedRegistration(baseline_y, midband_y, k, True, None, readings)
 
 
 def scale_composed_x(composed: Mapping[str, Any], k: float) -> dict[str, Any]:
