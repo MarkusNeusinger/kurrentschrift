@@ -252,7 +252,7 @@ die DB) — mit seiner Bedingung.
 | sep20 | Eigenhand | [Tintentreue-Kalibrierung — die blinde Runde](#tintentreue-kalibrierung-sep20--vorregistrierung-der-blinden-runde-je-hand) | Pre-Reg · **nichts beurteilt, nichts adoptiert** | Die Runde, die die acht geborgten Schwellen ersetzt (Q10 b, gebaut als letzter Posten der Phase 2 — Frage F): 30 Kästen einer Hand, blind in **drei Stufen plus vier Merkmale** beurteilt, Abbildung nicht interpretativ (die gesetzte Stufe IST die Stufe, je Merkmal genau ein Sensor). Nachbau statt Konfiguration — `humanbench` liest eingefrorene Fixture-Crops und hat sechs Fit-Kategorien —, geteilt wird nur die SEITE (`STRIP_CATEGORIES`), der Bauer wohnt bei den Pixeln (`tools/eigenhand/tintentreue_calibration.py`); Verfahren in [`menschliche-bewertung.md`](menschliche-bewertung.md) §8b, vor dem Code geschrieben. Ziehung nach der VORLÄUFIGEN Stufe geschichtet (Prävalenz damit keine Aussage über die Hand), Auswerteplan mit Verlässlichkeits-Schranke, Mindestbesetzung, Quantil-Schnitt und Rundung in die strengere Richtung. Gates (F)–(H) neben den Adoptions-Gates (A)–(E) von „Tintentreue `sep20`"; `VORLAEUFIG` unberührt, das Etikett bleibt stehen. Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
 | sep20 | Eigenhand | [Span-Zuordner — Grenzen ohne Dekodierung](#span-zuordner-sep20--die-zuordnung-über-eine-nachgefahrene-bahn-gegen-die-dekodierung-gemessen) | Pre-Reg (geschwächt) + gemessen · **adoptiert: `dtw`** | Die Buchstabengrenzen einer Bahn, hinter der keine Dekodierung steht (A48: für authored-Bahnen ist die Zuordnung neue Arbeit). Ein Knopf, zwei Arme — monotone Ausrichtung gegen ordnungslos-nächster Saat-Punkt —, gemessen gegen die Zuordnung des Folgers auf 63 Wörtern der eingefrorenen Wurzel `5d4556b87573`, BLAS gepinnt. Beide Arme halten beide Schranken; die Entscheidung fällt am Maximum: die ordnungslose Basis legt ihre schlechteste Naht 2,16 xh daneben (ein ganzer Buchstabe), die monotone 0,34 xh. Ausdrücklich benannte Grenze: die Referenzbahn wurde gegen genau diese Saat dekodiert, die Zahl ist eine obere Schranke — die Messung, die das bricht, läuft auf den nachgefahrenen Bahnen des Autors und bekommt ihre eigene Vorregistrierung. Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
 | sep24 | Eigenhand/Tintenpfad | [Folger-Eingabe-Leiter](#folger-eingabe-leiter-sep24--die-eigene-hand-in-drei-sprossen-a1-und-a2-nicht-besser-a3-raus-am-platten-wächter) | Pre-Reg + gemessen (explorativ, n = 7) · **A1/A2 nicht besser, A3 raus** · Beschriftungszonen per Autor-Entscheid Vorgabe | A3 (Saat-Registrierung) hebt die Hand 7 von 7 (cov-Median 0,736 → 0,959) und reißt den dev-19-aiou 0,7929 → 0,7895; Vorregistrierung ohne Vor-Arm-Hash |
-| sep24 | Eigenhand/Tintenpfad | [Stufe 3 gezielt: R-gate + R-split `sep24b`](#stufe-3-gezielt-r-gate--r-split-sep24b--vorregistrierung-bevor-ein-arm-läuft) | Pre-Reg · **keine Zahl** | C0 → R-k → R-ky, Stufe 3 nur auf Bogen-Eingabe; (a) die 7 Kästen, (b) 7 `practice`-Kästen ab S0182 nach der Ziehung; Bahn-Unstetigkeit + Kurzsehnen nur berichtend |
+| sep24 | Eigenhand/Tintenpfad | [Stufe 3 gezielt: R-gate + R-split `sep24b`](#stufe-3-gezielt-r-gate--r-split-sep24b--vorregistrierung-bevor-ein-arm-läuft) | Pre-Reg · **keine Zahl** (Fassung 3) | C0 → R-k → R-ky, Stufe 3 nur auf Bogen-Eingabe; (a) die 7 Kästen, (b) 7 `practice`-Kästen der Ziehung vom 2026-09-21 (`mn-suetterlin-2026-09-21`) ab S0182 vom nächsten Bogen B0005 — nichts mehr zu ziehen; Bahn-Unstetigkeit + Kurzsehnen nur berichtend |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -18283,9 +18283,19 @@ nichts nach `data/samples/own-hand` oder ins Archiv. Läufer, Bahnen und
 **Status: vorregistriert, keine Zahl.** Geschrieben am
 `2026-09-24T08:34+02:00` auf `exp/eigenhand-folger-eingabe` @ `e6e7fea`
 (Fassung 1, Commit `6a59436`); nach einer Durchsicht und noch vor jedem Arm
-überarbeitet am `2026-09-24T08:53+02:00` (Fassung 2: Paket-Nominierung,
-Berichtslauf ohne Tor, Beweislast G1/G2, Schalterform, Rückhalte-Wortlaut,
-Blindlauf-Skript, maßgebliche Referenz); Arbeitsbaum jeweils sauber. Der
+überarbeitet am `2026-09-24T08:53+02:00` (Fassung 2, Commit `95b481a`:
+Paket-Nominierung, Berichtslauf ohne Tor, Beweislast G1/G2, Schalterform,
+Rückhalte-Wortlaut, Blindlauf-Skript, maßgebliche Referenz); noch immer vor
+jedem Arm berichtigt am `2026-09-24T09:05+02:00` (**Fassung 3**). Fassung 3
+hat einen einzigen Anlass: Fassung 1 und 2 behaupteten, es sei nicht gezogen,
+und ließen den Autor darum ziehen. Das war falsch — gezogen ist seit dem
+2026-09-21 (Nachtrag unter „Trainingssatz `sep20`"); die Behauptung stützte
+sich auf einen veralteten lokalen Datenbestand. Fassung 3 ersetzt darum
+Zulässigkeit und Autorenschritte von Stufe (b), nennt die Lage der drei
+Diagnose-Streifen, liest das Auffüllen am nachprüfbaren Einlesedatum und
+benennt, was der Blindlauf über die Zugehörigkeit verrät; jede Änderung
+trägt die Marke *Fassung 3*, alles andere steht wie in Fassung 2.
+Arbeitsbaum jeweils sauber. Der
 **Vor-Arm-Hash** — der, der `sep24` fehlte — ist der letzte Commit, der
 diesen Eintrag ändert: kein Arm läuft auf einem Stand ohne ihn, und ab ihm
 steht jede Abweichung als datierter Nachtrag UNTER diesem Eintrag — der
@@ -18396,31 +18406,54 @@ Byte (dort feuerte keine Bereichsgrenze). Die einzige NEUE Zahl von (a) ist
 also R-k; R-ky gegen R-k ist dort eine Zerlegung, keine Bestätigung. Die
 7 Kästen sind **vorbelastet** (Diagnose, `sep24`, jetzt `sep24b`): gleich, in
 welchen Satz die Ziehung ihre Streifen legt, zählen sie für keine
-Rückhalte-Messung.
+Rückhalte-Messung. *Fassung 3:* die Ziehung vom 2026-09-21 legt alle drei
+Streifen (S0002, S0003, S0181) in `practice` — die Diagnose hat also keinen
+Rückhalte-Streifen gesehen, und die Regel greift ins Leere. Sie bleibt
+trotzdem stehen, als Regel für jede spätere Runde.
 **(b) Bestätigung** auf ungesehenen Kästen, EINMAL, mit derselben Regel.
 Welche Kästen dürfen, regelt `tools/eigenhand/training_set.py` (#647, §14
 „Trainingssatz `sep20`"): die Ziehung legt jeden Streifen per Schlüssel in
-`practice`, `holdout-follower` oder `holdout-release`. Am Tag dieses
-Eintrags ist **nicht gezogen** (die lokale Kartei trägt keinen
-`holdout`-Satz). Daraus folgt:
+`practice`, `holdout-follower` oder `holdout-release`. *Fassung 3:* **gezogen
+ist** — am 2026-09-21, Schlüssel `mn-suetterlin-2026-09-21`, über 265
+Streifen `practice` 160 · `holdout-follower` 49 · `holdout-release` 56,
+maßgeblich die Kartei im Archiv-Schnappschuss
+`own-hand/mn-suetterlin/2026-09-21-0928` (`kurrentschrift-data`, Commit
+`9efe356`). Fassung 1 und 2 sagten „nicht gezogen", weil sie den veralteten
+lokalen Datenbestand lasen (Kartei vom 2026-09-09, ohne `holdout`-Satz).
+Daraus folgt:
 
-1. Der Autor zieht (`training_set --hand mn-suetterlin --draw <Schlüssel>`),
-   **bevor** ein Streifen von B0002 eingelesen oder gefolgt ist.
+1. **Nichts ist zu ziehen.** Die Ziehung fiel vor Fassung 1 dieses Eintrags
+   und bevor ein Kasten von S0182–S0188 geschrieben war; die Zuordnung ist
+   eine reine Funktion des Schlüssels, niemand konnte sie am Material
+   ausrichten. `training_set --draw` wird für diese Hand nie wieder
+   aufgerufen — lokal ohne `--archive` hätte es die Verweigerung des zweiten
+   Ziehens umgangen. Die Zugehörigkeit liest der Läufer von (b) aus der
+   Kartei des Archivs (dieser Schnappschuss oder ein jüngerer, `--archive`),
+   nie aus einem lokalen Datenbestand, der sie nicht trägt. Der einzige
+   Autorenschritt: **B0005** im Admin erzeugen, schreiben und einlesen
+   (`tintenfolger.md` §7.11, Autorenschritte).
 2. Zulässig für (b) sind genau die Kästen von S0182–S0188 (je ein Wort:
    *lesen* · *denen* · *Wer* · *die* · *laden* · *unter* · *will*), deren
-   Streifen die Ziehung in **`practice`** legt, erste angenommene Fassung.
+   Streifen DIESE Ziehung in **`practice`** gelegt hat, erste angenommene
+   Fassung. Die sieben stehen auf dem nächsten Bogen, **B0005** (angeheftet;
+   B0002–B0004 sind seit dem 2026-09-08 gedruckt und unterwegs, ohne sie).
    Ein Streifen in `holdout-follower` (der EINE referenzgebundene Folger-Test
    gegen nachgefahrene Bahnen, einmal verbrauchbar, Gate (B) von `sep20`)
    oder `holdout-release` wird von keinem Arm dieser Runde gefolgt, nicht
    gewertet, nicht angesehen; der Standard-Folgelauf der Erfassungskette
    (`tools.eigenhand.pfad` mit der Vorgabe-Eingabe, für Bestand und
-   Tintentreue) bleibt davon unberührt.
-3. Bei den Vorgabeanteilen 0,2/0,2 sind rund vier der sieben zulässig.
-   Aufgefüllt wird mit den Kästen der nächsten `practice`-Streifen, die der
-   Autor nach Fassung 1 dieses Eintrags schreibt und einliest, in Streifen-ID- und
-   Kastenfolge, bis es genau 7 sind — nie S0002, S0003, S0181, nie ein
-   Kasten, den eine Folger-Runde schon gewertet hat. Sind keine 7 da, wartet
-   (b).
+   Tintentreue) bleibt davon unberührt. Welche der sieben zulässig sind,
+   steht nicht in diesem Eintrag, sondern nur im Lauflog von (b) — der Autor
+   bleibt blind dafür, welcher Streifen zurückgehalten ist.
+3. Bei 160 von 265 Streifen in `practice` (rund 60 %) sind im Erwartungswert
+   rund vier der sieben zulässig; die tatsächliche Zahl wird hier bewusst
+   nicht genannt. Aufgefüllt wird mit den Kästen der nächsten
+   `practice`-Streifen DIESER Ziehung, die der Autor nach Fassung 1 dieses
+   Eintrags schreibt und einliest, in Streifen-ID- und Kastenfolge, bis es
+   genau 7 sind — nie S0002, S0003, S0181, nie ein Kasten, den eine
+   Folger-Runde schon gewertet hat. „Nach Fassung 1 geschrieben und
+   eingelesen" liest sich am Einlesedatum der Fassung in der Kartei, dem
+   einzigen, das sich nachprüfen lässt. Sind keine 7 da, wartet (b).
 
 **Das Auge.** Vor jeder Adoption der **Blindlauf des Autors** über
 `folger-arms/blind.py` (sha256 `e303fea3…`), erweitert um Kasten-Liste und
@@ -18429,7 +18462,12 @@ bleibt `random.Random(seed).random() < 0.5` je Kasten in Listenfolge; die
 sha256 der erweiterten Datei steht im Lauflog vor dem Blindlauf), auf dem
 registrierten Paar — die Sprosse, die in (b) Regel und Wächter besteht,
 gegen ihre Vorgängerin. Samen jetzt fest: (a) `2409241`, (b) `2409242`;
-`key.json` sieht der Beurteiler nicht. Prüfliste: die Klassen von `sep24` §7
+`key.json` sieht der Beurteiler nicht. *Fassung 3, eine benannte Grenze:*
+der Blindlauf über (b) zeigt dem Autor die zulässigen Kästen, und wer die
+sieben Referenzwörter kennt, kann an den fehlenden ablesen, welche von
+S0182–S0188 zurückgehalten sind. Neben der Lage der drei Diagnose-Streifen
+unter (a) ist das die einzige Stelle, an der diese Runde Zugehörigkeit
+preisgibt, und sie betrifft höchstens diese sieben Streifen. Prüfliste: die Klassen von `sep24` §7
 plus Zittern und Kurzsehnen. Das Urteil des Autors ist letztinstanzlich, eine
 Zahl überstimmt es nicht; auch Regel + Wächter + Auge zusammen sind eine
 Nominierung, **die Adoption ist ein Autor-Entscheid**.
