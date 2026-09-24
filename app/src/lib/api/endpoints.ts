@@ -38,6 +38,7 @@ import type {
   PairAggregateOut,
   PairAggregateRebuildOut,
   PairInstanceOut,
+  PenaltySitesOut,
   QualityComparison,
   QuizWordOut,
   LesartenOut,
@@ -660,6 +661,14 @@ export const getDiagnostic = (sourceId: string, glyphKey: string): Promise<Diagn
 // the same letter. Admin-gated like the raw row it is derived from.
 export const getLandmarks = (sourceId: string, glyphKey: string): Promise<GlyphLandmarksOut> =>
   apiFetch(src(sourceId, `/templates/${encodeURIComponent(glyphKey)}/landmarks`)).then(asJson<GlyphLandmarksOut>);
+
+// Where the Gleichzug score takes its points off one letter, for the
+// Abzugs-Linse: every deduction category split into located sites in the
+// crop's own pixels. Re-scored against the chart per request (0.3–2.5 s, like
+// getQuality's `stored` half) — never the stamp, so the sites add up to a
+// number measured with today's ruler. Admin-gated like the score it localizes.
+export const getPenaltySites = (sourceId: string, glyphKey: string): Promise<PenaltySitesOut> =>
+  apiFetch(src(sourceId, `/templates/${encodeURIComponent(glyphKey)}/penalty-sites`)).then(asJson<PenaltySitesOut>);
 
 // Batch render payloads for the public writer (one round trip per word/Tafel).
 // Keys are sorted so the same letter set always yields the same URL — the

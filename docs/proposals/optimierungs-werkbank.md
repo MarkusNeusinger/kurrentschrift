@@ -1,11 +1,14 @@
 # Optimierungs-Werkbank 2026-07-31 — eine Admin-Fläche, Stufen-Doktrin, Auftragskorb
 
-> **Status (2026-09-18): bindend.** W1–W6 sind umgesetzt
+> **Status (2026-09-24): bindend.** W1–W6 sind umgesetzt
 > (PR #252 · #255 · #261 · #264 · #266); §3–§5 **und §6** sind bindende
 > Doktrin, §3–§5 werden seit W4 von der API erzwungen
 > (`check_transition`) — deshalb „bindend" und nicht
 > „umgesetzt-historisch": dieses Doc bleibt Pflichtlektüre vor jeder
-> Korb-Arbeit (`/work-basket`). Jüngster Zusatz, 2026-09-18: die
+> Korb-Arbeit (`/work-basket`). Jüngster Zusatz, 2026-09-24: die
+> **Abzugs-Linse** in §9 (Autor-Entscheid 2026-09-23) — wo die
+> Gleichzug-Metrik abzieht, über dem Tafel-Ausschnitt; ⚑ legt einen
+> gewöhnlichen Buchstaben-Auftrag ab, keine neue Ebene oder Stufe. Davor, 2026-09-18: die
 > §6-Leitplanke „genau eine Quelle/Hand" heißt nach dem Autor-Entscheid Q3 (a)
 > des Admin-Redesigns „genau eine Hand als Subjekt; eine zweite Hand nur
 > eingeklappt, beschriftet, nie verrechnet" — eine Doktrin-Änderung, noch
@@ -570,3 +573,94 @@ ob der autorierte Duktus stimmt (`chart_ductus` — und dann ist es eine
 **Rückgabe an den Autor**, kein Fix), dann die Laufform, dann die
 Klassenregel, und erst zuletzt den Sensor verdächtigen, der das alles
 liest.
+
+## 9. Abzugs-Linse — wo das Lineal abzieht
+
+**Autor-Entscheid, 2026-09-23** („wie empfohlen", auf die Zweitmeinung zu
+zwei Entwürfen): Die Zeile „Abzüge: Deckungslücke 0.18 · Ecken 0.17 …" der
+Buchstaben-Liste sagt, WIE VIEL die Gleichzug-Metrik abzieht, nie WO. Die
+Linse zeigt es — und bleibt dabei, was ihr Untertitel sagt: **„Wo das
+Lineal abzieht — kein Fehlerbefund."** Das Lineal ist nicht das Auge; keine
+lokale Schwelle macht hier aus einer Zahl ein Urteil.
+
+### 9.1 Was die Linse zeigt
+
+In der Buchstaben-Ansicht steht unter „Landmarken" ein zweiter Schalter
+**Abzüge** (zu, `unmountOnExit` — das Neu-Messen kostet 0,3–2,5 s).
+Aufgeklappt liegt der **Tafel-Ausschnitt** groß und gedimmt da, darüber
+dünn die gemessene Mittellinie und je Kategorie ihre Abzugsstellen.
+**Rahmen ist der Ausschnitt, nicht die geschriebene Form:** dort hat das
+Lineal gemessen, und die Fluent-Weitung verschiebt a/e/o/u zur Renderzeit —
+eine Marke auf der Schriftform säße neben der gewerteten Tinte (§8.2, dieselbe
+Regel umgekehrt).
+
+| Kategorie | Marke |
+|---|---|
+| Glätte | Band entlang der Mittellinie, je Punkt so breit wie sein Anteil am Ruck; wo es aussetzt, ein Eckfenster als Kontext („zählt unter Ecken") |
+| Senkrechte | Klammer neben dem Lauf, gestrichelt die Ideal-Senkrechte, die Abweichung überhöht (×20, weniger, wo sie weiter als 0,15 x-Höhen ausschlüge; der Faktor steht im Detail) |
+| Ecken | Quadrat am Scheitel (die Marke der Landmarken-Umkehrecke), die Anlaufstücke, gestrichelt ihre Sehnen, Punkt an der größten Abweichung |
+| Kreuzungsflucht | Ring an der Kreuzung und die beiden gefitteten Geraden |
+| Doppelzug | kreuzschraffiert die fehlende Tinte in der Zone; die Zone selbst als Kontext |
+| Deckungslücke | schraffiert tiefe Tintenlücken, gerastert Render über Papier, kurze Querstriche über den Rand fürs Chamfer, Fühler zum Skelett für Geo |
+
+**Ein Farbton für alle Abzüge** (Karmin, `styles/paper.ts` `penalty.mark`):
+die Form trägt die Kategorie, die Breite die Größe — auf EINER Skala für den
+ganzen Buchstaben, den linearisierten Punkten der Stelle. **Kontext ist kein
+Abzug und trägt eigene Farbe UND eigene Form** (`penalty.context`,
+Ultramarin, dünn gestrichelt): die Doppelzug-Zone als Umriss, die Eckfenster
+der Glätte als gestrichelte Unterlegung mit Querbalken an den Enden. Die
+Trennung ist eine Review-Lehre (2026-09-24): vorher waren Zonenrand,
+Chamfer-Rand, Eckfenster und ein Streifen Raster vier Punktketten auf
+denselben Kantenpixeln — die Zone ist `Tinte ∩ Umkreis`, ihr Rand IST die
+Tintenkante, auf der das Chamfer sitzt —, also für jeden Leser eine Marke.
+Die Legenden-Chips sind zugleich die Kopfzeile „Abzüge (neu gemessen): …" und
+der Filter fürs BILD; ein Term, der nie griff, heißt „nicht anwendbar", nie
+0, und ist kein Schalter, und eine Kategorie, deren Karte der Kern verworfen
+hat (`in_sync` falsch), heißt „Karte verworfen (Nachrechnung weicht ab)"
+statt als gewöhnliches „ohne Ort" durchzugehen. Weicht der gespeicherte
+Listenwert um mehr als 0,005 ab, steht er als „gespeichert: …" daneben. Die
+fünf teuersten Stellen sind die Scheiben ①–⑤ im Bild und die Liste daneben;
+„Alle Stellen" öffnet ALLE anwendbaren Kategorien als Roving-Liste, auch
+eine im Bild ausgeblendete (so vermerkt) — eine dort gewählte Stelle blendet
+ihre Kategorie wieder ein. **Liste und Bild wählen beidseitig** — die Marken
+im Bild sind Zeiger-Zucker, der Tastatur- und Screenreader-Weg ist die Liste,
+und der Rang ①–⑤ steht dort auch im Namen der Zeile. Stellen, deren Anteil
+auf vier Stellen 0.0000 ist, werden gezählt, nicht gezeichnet — und
+bekommen keine Scheibe, auch wenn der Kern sie nach dem ungerundeten Anteil
+gereiht hat; die übrigen Scheiben rücken nach. Was keinen Ort hat (der
+Kanten-Saum der Deckungslücke), steht als Zeile „ohne Ort". Nur die
+Tafelzeile (V0): eine Laufform-Zeile wurde nie gegen die Tafel gemessen.
+Eine Zeile ohne Pixel-Anker oder mit ungültiger Geometrie (die 409 der
+Route) bekommt den Satz, der hilft — neu abtasten oder nachzeichnen —, nicht
+das allgemeine „erst neu laden". Kurrent und Offenbacher bekommen den Satz
+der Liste — „diese Schrift misst anders".
+
+### 9.2 Route und Rechnung
+
+`GET /sources/{id}/templates/{glyph_key}/penalty-sites` — admin-gegatet,
+`private, no-store`, im Public-Surface-Test RESERVED; gerechnet von
+`core/quality_localize.py` mit dem unveränderten Lineal, heute gemessen statt
+gestempelt. Die Teile einer Kategorie summieren sich auf deren Zahl bis zur
+vierten Stelle; wie jede Kategorie zerlegt wird (Term oder Anteil), steht in
+[`qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md) §5 „Die
+Abzugs-Linse".
+
+### 9.3 Bemängeln — ein gewöhnlicher Buchstaben-Auftrag
+
+⚑ an einer Stelle legt `kind = "letter"` ab — **keine neue Ebene, keine neue
+Stufe**: die Beschwerde trifft den autorierten Duktus oder seine Ableitung;
+ein Streit mit dem Lineal selbst ist ein Proposal samt Re-Baseline, kein
+Korb-Fix. Die Linse schreibt die ersten zwei Notizzeilen wie in §8.4:
+
+> ```
+> Abzug: Ecken #1 (corner#1) · a · Tafel-Duktus (Variante 0) · 0.0954 von 0.1711
+> Term · ≈ 2.28 Punkte · kind corner · x 72.6 px · y 24.86 px · anchor 71 · sample 142 · s_in 0.1187 · s_out 0.1218 · q 0.6182
+> ```
+
+Die Korb-Überschrift bleibt „Buchstabe a", der Kopf eröffnet den Text.
+Die Vorsortier-Frage des Buchstaben-⚑ („sieht er einzeln auch falsch
+aus?") entfällt: die Linse zeigt den Buchstaben einzeln, die Antwort wäre
+immer ja und schickte jede Meldung in den Wizard — die Entlastungsregel
+sagt, dass der Autor die Stufe nicht diagnostiziert. Die Kategorie
+`collinearity` heißt seitdem überall **Kreuzungsflucht** statt „Kreuzung",
+weil die Landmarke auf derselben Seite so heißt.

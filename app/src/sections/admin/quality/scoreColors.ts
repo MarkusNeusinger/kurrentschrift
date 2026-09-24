@@ -17,6 +17,14 @@ import { paper } from '@/styles/paper';
 /** Severity tiers of one penalty category, worst first. */
 export type PenaltyTier = 'error' | 'warning' | 'primary';
 
+/**
+ * Below this a deduction is effectively none. Here rather than in
+ * `scoreParts.tsx` because it has a second reader: the Abzugs-Linse uses the
+ * same step to decide when the stamped list value and today's re-score
+ * disagree enough to print the „gespeichert" line — one threshold, one home.
+ */
+export const PENALTY_EPS = 0.005;
+
 /** The penalty number's text colour per tier — soft ink → ink → oxblood, so the
  *  ladder still rises monotonically without reaching for an unreadable tone. */
 export const PENALTY_TEXT_COLOR: Record<PenaltyTier, string> = {

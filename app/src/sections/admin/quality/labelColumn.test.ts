@@ -35,6 +35,9 @@ describe('labelColumnChars', () => {
     const labels = Object.values(de.wizard.optimize.cat);
     const width = labelColumnChars(labels);
     for (const label of labels) expect(label.normalize('NFC').length).toBeLessThanOrEqual(width);
-    expect(width).toBe(LONGEST.length);
+    // „Kreuzungsflucht" (15) took the widest slot from „Deckungslücke" (13)
+    // when the collinearity deduction was renamed (2026-09-23) — the column
+    // grew with it, which is exactly what measuring the strings is for.
+    expect(width).toBe('Kreuzungsflucht'.length);
   });
 });

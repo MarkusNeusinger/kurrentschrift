@@ -28,7 +28,7 @@ import { useState } from 'react';
 import { createWorkItem } from '@/lib/api';
 import { de } from '@/locales/admin';
 
-import { landmarkNoteHead, landmarkRowLabel, targetLabel, workItemBodyOf, type Mark } from './model';
+import { landmarkNoteHead, landmarkRowLabel, penaltyNoteHead, targetLabel, workItemBodyOf, type Mark } from './model';
 
 // The pre-sort question points at the letter's own chart form. It is only
 // answerable where that form is visible or one click away — which it is
@@ -47,7 +47,11 @@ interface Props {
 export function MarkDialog({ mark, sourceId, onClose, onFiled, onOpenWizard }: Props) {
   const t = de.admin.werkbank;
   // Only the letter level has the pre-sort question; pair and word marks are
-  // always complaints about generated output and go straight to the note.
+  // always complaints about generated output and go straight to the note. So
+  // does a deduction from the Abzugs-Linse, although it files as a letter
+  // item: the lens shows the letter on its own, so „does it look wrong on its
+  // own?" would always be answered yes and route every flag to the wizard —
+  // the Entlastungsregel says the author does not have to diagnose the stage.
   const [presorted, setPresorted] = useState(mark.target.kind !== 'letter');
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
@@ -80,22 +84,24 @@ export function MarkDialog({ mark, sourceId, onClose, onFiled, onOpenWizard }: P
                   be a lie about where it came from — it names the row instead. */}
               {mark.target.kind === 'landmark'
                 ? ` · ${landmarkRowLabel(mark.target.variant)}`
-                : mark.specimen
-                  ? ` · ${t.dialogSeenIn} ${mark.specimen.word} (${mark.specimen.id})`
-                  : ` · ${t.dialogNoSpecimen}`}
+                : mark.target.kind === 'penalty'
+                  ? ` · ${landmarkRowLabel(0)}`
+                  : mark.specimen
+                    ? ` · ${t.dialogSeenIn} ${mark.specimen.word} (${mark.specimen.id})`
+                    : ` · ${t.dialogNoSpecimen}`}
             </Typography>
           </Typography>
 
           {/* The measured numbers the lens will file with the item, shown
               before it is filed — the author should see what the row will
               carry, not trust that something useful travels. */}
-          {mark.target.kind === 'landmark' && (
+          {(mark.target.kind === 'landmark' || mark.target.kind === 'penalty') && (
             <Typography
               variant="caption"
               color="textSecondary"
               sx={{ display: 'block', whiteSpace: 'pre-line', fontVariantNumeric: 'tabular-nums' }}
             >
-              {landmarkNoteHead(mark.target)}
+              {mark.target.kind === 'landmark' ? landmarkNoteHead(mark.target) : penaltyNoteHead(mark.target)}
             </Typography>
           )}
 

@@ -783,6 +783,107 @@ export interface GlyphLandmarksOut {
   rows: TemplateLandmarksOut[];
 }
 
+// ---------------------------------------------------------------- Abzugs-Linse
+//
+// Where the Gleichzug metric takes its points off one letter
+// (`core/quality_localize.py`, qualitaetsmetrik.md §5). Mirrors PenaltyPathOut /
+// PenaltySiteOut / PenaltyCategoryOut / PenaltyPinOut / PenaltyFrameOut /
+// PenaltySitesOut in api/schemas.py. Unlike the Landmarken above, everything
+// here is in CROP PIXELS — the frame the ruler measured in: x right, y down,
+// the pixel in column c and row r centred on (c, r). An overlay over the crop
+// image (pixel c spans [c, c+1]) draws a point at (x + 0.5, y + 0.5) and a cell
+// run as the rect (x, y, width, 1).
+
+// The six deductions, keyed like the metric's `components`.
+export type PenaltyCategoryKey = 'smoothness' | 'verticality' | 'corner' | 'collinearity' | 'retrace' | 'coverage';
+
+// A named polyline of a site — a run, a fitted line, an approach, a whisker.
+// `values` (when present) runs along `points`: the per-sample share of a Glätte
+// segment or a Geo run, the signed x-deviation of a Senkrechte run.
+export interface PenaltyPathOut {
+  role: string;
+  points: Array<[number, number]>;
+  values: number[];
+}
+
+// One Abzugsstelle — or, with `x`/`y` null, the honest part without a place.
+// `value` is the site's part of its category's number, apportioned to four
+// places so the parts add up to that number exactly; `exact` says whether it
+// is the literal term (Ecken, Kreuzungsflucht, Doppelzug) or a proportional
+// share. `points_est` is the linearised score cost — for ranking and detail
+// only, never the number shown for a category. `cells` are pixel runs
+// `[x, y, width]`. `index` is the handle a complaint names.
+export interface PenaltySiteOut {
+  index: number;
+  kind: string;
+  value: number;
+  share: number;
+  exact: boolean;
+  points_est: number;
+  x: number | null;
+  y: number | null;
+  numbers: Record<string, number | string | boolean | null>;
+  paths: PenaltyPathOut[];
+  cells: Array<[number, number, number]>;
+}
+
+// One deduction category. `value` is the component as the metric computed it
+// today (not the stamp); `applicable` false means „nicht anwendbar", never a
+// measured 0; `in_sync` false means the map was dropped and the whole value is
+// one unlocated site. `parts` splits Deckungslücke into dice · chamfer · geo;
+// `context_*` is drawn AROUND the sites (Glätte corner windows, Doppelzug zone).
+export interface PenaltyCategoryOut {
+  value: number;
+  applicable: boolean;
+  in_sync: boolean;
+  exact: boolean;
+  points_est: number;
+  sites: PenaltySiteOut[];
+  numbers: Record<string, number | string | boolean | null>;
+  parts: Record<string, number>;
+  context_paths: PenaltyPathOut[];
+  context_cells: Array<[number, number, number]>;
+}
+
+// One of the five costliest LOCATED sites across all categories.
+export interface PenaltyPinOut {
+  rank: number;
+  category: PenaltyCategoryKey;
+  index: number;
+  points_est: number;
+  x: number;
+  y: number;
+}
+
+// The crop the metric scored: its pixel size and the x-height in pixels.
+export interface PenaltyFrameOut {
+  width: number;
+  height: number;
+  unit_px: number;
+}
+
+// GET /sources/{id}/templates/{glyph_key}/penalty-sites — the chart row
+// (variant 0) only. For a script whose metric has no deduction categories
+// (Kurrent, Offenbacher) `sites` is null, `reason` says why and every measured
+// field is null too: the two metrics are never mixed. `stamped` is what the
+// derivation stored (the „gespeichert" line); `components` is today's re-score
+// the sites add up to.
+export interface PenaltySitesOut {
+  glyph_key: string;
+  style_id: string;
+  variant: number;
+  metric: string | null;
+  reason: string | null;
+  stamped: Record<string, number> | null;
+  score: number | null;
+  components: Record<string, number> | null;
+  applicable: Record<string, number> | null;
+  frame: PenaltyFrameOut | null;
+  centerline: Array<Array<[number, number]>> | null;
+  sites: Record<PenaltyCategoryKey, PenaltyCategoryOut> | null;
+  pins: PenaltyPinOut[];
+}
+
 // Render subset served by the public write endpoints (GET …/write/glyphs):
 // exactly what the "as written" surfaces (WrittenGlyph/WrittenWord/WrittenSheet)
 // draw — template-frame silhouettes + centerlines in writing order, resolved
