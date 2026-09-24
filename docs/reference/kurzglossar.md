@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
-> **Status (2026-09-21): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **120
+> **Status (2026-09-24): lebend.** Die Kurzfassung von
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **122
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -532,8 +532,15 @@ Buchstaben-Ansicht, `letters/PenaltyPanel.tsx`): Jede Abzugsstelle
 trägt ihren Teil der gezeigten Kategoriezahl, die Teile einer Kategorie
 summieren sich auf diese Zahl bis zur vierten Stelle, und was keinen Ort
 hat (der Kanten-Saum der Deckungslücke), steht als „ohne Ort“. ⚑ legt
-einen Buchstaben-Auftrag ab; `collinearity` heißt „Kreuzungsflucht“.
-→ [§5](glossar.md#5-werkbank-und-prozess) · werkbank §9
+einen Buchstaben-Auftrag ab.
+→ [§5](glossar.md#5-werkbank-und-prozess) · werkbank §9 · qualitaetsmetrik.md §5
+
+**Kreuzungsflucht** — der Anzeigename des Kollinearitäts-Abzugs
+(`collinearity`): Läuft ein gerader Strich durch eine Kreuzung, sollen die
+Gerade davor und die dahinter EINE Flucht bilden. Bis 2026-09-23 hieß die
+Kategorie „Kreuzung“ — wie die Kreuzungs-Marke der Landmarken-Linse auf
+derselben Seite; die Marke behält ihr Wort.
+→ [§4](glossar.md#4-metriken-und-benchmarks) · qualitaetsmetrik.md §5
 
 **Stufen-Doktrin** — **Manuell hinzufügen nur, wo Ground Truth entsteht,
 die das System nicht selbst herleiten kann. Alles Generierte wird

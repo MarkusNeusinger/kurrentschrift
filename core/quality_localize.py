@@ -1223,7 +1223,11 @@ def suetterlin_penalty_sites_for_glyph(glyph_row: dict, bbox: dict, chart_path: 
     skel, width_map = skeleton_and_width(mask)
 
     anchors_px = crop_local_anchors(pixel_anchors, bbox)
-    unit_px = float(trace_meta.get("unit_px") or (int(bbox["baseline_y"]) - int(bbox["midband_y"])))
+    # Fall back to the bbox only when the field is ABSENT: a stored 0.0 is a
+    # corrupt x-height, and `or` would quietly swap it for a healthy one and
+    # map a row `_require_finite` exists to refuse.
+    stored_unit = trace_meta.get("unit_px")
+    unit_px = float(stored_unit) if stored_unit is not None else float(int(bbox["baseline_y"]) - int(bbox["midband_y"]))
     return suetterlin_penalty_sites(
         anchors_px,
         np.asarray(half_widths_px, dtype=float),

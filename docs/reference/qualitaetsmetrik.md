@@ -1,6 +1,6 @@
 # Qualitätsmetrik & Glyph-Bench
 
-> **Status (2026-09-10): lebend.** Die Messlatte und ihre **Regeln**. Das
+> **Status (2026-09-24): lebend.** Die Messlatte und ihre **Regeln**. Das
 > Journal der Läufe ist am 2026-09-04 in eine eigene Datei gezogen —
 > [`messjournal.md`](messjournal.md), dort weiterhin §14; hier §1–§13, §15.
 > **Aktuelle Headlines: Wörter 0,108339 · Paare 0,148236** (Re-Baseline
@@ -24,7 +24,7 @@
 > **Was offen ist.** Die Verworfen-Listen (§4, §5, §6) bleiben
 > **geschlossen** — ein dort abgelehnter Mechanismus ist eine
 > Wiederholung, keine Hypothese. Offene Arme, Autorenschritte und
-> Rettungswege der laufenden Kampagne stehen nicht hier, sondern in
+> Rettungswege der laufenden Kampagne stehen in
 > [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9/§7.11.
 >
 > **Wo die Details stehen.** Eingefrorene Referenzen und die
@@ -32,14 +32,14 @@
 > Baseline-Historie des Glyph-Benchs: [§3](#3-baseline-historie). Ein
 > Wort-Bench-Re-Baseline im Wortlaut (das jüngste ist „Laufform LF17
 > `sep10`“ im Messjournal): [§15](#15-sieben-angeschnittene-wortproben-repariert--angekündigtes-re-baseline-des-wort-benchs-aug31).
-> Die Läufe selbst: [`messjournal.md`](messjournal.md), Einstieg über sein
+> Die Läufe selbst: im Messjournal (oben verlinkt), Einstieg über sein
 > Register.
 >
 > **Nachzieh-Anlass.** Jede Änderung an `core/quality.py`,
-> `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py`
-> und jedes Re-Baseline der eingefrorenen Fixtures. Ein Lauf, der eine
-> Zahl hervorbringt, schreibt seinen datierten Abschnitt ins Messjournal
-> — nicht hierhin.
+> `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py`,
+> `core/quality_localize.py` und jedes Re-Baseline der eingefrorenen
+> Fixtures. Ein Lauf, der eine Zahl hervorbringt, schreibt seinen datierten
+> Abschnitt ins Messjournal — nicht hierhin.
 
 Wie die Qualität einer kanonischen Glyphe gemessen wird, wie der
 hermetische Benchmark (`tools/glyphbench`) und der Experiment-Loop
