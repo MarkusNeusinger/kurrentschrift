@@ -24,7 +24,8 @@
 > entschieden), der Lese-Sweep über die Admin-API vor M1 (dort §12, mit Rückfrage) und V1 (§15.3).
 > Die Phasen 3 und 4 sind unberührt; die offenen Geschmacksfragen — jede mit der Empfehlung gebaut,
 > jede mit einem Wort kippbar — sammeln §15.5 (Phase 0/1) und §15.7 (Phase 2, dort auch die drei
-> Schritte, die nur der Autor tun kann). Auf Wunsch des Autors entstanden („noch nichts
+> Schritte, die nur der Autor tun kann; die Ziehung der zwei Rückhaltemengen ist davon am
+> 2026-09-21 getan, Nr. 32). Auf Wunsch des Autors entstanden („noch nichts
 > implementieren … ich will das erst mit dir durch diskutieren bevor wir umsetzen", §1).
 > **Der Rückfragen-Katalog ist seit dem 2026-09-18 beantwortet:** alle 25 Fragen, die
 > Unterpunkte zu Q4/Q24, die Vorgaben V1–V26 und der Kleinkram — Entscheid-Zeile je Frage
@@ -3359,7 +3360,8 @@ in dieser Reihenfolge — jeder ist die Voraussetzung des nächsten:
    Entscheid ist H dieses Plans (§4.7), gebucht in `freigabe-maschine.md`
    §10 FM3 und gebaut mit #647. Die alte Bedingung „FM3 vor Schritt 4" ist
    damit erledigt; an ihre Stelle tritt die engere, dass die ZIEHUNG vor der
-   ersten von Hand gezeichneten Bahn liegt.
+   ersten von Hand gezeichneten Bahn liegt. Die Ziehung ist am 2026-09-21
+   gemacht (§15.7 Nr. 32, nachgetragen 2026-09-24).
 
    **Zwei Befunde nimmt der Schema-PR (Schritt 3) aus dem Doc mit; beide am
    2026-09-19 im Code nachgeprüft:**
@@ -3881,7 +3883,7 @@ alles, wie es gebaut ist. Die Nummern sind nur Adressen für die Antwort.
     `useEigenhandPfadBoxes` plus die `ampel`-Eigenschaft von `CropTile`.
 
 **Drei Schritte, die nur der Autor tun kann** — keiner davon ist lokal
-prüfbar:
+prüfbar, und Nr. 32 ist am 2026-09-21 getan worden:
 
 31. **Die Archiv-Kette über echte Daten laufen lassen.** Sie ist gegen
     einen Fake-API-Client und die In-Process-Suite geprüft, aber noch nie
@@ -3907,6 +3909,25 @@ prüfbar:
     gehört sie **vor die erste Bahn** — danach zöge man, nachdem man das
     Material gesehen hat. Ein zweites Ziehen wird verweigert, ohne
     Override.
+    **Getan am 2026-09-21** (nachgetragen 2026-09-24; bis dahin führte
+    diese Liste den Schritt als offen): Schlüssel
+    `mn-suetterlin-2026-09-21`, gezogen über 265 Streifen — `practice` 160
+    · `holdout-follower` 49 · `holdout-release` 56. Maßgeblich ist die
+    Kartei im Archiv-Schnappschuss `own-hand/mn-suetterlin/2026-09-21-0928`
+    (privates Archiv `kurrentschrift-data`, Commit `9efe356`); welcher
+    Streifen in welcher Menge liegt, steht bewusst nirgends im Repo, damit
+    der Autor blind bleibt. **Die lokale Datenwurzel
+    `data/samples/own-hand/mn-suetterlin` war am 2026-09-24 veraltet** —
+    Kartei vom 2026-09-09, ohne Ziehung —, weil die Sitzung vom 2026-09-21
+    in einer anderen Datenwurzel arbeitete. Die Eigenhand-Werkzeuge laden
+    `.env` nicht und sehen das Archiv darum nur mit `--archive` (oder einem
+    in der Shell gesetzten `KURRENTSCHRIFT_ARCHIVE`); ohne das hätte ein
+    lokales `training_set --draw` die Ziehung übersehen und eine ZWEITE
+    erlaubt — für diese Hand läuft `--draw` nie wieder. Die sieben angehefteten Referenzwörter
+    `S0182`–`S0188` sind in der Ziehung, geschrieben sind sie noch nicht:
+    sie kommen auf den nächsten im Admin erzeugten Bogen, und das ist
+    **`B0005`**, nicht `B0002` — `B0002`–`B0004` sind am 2026-09-08
+    gedruckt (mit `S0001` und `S0004`–`S0011`) und „unterwegs".
 33. **Das Tablet beurteilen** (Q14 a): Stiftverzögerung, Handballen-Abwehr,
     ob die Umschalter erreichbar sind, während die Hand aufliegt, und ob
     die Bahn über echter 300-dpi-Tinte überhaupt lesbar liegt. Der

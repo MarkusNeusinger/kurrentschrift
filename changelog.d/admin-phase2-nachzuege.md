@@ -21,6 +21,22 @@
   dated note to the same effect. Two unreleased changelog fragments carried
   the same stale counts and are corrected in place.
 
+- **The plan no longer lists the hold-out draw as still to come.** §15.7
+  item 32 named drawing the two hold-out sets as an author step ahead of the
+  first Bahn, but the draw for `mn-suetterlin` was made on 2026-09-21: key
+  `mn-suetterlin-2026-09-21`, over 265 strips, practice 160 ·
+  holdout-follower 49 · holdout-release 56, filed in the private archive.
+  The item now says so in a dated note, and so do the status blockquote,
+  §15.3 and `docs/index.md`. The note also records why the plan missed it:
+  the local data root still held the Kartei of 2026-09-09, and the eigenhand
+  tools do not load `.env`, so they see the archive only with `--archive`.
+  Without it, a local `training_set --draw` would have missed the draw and
+  allowed a second one. It also names the next sheet generated in the
+  admin, the first to carry the pinned reference words `S0182`–`S0188`, as
+  `B0005`, because `B0002`–`B0004` were printed on 2026-09-08 and are still
+  out. Which strip lies in which set is written nowhere, so the author stays
+  blind to it.
+
 - **Admin copy that still promised what has shipped.** The strip editor's
   "no letter boundaries" line said the Zuordner "kommt später", but
   `tools.eigenhand.pfad --spans` exists since #650, so the line now names the
