@@ -18261,12 +18261,24 @@ nichts nach `data/samples/own-hand` oder ins Archiv. Läufer, Bahnen und
 ### Stufe 3 gezielt: R-gate + R-split `sep24b` — Vorregistrierung, bevor ein Arm läuft
 
 **Status: vorregistriert, keine Zahl.** Geschrieben am
-`2026-09-24T08:34+02:00` auf `exp/eigenhand-folger-eingabe` @ `e6e7fea`,
-Arbeitsbaum sauber. Dieser Eintrag ist ein **eigener Commit**, und dessen
-Hash ist der Vor-Arm-Hash, der `sep24` fehlte: kein Arm läuft auf einem
-Stand ohne diesen Commit, und jede Abweichung steht als datierter Nachtrag
-UNTER diesem Eintrag — der Text darüber wird nie editiert. Der Arm-Code
-entsteht erst danach, in einem eigenen Commit.
+`2026-09-24T08:34+02:00` auf `exp/eigenhand-folger-eingabe` @ `e6e7fea`
+(Fassung 1, Commit `6a59436`); nach einer Durchsicht und noch vor jedem Arm
+überarbeitet am `2026-09-24T08:53+02:00` (Fassung 2: Paket-Nominierung,
+Berichtslauf ohne Tor, Beweislast G1/G2, Schalterform, Rückhalte-Wortlaut,
+Blindlauf-Skript, maßgebliche Referenz); Arbeitsbaum jeweils sauber. Der
+**Vor-Arm-Hash** — der, der `sep24` fehlte — ist der letzte Commit, der
+diesen Eintrag ändert: kein Arm läuft auf einem Stand ohne ihn, und ab ihm
+steht jede Abweichung als datierter Nachtrag UNTER diesem Eintrag — der
+Text darüber wird nicht mehr editiert. Der Arm-Code entsteht erst danach,
+in einem eigenen Commit und in einem eigenen PR, nicht in diesem.
+
+**Maßgebliche Referenz.** Der Autor squash-merged; danach löst `git log
+main` den Branch-Hash nicht mehr auf, er bleibt nur in der Commit-Liste des
+PRs. Maßgeblich ist darum der **Squash-Commit dieses PRs auf `main`**: ein
+datierter Nachtrag nach dem Merge nennt ihn, den Branch-Hash und die
+PR-Nummer. Weil der Arm-Code nicht in diesem PR liegt, ist der Squash-Commit
+selbst Vor-Arm. Läuft ein Arm vor dem Merge, nennt sein Lauflog den
+Branch-Hash.
 
 **Frage.** Trägt Stufe 3 den Gewinn der eigenen Hand aus `sep24`, wenn sie
 nur auf Bogen-Eingabe läuft (**R-gate**) und in ihre zwei Skalen zerlegt
@@ -18280,8 +18292,10 @@ wird (**R-split**) — und welche der beiden trägt ihn?
 | **R-k** | + nur die x-Skala der Saat: k = Tintenbreite / (Kompositionsbreite · x-Höhe des Falls), Breiten wie in `register_seed` (x-Ausdehnung des beschriftungsfreien Skeletts gegen die der komponierten Saat-Items), die x-Höhe die des Falls nach Stufe 2; Grundlinie und x-Höhe bleiben gedruckt. Außerhalb von `SEED_SCALE_BOUNDS` Identität mit Grund, nie geklemmt |
 | **R-ky** | + sy und Grundlinie aus den Skelett-Moden (`PLATE_MODE_CALIBRATION`, R = 9/14, O = −1/6), k dann gegen die registrierte x-Höhe — Stufe 3 wie in `sep24`, mit den Bereichsgrenzen des Werkzeugs |
 
-Schalter (gebaut nach diesem Commit): `--register-seed {k,ky}`, ohne Wert
-aus.
+Schalter (gebaut im Arm-Commit): `--register-seed {k,ky}`, ohne Wert
+aus. Heute ist `--register-seed` ein Bool-Schalter (Stufe 3 wie `sep24`,
+ohne Tor); der Arm-Commit ändert seine Form, und `werkzeuge.md`, Glossar,
+Kurzglossar und Changelog-Fragment ziehen im selben Commit nach.
 
 **Das Tor, und sein Beweis (R-gate).** Stufe 3 läuft nur auf einem Fall,
 dessen `origin` mit `eigenhand:` beginnt — so setzt ihn `_case_for_box`, ein
@@ -18298,7 +18312,11 @@ Stufen von C0, R-k und R-ky gibt jeden der 63 Plattenfälle Array-gleich
 zurück (Maske, Skelett, Breite, Rechteck, Lineatur, `seed_x_scale`), und
 `follow_case` auf den 19 dev-Wörtern ist Folger-JSON-gleich. Reißt G1 oder
 G2, ist das ein Fehler im Tor — als datierter Nachtrag behoben, die Sprosse
-neu gelaufen —, kein Befund über Stufe 3.
+neu gelaufen —, kein Befund über Stufe 3. **Die Beweislast trägt G2:** G1
+hält schon heute, weil der Plattenpfad `adapt_case` gar nicht aufruft
+(`tools/pairlab/tintenpfad.py` kennt die Stufen nicht, und `derive_word`
+streckt nur bei `seed_x_scale` ≠ 1,0) — G1 zeigt nur, dass der Arm-Commit
+daran nichts ändert; dass das Tor Plattenfälle wirklich abweist, zeigt G2.
 
 **Ehrlichkeitsklausel.** Das Tor nimmt Stufe 3 aus dem Platten-Lineal,
 statt sie dort als harmlos zu beweisen. `sep24` hat sie auf der Platte
@@ -18308,6 +18326,13 @@ besser, 10 schlechter, 1 gleich. Darum laufen R-k und R-ky ZUSÄTZLICH
 ungetort auf der Platte, als Berichtszeile neben dem Wächter und nie als
 Wächter (dev-19 über `tracebench --compare` gegen die Basis): sie
 beantwortet R-split auch dort — kostet k allein den Median, oder sy?
+**Der Mechanismus ist kein Schalter im Repo**, damit das Tor keine Hintertür
+bekommt: der Scratch-Läufer (`folger-arms/sep24b/run_arm.py`, sha256 im
+Lauflog vor C0) reicht jeden der 63 Plattenfälle mit dem `origin`
+`eigenhand:ungated-report:` + dem Fixture-`origin` an `adapt_case` — `origin`
+ist ein Etikett, das der Folger nicht liest, und nur dieser Läufer setzt das
+Präfix auf einen Plattenfall. Die Zeilen gehen in eigene Kandidatendateien
+(`plate/ungated-<Sprosse>-cand.json`), nie in die Wächter-Dateien.
 
 **Maße.** Das Lineal von `sep24` unverändert (`folger-arms/score.py`, sha256
 `6531a7293c1d358c489bbefb93bec3a7d9278b4edc3c7a5f880e73577e9df95c`): cov ·
@@ -18333,8 +18358,8 @@ Runde nie entscheidend — der Restmangel, den das Blindurteil an A3 sah:
    gemessen zwischen 0,05 und 0,2 xh liegt — die Sehnen, die `chords` nicht
    zählt; Anzahl je Kasten.
 
-Das Skript (`folger-arms/sep24b/unstetigkeit.py`) entsteht nach diesem
-Commit; seine sha256 steht im Lauflog, bevor C0 läuft, und es wird zur
+Das Skript (`folger-arms/sep24b/unstetigkeit.py`) entsteht nach dem
+Vor-Arm-Hash; seine sha256 steht im Lauflog, bevor C0 läuft, und es wird zur
 Einordnung auch über die gespeicherten `sep24`-Bahnen B0–A3 gerechnet.
 
 **Regel** — die von `sep24`, Wort für Wort: eine Sprosse schlägt ihre
@@ -18366,19 +18391,22 @@ Eintrags ist **nicht gezogen** (die lokale Kartei trägt keinen
    Streifen die Ziehung in **`practice`** legt, erste angenommene Fassung.
    Ein Streifen in `holdout-follower` (der EINE referenzgebundene Folger-Test
    gegen nachgefahrene Bahnen, einmal verbrauchbar, Gate (B) von `sep20`)
-   oder `holdout-release` wird in (b) weder gefolgt noch gewertet noch
-   angesehen.
+   oder `holdout-release` wird von keinem Arm dieser Runde gefolgt, nicht
+   gewertet, nicht angesehen; der Standard-Folgelauf der Erfassungskette
+   (`tools.eigenhand.pfad` mit der Vorgabe-Eingabe, für Bestand und
+   Tintentreue) bleibt davon unberührt.
 3. Bei den Vorgabeanteilen 0,2/0,2 sind rund vier der sieben zulässig.
    Aufgefüllt wird mit den Kästen der nächsten `practice`-Streifen, die der
-   Autor nach diesem Commit schreibt und einliest, in Streifen-ID- und
+   Autor nach Fassung 1 dieses Eintrags schreibt und einliest, in Streifen-ID- und
    Kastenfolge, bis es genau 7 sind — nie S0002, S0003, S0181, nie ein
    Kasten, den eine Folger-Runde schon gewertet hat. Sind keine 7 da, wartet
    (b).
 
 **Das Auge.** Vor jeder Adoption der **Blindlauf des Autors** über
-`folger-arms/blind.py` (sha256 `e303fea3…`), erweitert nur um die
-Kasten-Liste (datierter Nachtrag, die Seitenwahl bleibt
-`random.Random(seed).random() < 0.5` je Kasten in Listenfolge), auf dem
+`folger-arms/blind.py` (sha256 `e303fea3…`), erweitert um Kasten-Liste und
+Arm-Verzeichnis, sonst unverändert (datierter Nachtrag, die Seitenwahl
+bleibt `random.Random(seed).random() < 0.5` je Kasten in Listenfolge; die
+sha256 der erweiterten Datei steht im Lauflog vor dem Blindlauf), auf dem
 registrierten Paar — die Sprosse, die in (b) Regel und Wächter besteht,
 gegen ihre Vorgängerin. Samen jetzt fest: (a) `2409241`, (b) `2409242`;
 `key.json` sieht der Beurteiler nicht. Prüfliste: die Klassen von `sep24` §7
@@ -18391,7 +18419,12 @@ den Gewinn und sy bleibt aus. Besteht R-k nicht, R-ky aber gegen R-k, trägt
 das Paar und die Frage ist, ob sy allein oder nur mit k wirkt — eine eigene
 Runde. Besteht in (b) keine Sprosse: ehrliches Negativ mit benannten
 Rettungswegen (§7.9: R-price · R-reach · R-slant · R-grid · R-truth · R-forms ·
-R-loops). **Nicht** beantwortet: die Kalibrierung der Tintentreue; Hand,
+R-loops). **Was eine bestandene Sprosse nominiert:** C0 trägt Stufe 2, die
+in `sep24` ihre eigene Regel nicht bestanden hat. Besteht R-k oder R-ky,
+nominiert die Runde darum das **Paket** Stufe 2 + diese Sprosse: Stufe 2
+fährt mit als der Maßstab, auf dem Stufe 3 gemessen ist, nicht als eigener
+Gewinn. Ihre eigene Frage bleibt R-price; ersetzt ein späterer Arm das
+Umtasten, muss die Stufe-3-Sprosse auf dem neuen Maßstab neu bestehen. **Nicht** beantwortet: die Kalibrierung der Tintentreue; Hand,
 Maßstab, Feder und Sitzung bleiben verschränkt; die Saat bleibt die Form von
 1922.
 

@@ -23,13 +23,20 @@
   its two scales as separate rungs (R-split). The glossary gains the
   Platten-Wächter, the plate guard every such stage answers to.
 - **The next follower round, pre-registered before any arm exists.** The
-  entry „Stufe 3 gezielt: R-gate + R-split `sep24b`" is its own commit, so
-  its hash is the pre-arm hash the previous round lacked. It registers a
+  entry „Stufe 3 gezielt: R-gate + R-split `sep24b`" is committed on its
+  own, and the last commit that changes it is the pre-arm hash the previous
+  round lacked. Because the author squash-merges, the merge commit on
+  `main` is the reference of record, named in a dated addendum after the
+  merge, and the arm code comes in a PR of its own. It registers a
   three-rung ladder: label masking plus resampling as the base, then the
-  seed's x-scale alone, then the vertical scale and baseline on top. The
-  seed registration runs only on a case cut from a printed sheet, so the
-  plate path stays byte-identical by construction, and each rung is still
-  reported ungated on the plate, so the gate hides nothing. The metrics and
+  seed's x-scale alone, then the vertical scale and baseline on top. A
+  passing rung nominates resampling and itself as one package, since the
+  seed registration was measured at the plate's scale. The seed
+  registration runs only on a case cut from a printed sheet, so the plate
+  path stays byte-identical by construction. Each stage-3 rung is still
+  reported ungated on the plate, through the scratch runner rather than a
+  repo switch, so the gate hides nothing. The arm commit turns today's
+  boolean `--register-seed` into `--register-seed {k,ky}`. The metrics and
   the decision rule are unchanged. A jitter and short-chord sensor, built
   on the frozen continuity arithmetic, is reported and never decides. The
   confirmation runs on unseen boxes from S0182 on, and only on strips the
