@@ -18558,7 +18558,9 @@ noch nicht geschrieben ist. Die Abweichungen stehen im Nachtrag vom
 (`--register-seed {k,ky}` und das Stufe-3-Tor; der Referenz-Nachtrag
 `1c0f817` davor), bei jedem Lauf 0 geänderte Dateien. BLAS ist gepinnt
 (`OPENBLAS/OMP/MKL_NUM_THREADS=1`), die Wurzel ist `c7f2efd9cf37`. Das
-Lineal `score.py` ist unverändert (`6531a729…`), die Eingabe der Cache (GET).
+Lineal `score.py` ist unverändert (`6531a729…`), die Eingabe der Cache (GET);
+die Konstruktionsproben stehen auf dem Referenzsatz `sep24-reference.json`
+(`3d2f1cf1…`).
 Alle Sprossen laufen über `adapt_case` des Repos, mit Kalibrierung und
 Bereichsgrenzen des Werkzeugs. Befehle, Uhrzeiten und Prüfsummen stehen in
 `folger-arms/sep24b/LOG.md` und `commands.jsonl`, Pixel und Bahnen im
@@ -18652,7 +18654,9 @@ zeigt erst der Blindlauf. Solange bleiben es Zahlen ohne Urteil.
    Die Saat von 1922 ist für diese Hand auch ohne sy-Schätzung zu breit, in
    jedem Kasten.
 2. **Wo sy = 1,000 gelesen wird** (*things*, *doctor*), sind R-k und R-ky
-   dieselbe Bahn. Median und schlechtester Kasten von „R-k gegen C0" sind
+   dieselbe Bahn, bei *things* sogar trotz einer um 2 px verschobenen
+   Grundlinie: Die eingefrorene Registrierung (ty ±4 px) fängt den Versatz
+   auf, was Rettungsweg R-price direkt stützt. Median und schlechtester Kasten von „R-k gegen C0" sind
    darum ziffernidentisch mit „A3 gegen A2" aus `sep24`.
 3. **Die Tintentreue** (geborgte Schwellen) liest für R-k 2 „folgt",
    4 „folgt teils" und 1 „folgt nicht" (*doctor*, Absetzer der Bahn). Für
