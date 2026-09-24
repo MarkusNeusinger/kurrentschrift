@@ -22,3 +22,17 @@
   paths: the seed registration on printed-sheet input only (R-gate), and
   its two scales as separate rungs (R-split). The glossary gains the
   Platten-Wächter, the plate guard every such stage answers to.
+- **The next follower round, pre-registered before any arm exists.** The
+  entry „Stufe 3 gezielt: R-gate + R-split `sep24b`" is its own commit, so
+  its hash is the pre-arm hash the previous round lacked. It registers a
+  three-rung ladder: label masking plus resampling as the base, then the
+  seed's x-scale alone, then the vertical scale and baseline on top. The
+  seed registration runs only on a case cut from a printed sheet, so the
+  plate path stays byte-identical by construction, and each rung is still
+  reported ungated on the plate, so the gate hides nothing. The metrics and
+  the decision rule are unchanged. A jitter and short-chord sensor, built
+  on the frozen continuity arithmetic, is reported and never decides. The
+  confirmation runs on unseen boxes from S0182 on, and only on strips the
+  hold-out draw puts into practice; the draw comes first. The author's
+  seeded blind pass comes before any adoption, and adoption stays the
+  author's decision.
