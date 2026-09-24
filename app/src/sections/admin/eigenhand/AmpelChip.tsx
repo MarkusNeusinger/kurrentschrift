@@ -27,14 +27,21 @@ const STUFE_COLOR: Record<EigenhandTintentreueStufe, 'success' | 'warning' | 'er
   'nicht beurteilt': 'default',
 };
 
-export function AmpelChip({ urteil }: { urteil: EigenhandTintentreue }) {
+/** One STEP as a chip, without a box behind it — the statistik view counts
+ * steps and has no single verdict to hand over, and a second colour table
+ * there is exactly the drift this file exists to prevent. */
+export function StufeChip({ stufe }: { stufe: EigenhandTintentreueStufe }) {
   return (
     <Chip
       size="small"
-      color={STUFE_COLOR[urteil.stufe]}
-      variant={urteil.stufe === 'nicht beurteilt' ? 'outlined' : 'filled'}
-      label={urteil.stufe}
+      color={STUFE_COLOR[stufe]}
+      variant={stufe === 'nicht beurteilt' ? 'outlined' : 'filled'}
+      label={stufe}
       sx={{ flexShrink: 0 }}
     />
   );
+}
+
+export function AmpelChip({ urteil }: { urteil: EigenhandTintentreue }) {
+  return <StufeChip stufe={urteil.stufe} />;
 }

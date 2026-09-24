@@ -1407,12 +1407,11 @@ export const admin = {
     // same step was then stated in two places at once.
     quotenNone:
       'Erstbeleg- und Ausbau-Quote brauchen die Übergangsraum-Gewichte; die liegen noch nicht in der Datenbank. Der Befehl dazu steht auf dieser Seite unter „Am Rechner weiter".',
-    // The statistik Unteransicht. Today it carries exactly one figure: the pen
-    // half width. The other three of the four §7.2 promises stand as a
-    // labelled Leerfläche — saying what will land here is more honest than a
-    // surface that looks as though there is nothing to be had. Only two of
-    // them still lack their compute; the Tintentreue verdict exists since
-    // #638 and is just not counted here yet.
+    // The statistik Unteransicht. It carries two of the four §7.2 figures:
+    // the pen half width and the Tintentreue distribution (`statistikTreue`).
+    // The other two stand as a labelled Leerfläche — saying what will land
+    // here is more honest than a surface that looks as though there is
+    // nothing to be had.
     statistikIntro:
       'Was die Tinte dieser Hand sagt — im Unterschied zum Bestand, der sagt, wie weit die Hand gekommen ist. Gemessen wird je Fassung beim Einlesen; hier steht die Zusammenfassung über alle.',
     statistikNibTitle: 'Feder-Halbbreite',
@@ -1425,12 +1424,51 @@ export const admin = {
       'Keine angenommene Fassung dieser Hand trägt eine Federmessung — entweder ist noch keine Siebung hochgeschoben, oder die Fassungen stammen aus der Zeit vor dem Streifen-Befund. Eine fehlende Messung ist keine Null.',
     statistikSoonTitle: 'Kommt hierher',
     statistikSoonCaption:
-      'Beschriftete Leerfläche: die drei übrigen Größen aus dem Plan sind noch nicht gebaut; sie stehen hier, damit die Fläche sagt, was sie einmal trägt.',
-    // Where the per-box Ampel can actually be found: the list under
-    // „Nachfahren" and the word crops of the FILTERED gallery. The unfiltered
-    // gallery shows whole strips (`StripTile`), which carry no Ampel.
-    statistikSoonTintentreue:
-      'Tintentreue-Verteilung — bei wie vielen Wortkästen der Hand die Bahn der Tinte folgt, teils folgt, nicht folgt. Die Ampel dazu steht je Kasten schon da: in der Liste unter „Nachfahren“ und auf den Wort-Ausschnitten der Galerie, sobald nach einem Wort oder Zeichen gefiltert ist. Über die ganze Hand gezählt wird hier noch nicht, und ihre Schwellen bleiben bis zur Kalibrierung vorläufig.',
+      'Beschriftete Leerfläche: die beiden übrigen Größen aus dem Plan sind noch nicht gebaut; sie stehen hier, damit die Fläche sagt, was sie einmal trägt.',
+    // The Tintentreue distribution: the per-box Ampel COUNTED over the hand,
+    // never folded into one number. Step and reason are the server's words
+    // (`core/eigenhand/tintentreue.py`); these strings only say what the count
+    // itself says. A link into the Nachfahr-Liste stands only where a list
+    // axis selects EXACTLY the counted boxes.
+    statistikTreue: {
+      title: 'Tintentreue-Verteilung',
+      caption:
+        'Bei wie vielen Wortkästen dieser Hand die Bahn der Tinte folgt, teils folgt oder nicht folgt — und wie viele noch niemand beurteilt hat, mit ihrem Grund. Gezählt über alle abgelegten Fassungen, dieselben Kästen wie in der Nachfahr-Liste.',
+      vorlaeufig: 'vorläufig',
+      vorlaeufigTitle: 'Schwellen der Ampel',
+      vorlaeufigAria: 'Warum die Verteilung vorläufig ist',
+      stand: 'Schwellen vom {{stand}}.',
+      // More than one date means the count spans a calibration; neither is
+      // then printed as „the" date.
+      staende: 'Die gezählten Kästen tragen mehrere Schwellen-Stände: {{staende}}.',
+      eineHand:
+        'Die Schwellen gelten für diese eine Hand. Die Verteilung einer anderen Hand ist mit dieser nicht vergleichbar.',
+      loading: 'Kästen werden gezählt …',
+      loadError: 'Die Kästen dieser Hand konnten nicht gelesen werden.',
+      emptyNoStrips:
+        'Für diese Hand ist noch kein Streifen abgelegt — es gibt keine Kästen zu zählen. Die Streifen kommen mit „sync --mit-streifen" herauf.',
+      emptyNoBoxes: 'Die abgelegten Fassungen dieser Hand tragen keinen Wortkasten aus dem Streifenplan.',
+      // `kaesten`/`fassungen` arrive with their noun already inflected.
+      summary: '{{kaesten}} in {{fassungen}} · {{gemessen}} davon beurteilt',
+      kasten: { one: '{{count}} Kasten', many: '{{count}} Kästen' },
+      fassung: { one: '{{count}} Fassung', many: '{{count}} Fassungen' },
+      nothingMeasured:
+        'Noch ist kein Kasten gemessen — alle stehen grau. Die Ampel liest die Sensoren, die der Folger beim Nachfolgen mitschreibt; Fassungen aus einem Lauf vor dem Formatwechsel bleiben grau, bis sie einmal neu gefolgt werden.',
+      count: '{{kaesten}} ({{share}} %)',
+      gruendeSensor: 'entschieden von',
+      gruendeGrau: 'Grund',
+      grund: '{{name}}: {{count}}',
+      link: 'in der Liste',
+      linkAria: '{{name}}: {{kaesten}} in der Nachfahr-Liste zeigen',
+      // The list deliberately has no axis per Ampel step, but its Schwere
+      // order puts the red boxes first anyway.
+      toList: 'Zur Nachfahr-Liste — rot zuerst',
+      perFassungShow: 'Je Fassung ({{count}})',
+      perFassungHide: 'Je Fassung ausblenden',
+      perFassungAria: 'Tintentreue je Fassung',
+      colFassung: 'Streifen · Fassung',
+      colKaesten: 'Kästen',
+    },
     statistikSoonBelege:
       'Belegzahlen im Verlauf — wie die Abdeckung über die Sitzungen gewachsen ist. Braucht einen datierten Bestandsverlauf (Phase 3).',
     statistikSoonStapel:
