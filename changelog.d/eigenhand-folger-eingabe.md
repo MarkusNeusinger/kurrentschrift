@@ -32,3 +32,15 @@
   ink the same way, so a case's `ink.png` is the mask the follower is
   handed by default; its envelope moves to format 2 and names the cleared
   zones.
+
+### Fixed
+
+- **A first hold-out draw now refuses when it cannot look at the archive.**
+  `training_set --draw` read „no archive configured" the same as „no draw
+  filed", and the eigenhand tools do not read `.env`. On 2026-09-24 this
+  checkout's Kartei was of 2026-09-09 while the draw of 2026-09-21 sat only
+  in the archive, so a plain `--draw` would have made a second, different
+  split of a create-once artefact. The draw now needs an archive root that
+  exists (`--archive` or an exported `KURRENTSCHRIFT_ARCHIVE`). A hand the
+  archive does not know yet still draws, because that answer comes from
+  looking.

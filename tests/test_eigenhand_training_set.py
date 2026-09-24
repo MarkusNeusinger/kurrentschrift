@@ -301,6 +301,30 @@ class TestRueckhaltRecord:
         (newer / "kartei.json").write_text(json.dumps(drawn, ensure_ascii=False), encoding="utf-8")
         assert tool.archived_holdout(HAND, str(archive))[1] == newer
 
+    def test_a_first_draw_that_cannot_look_at_the_archive_is_refused(self, tmp_path, monkeypatch):
+        # The near miss of 2026-09-24: a stale data root, no archive in the
+        # shell's environment (the tools do not read .env) — and the old guard
+        # read „could not look" as „no draw filed" and let a second split through.
+        monkeypatch.setattr(tool, "load_plan", lambda *_a: SMALL_PLAN)
+        _kartei(tmp_path, monkeypatch)
+
+        with pytest.raises(SystemExit) as exc:
+            tool.main(["--hand", HAND, "--draw", "key-a", "--date", TODAY])
+        assert "no archive" in str(exc.value) and "KURRENTSCHRIFT_ARCHIVE" in str(exc.value)
+
+        with pytest.raises(SystemExit) as exc:
+            tool.main(["--hand", HAND, "--draw", "key-a", "--date", TODAY, "--archive", str(tmp_path / "nirgends")])
+        assert "does not exist" in str(exc.value)
+
+        # An archive that exists and simply does not know this hand is an
+        # answer from looking, so the first draw goes through.
+        archive = tmp_path / "archive"
+        archive.mkdir()
+        assert tool.main(["--hand", HAND, "--draw", "key-a", "--date", TODAY, "--archive", str(archive)]) == 0
+        from tools.eigenhand.kartei import load_kartei
+
+        assert tool.holdout_of(load_kartei(HAND))["key"] == "key-a"
+
     def test_an_export_without_a_local_draw_names_the_archived_one_instead_of_ziehen(self, tmp_path, monkeypatch):
         from tools.eigenhand.snapshot import ARCHIVE_SUBDIR
 

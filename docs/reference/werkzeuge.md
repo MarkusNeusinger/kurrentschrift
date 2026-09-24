@@ -931,7 +931,11 @@ Ablage — steht im Abschnitt darüber, die Doktrin in
   Datenbestand aus wie „nie gezogen" — vor einer Ziehung und vor einem Export
   wird darum auch das Archiv gelesen (`$KURRENTSCHRIFT_ARCHIVE` bzw.
   `--archive`, nur lesend): liegt dort eine Ziehung, bricht der Lauf ab und
-  nennt den Schnappschuss, aus dem die Kartei zurückzuholen ist. **Der Export** schneidet jeden Kasten mit
+  nennt den Schnappschuss, aus dem die Kartei zurückzuholen ist. Seit
+  2026-09-24 verweigert `--draw` die Erst-Ziehung auch, wenn es GAR kein
+  Archiv zum Nachsehen gibt: Die Werkzeuge lesen `.env` nicht, und „nicht
+  nachsehen können“ galt vorher als „nichts gezogen“. Damit wäre auf einem
+  veralteten Datenbestand beinahe eine zweite Ziehung entstanden. **Der Export** schneidet jeden Kasten mit
   Handarbeit — gezeichnete Bahn ODER von Hand korrigierte Grenzen — genau so
   heraus, wie der Folger ihn liest (`path.json` + `crop.png` + `ink.png`),
   seit 2026-09-24 also mit gelöschten Druckbeschriftungen in `ink.png` wie

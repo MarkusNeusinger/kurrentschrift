@@ -334,6 +334,29 @@ def archived_holdout(hand: str, archive: str | None = None) -> tuple[dict, Path]
     return None
 
 
+def _require_archive(archive: str | None) -> None:
+    """Refuse a first draw that cannot look at the archive at all.
+
+    `archived_holdout` answers None both for „the archive holds no draw" and for
+    „there was no archive to look in" — and the eigenhand tools do not read
+    `.env`, so `$KURRENTSCHRIFT_ARCHIVE` is only seen when it is exported in the
+    shell. On 2026-09-24 that nearly cost the hand its draw: this checkout's
+    Kartei was of 2026-09-09, the draw of 2026-09-21 sat only in the archive,
+    and a plain `--draw` would have made a second, different split. A
+    create-once artefact must not be made on „could not look", so the first
+    draw needs an archive root that exists; a hand the archive does not know
+    yet still draws, because that answer came from actually looking.
+    """
+    value = archive or os.environ.get("KURRENTSCHRIFT_ARCHIVE")
+    if not value:
+        raise SystemExit(
+            "refusing to draw: there is no archive to check for an earlier draw. Pass --archive <clone root> "
+            "or export KURRENTSCHRIFT_ARCHIVE — the eigenhand tools do not read .env."
+        )
+    if not Path(value).expanduser().is_dir():
+        raise SystemExit(f"refusing to draw: the archive root {value!r} does not exist, so it could not be checked.")
+
+
 def _refuse_if_archived(hand: str, archive: str | None) -> None:
     """Stop where the archive holds a draw this data root has lost."""
     filed = archived_holdout(hand, archive)
@@ -804,6 +827,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.draw:
         kartei = load_kartei(hand)
         if holdout_of(kartei) is None:
+            _require_archive(args.archive)
             _refuse_if_archived(hand, args.archive)
         shares = {SET_HOLDOUT_FOLLOWER: args.share_follower, SET_HOLDOUT_RELEASE: args.share_release}
         record = draw(hand, kartei, args.draw, shares, today)
@@ -824,8 +848,6 @@ def main(argv: list[str] | None = None) -> int:
             f"reminder: snapshot NOW so the archive carries it — "
             f"uv run python -m tools.eigenhand.snapshot --hand {hand}"
         )
-        if not (args.archive or os.environ.get("KURRENTSCHRIFT_ARCHIVE")):
-            print("(no archive configured, so this run could not check whether one was already filed elsewhere)")
         return 0
 
     export(
