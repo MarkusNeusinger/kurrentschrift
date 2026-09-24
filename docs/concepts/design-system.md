@@ -1,6 +1,6 @@
 # Design-System — kurrentschrift.ink
 
-> **Status (2026-09-19): lebend.** Beschreibt den Ist-Zustand des
+> **Status (2026-09-24): lebend.** Beschreibt den Ist-Zustand des
 > Frontends und ist am 2026-08-03 gegen den Code geprüft
 > (Tokens, 19-px-Leiter samt Gewichten, Breiten 760/1152/1280, Kopfleiste,
 > Routenliste); am 2026-09-04 um den Tintenboden geschriebener Zeilen
@@ -9,7 +9,8 @@
 > samt Strichart-Regel und das `mono`-Token (§2, §7, §10) sowie um die
 > Tastatur-Regeln (§9.5 — Roving-Liste, Subjekt-Stepper, Kurztasten-Schalter,
 > `toolbar`-Rolle), den zweiten Kanal des Rasterpunkts (§9.4), zwei
-> Inventarzeilen (§7) und den `--admin`-Lauf der Messgitter (§10).
+> Inventarzeilen (§7) und den `--admin`-Lauf der Messgitter (§10); am
+> 2026-09-24 um die Abzugs-Token (§2).
 > **Mitziehen bei jeder Änderung an `app/src/styles/paper.ts`,
 > `theme/typography.ts`,
 > `components/PageContainer|Prose|PageHeader|HeaderBar|PublicHeader|PublicFooter`,
@@ -168,6 +169,26 @@ oder die Strichart, die Legende trägt die Farbe. Ausgenommen sind vorerst die
 Diagnose- und Wizard-Signalfarben (`overlayColors.ts`, Landmark-Farben,
 Wizard-Griffe), wo die Farbe teils die Handlungsanweisung ist („den grünen Punkt
 ziehen") — ein benannter Nachzug, kein Freibrief für neue Sätze.
+
+**Abzugs-Token** (`penalty`, seit 2026-09-24) — die Marken der Abzugs-Linse
+(Werkbank §9), KEINE Ebenen: ein vierter Farbton im 3 : 1-Band ist
+unmöglich (s. o.), darum wird der Grund geändert statt des Bands. Der
+Tafel-Ausschnitt liegt auf `penaltyCropAlpha` = 0,35 gedimmt (wie die
+Skelett-Spalte der Diagnose), und jedes Token erreicht 3 : 1 gegen weiß UND
+gegen die so gedimmte Tinte `#b2afab`. **Ein** Farbton für alle sechs
+Kategorien — `penalty.mark` Karmin `#960018`, NUR für Abzüge; die Kategorie
+trägt die FORM (Band, Klammer, Quadrat, Ring, Kreuzschraffur, Schraffur,
+Raster, Querstriche über den Rand, Fühler), die Größe die Breite. Was einen
+Abzug rahmt, ohne einer zu sein — die Doppelzug-Zone, die Eckfenster der
+Glätte —, ist **Kontext**: `penalty.context` (Ultramarin, approx
+`#4040c0`), dünn gestrichelt, in Formen, die kein Abzug trägt (Umriss;
+Unterlegung mit Querbalken). Keine zwei Bedeutungen teilen sich eine Form:
+Punktketten auf der Tintenkante waren Zonenrand, Chamfer, Eckfenster und
+Raster zugleich (Review 2026-09-24). Dazu `centerline` (Preußischblau, die
+gemessene Mittellinie), `selected` (`viridianText`, ein Zustand; der knappe
+Deuteranopen-Abstand zur Mittellinie ist benannt und von Ring + Breite
+getragen) und `pin` (Tinte, die ①–⑤-Scheiben). `context` hält zu jedem
+anderen Token ΔE ≥ 35 auch für Deuteranope (gemessen in `paper.test.ts`).
 
 Font-Tokens (ebenfalls `styles/paper.ts`): `garamond` (EB Garamond, Body/UI &
 Theme-Default), `display` (Playfair Display, Display-Überschriften), `script`

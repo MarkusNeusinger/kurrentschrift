@@ -527,12 +527,13 @@ und ein Klick ins Leere meldet eine FEHLENDE Marke.
 
 **Abzugs-Linse · Abzugsstelle** — die Auskunft, WO die Gleichzug-Metrik
 abzieht, im Tafel-Ausschnitt und mit dem unveränderten Lineal
-(`core/quality_localize.py`, Admin-Route `…/penalty-sites`; die Ebene der
-Buchstaben-Ansicht folgt mit dem Overlay-PR): Jede Abzugsstelle
+(`core/quality_localize.py`, Route `…/penalty-sites`, Schalter „Abzüge“ der
+Buchstaben-Ansicht, `letters/PenaltyPanel.tsx`): Jede Abzugsstelle
 trägt ihren Teil der gezeigten Kategoriezahl, die Teile einer Kategorie
 summieren sich auf diese Zahl bis zur vierten Stelle, und was keinen Ort
-hat (der Kanten-Saum der Deckungslücke), steht als „ohne Ort“.
-→ [§5](glossar.md#5-werkbank-und-prozess) · qualitaetsmetrik.md §5
+hat (der Kanten-Saum der Deckungslücke), steht als „ohne Ort“. ⚑ legt
+einen Buchstaben-Auftrag ab.
+→ [§5](glossar.md#5-werkbank-und-prozess) · werkbank §9 · qualitaetsmetrik.md §5
 
 **Kreuzungsflucht** — der Anzeigename des Kollinearitäts-Abzugs
 (`collinearity`): Läuft ein gerader Strich durch eine Kreuzung, sollen die

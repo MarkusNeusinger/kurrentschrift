@@ -286,6 +286,144 @@ export const admin = {
     landmarkSpotButton: 'Fehlende Marke melden',
     landmarkSpotHint:
       'Ins Leere klicken meldet die Stelle mit ihrer Position; der Knopf meldet dasselbe ohne Ortsangabe — dann steht im Auftrag, was du beschreibst, keine erfundene Koordinate.',
+    // The Abzugs-Linse (optimierungs-werkbank.md §9): WHERE the Gleichzug
+    // score takes its points off, drawn over the Tafel-Ausschnitt the ruler
+    // measured in. The caption is the author's own framing — a deduction is
+    // where the ruler subtracts, not a defect list to be hand-fixed.
+    penalties: {
+      title: 'Abzüge',
+      caption: 'Wo das Lineal abzieht — kein Fehlerbefund.',
+      toggle: 'Abzüge zeigen',
+      loading: 'Abzüge werden neu gemessen …',
+      errorPrefix: 'Abzüge konnten nicht gemessen werden:',
+      // The route's 409: a row without pixel anchors, or one whose geometry the
+      // metric cannot score. Reloading cannot help — the generic conflict
+      // sentence would send the author the wrong way.
+      unscorable:
+        'Diese Zeile lässt sich nicht auswerten — ihr fehlen die Pixel-Anker, oder ihre Geometrie ist ungültig. Erst im Wizard neu abtasten oder nachzeichnen.',
+      // Which row is under the lens, and why only that one.
+      rowNote:
+        'Tafel-Duktus (Variante 0), neu gemessen gegen den Ausschnitt. Die Laufform ist nicht gegen die Tafel gemessen — ihr gespeicherter Score ist eine Kopie dieser Zeile.',
+      measuredLead: 'Abzüge (neu gemessen):',
+      storedLead: 'gespeichert:',
+      storedNote: 'Stand der letzten Ableitung — weicht um mehr als 0.005 ab.',
+      notApplicable: 'nicht anwendbar',
+      noPlace: 'ohne Ort',
+      // A category whose map the core dropped (`in_sync` false): the number
+      // stands, its places do not — not the same thing as a part without a place.
+      mapDropped: 'Karte verworfen (Nachrechnung weicht ab)',
+      // „4 Stellen", „1 Stelle", „keine Stelle" — the count a chip carries.
+      sitesOne: '1 Stelle',
+      sitesMany: '{{count}} Stellen',
+      sitesNone: 'keine Stelle',
+      legendTitle: 'Was die Marken zeigen',
+      legendAria: 'Die Abzugs-Marken erklären',
+      legendIntro:
+        'Die Form sagt die Kategorie, die Breite oder Größe den Anteil am Abzug; die dünne durchgezogene Linie ist die gemessene Mittellinie, die Scheiben ①–⑤ die fünf teuersten Stellen. Die Stellen einer Kategorie summieren sich auf die gezeigte Zahl bis zur vierten Stelle.',
+      // The context marks: they frame a deduction and are none — own form, own
+      // hue (styles/paper.ts `penalty.context`); the text names forms only.
+      legendContextLabel: 'Kontext',
+      legendContext:
+        'kein Abzug. Dünn gestrichelt umrissen: die Doppelzug-Zone. Gestrichelt unterlegt, mit Querbalken an den Enden: die Eckfenster der Glätte.',
+      legendExact:
+        'Term: die Stelle IST ein Summand der Zahl (Ecken, Kreuzungsflucht, Doppelzug). Anteil: der Abzug läuft durch eine Exponentialfunktion, ein Produkt oder eine Wurzel und ist proportional verteilt (Glätte, Senkrechte, Deckungslücke).',
+      legendPoints:
+        'Punkte sind linearisiert — die Näherung, um wie viel der Score stiege, fiele diese eine Stelle weg. Sie reihen die Stellen, sie sind nie die Hauptzahl.',
+      legendNoPlace:
+        'Ohne Ort: was zählt, aber keine Stelle hat — vor allem der 1,5-px-Saum der Deckungslücke (Kantenquantisierung der Binarisierung).',
+      // One line per category: what its mark is. Shapes and strokes only —
+      // no colour words (design-system.md §2, Strichart-Regel).
+      markerHint: {
+        smoothness:
+          'Band entlang der Mittellinie, je Punkt so breit wie sein Anteil am Ruck. Wo es aussetzt, liegt ein Eckfenster (Kontext) — das zählt unter Ecken.',
+        verticality:
+          'Klammer neben dem Lauf, gestrichelt die ideale Senkrechte, die gemessene Abweichung überhöht gezeichnet — ×20, weniger, wo sie sonst weiter als 0.15 x-Höhen ausschlüge.',
+        corner:
+          'Quadrat am Scheitel, die beiden Anlaufstücke, gestrichelt ihre Sehnen, ein Punkt an der größten Abweichung.',
+        collinearity: 'Ring an der Kreuzung und die beiden gefitteten Geraden davor und dahinter.',
+        retrace: 'Kreuzschraffiert: fehlende Tinte in der Doppelzug-Zone; die Zone selbst ist Kontext.',
+        coverage:
+          'Schraffiert: tiefe Tintenlücken. Gerastert: Render über Papier. Kurze Querstriche über den Rand: Chamfer. Fühler vom Mittellinienpunkt zum Skelett: Geo.',
+      },
+      pinsTitle: 'Die fünf teuersten Stellen',
+      pinsNone: 'Keine Stelle mit Ort trägt einen Abzug.',
+      // „0.0954 von 0.1711" — the site's part of its category's number.
+      ofCategory: '{{value}} von {{total}}',
+      pointsShort: '≈ {{points}} Punkte',
+      pointsLong: '≈ {{points}} Punkte (linearisiert — nur zum Reihen)',
+      exactTerm: 'Term',
+      exactShare: 'Anteil',
+      selectHint: 'Eine Stelle in der Liste oder im Bild antippen, um ihre Zahlen zu sehen.',
+      position: 'x {{x}} · y {{y}} Pixel im Ausschnitt',
+      positionNone: 'ohne Ort — zählt in der Zahl, hat aber keine Stelle im Ausschnitt',
+      exaggerated: 'Abweichung ×{{factor}} überhöht gezeichnet — echt ist sie meist unter einem Pixel.',
+      windowsNote:
+        'Gestrichelt unterlegt, mit Querbalken an den Enden: die Eckfenster — was dort liegt, zählt unter Ecken.',
+      partOf: 'Teil {{part}}',
+      allToggle: 'Alle Stellen ({{count}})',
+      allHide: 'Stellenliste schließen',
+      // Beside a category group in „Alle Stellen" when its legend chip is off:
+      // the switch acts on the image only, and choosing a row shows it again.
+      hiddenNote: 'im Bild ausgeblendet',
+      // The pin's rank, spoken: the ①–⑤ disc beside a row is aria-hidden.
+      rankPrefix: 'Rang {{rank}} · ',
+      belowOne: '+ 1 Stelle unter 0.0001 — ohne Anteil an der gezeigten Zahl, nicht gezeichnet',
+      belowCount: '+ {{count}} Stellen unter 0.0001 — ohne Anteil an der gezeigten Zahl, nicht gezeichnet',
+      mark: 'Bemängeln',
+      markHint:
+        'Legt einen Buchstaben-Auftrag an; die erste Zeile nennt die Stelle und ihre Zahl. Ein Streit mit dem Lineal selbst ist kein Korb-Fix, sondern ein Vorschlag samt Re-Baseline.',
+      // What a site IS, per payload `kind`.
+      kind: {
+        segment: 'Abschnitt',
+        run: 'Senkrechtlauf',
+        corner: 'Ecke',
+        passage: 'Durchgang',
+        missed_ink: 'fehlende Tinte',
+        excess_render: 'Render über Papier',
+        edge: 'Randstück',
+        off_skeleton: 'neben dem Skelett',
+        rim: 'Saum (Kantenquantisierung)',
+        unlocated: 'Nachrechnung weicht ab',
+      },
+      // The three factors of the coverage gate.
+      part: {
+        dice: 'Dice',
+        chamfer: 'Chamfer',
+        geo: 'Geo',
+      },
+      // Field labels for the numbers a site carries; an unknown key shows raw.
+      number: {
+        anchor: 'Anker',
+        sample: 'Abtastpunkt',
+        s_in: 'Anlauf ein',
+        s_out: 'Anlauf aus',
+        q: 'q',
+        stroke: 'Zug',
+        from: 'von Punkt',
+        to: 'bis Punkt',
+        samples: 'Abtastpunkte',
+        peak_sample: 'Spitze bei',
+        stroke_end_share: 'Anteil am Strichende',
+        rms_px: 'rms (px)',
+        rms_units: 'rms (x-Höhen)',
+        length_units: 'Länge (x-Höhen)',
+        max_dev_px: 'größte Abweichung (px)',
+        lean_deg: 'Neigung (°)',
+        x_ideal: 'Ideal-x (px)',
+        partner: 'Partnerpunkt',
+        dtheta_deg: 'Knick δθ (°)',
+        ddist_units: 'Versatz δd (x-Höhen)',
+        ddist_px: 'Versatz δd (px)',
+        pixels: 'Pixel',
+        render_px: 'Randpixel Render',
+        ink_px: 'Randpixel Tinte',
+        max_offset_px: 'größter Abstand (px)',
+        missed_px: 'fehlende Pixel',
+        excess_px: 'überschüssige Pixel',
+        rim_px: 'Saumbreite (px)',
+        reason: 'Grund',
+      },
+    },
   },
   // The deliberate promotion of learned statistics into rendering (issue #270).
   laufform: {
@@ -832,7 +970,10 @@ export const admin = {
     // The nouns are the one vocabulary of #621: the line is „Bahn", and the
     // layer that reads it as a movement is „Bewegung".
     faceLayerTrace: 'Bahn',
-    faceLayerPath: 'Bewegung (Schreibreihenfolge, Absetzer gestrichelt)',
+    // „gepunktet", not „gestrichelt": the lift is `liftConnector`, whose stroke
+    // is `strokeStyle.dotted` (styles/paper.ts) — a legend that names the
+    // wrong stroke style fails the one reader the Strichart-Regel is for.
+    faceLayerPath: 'Bewegung (Schreibreihenfolge, Absetzer gepunktet)',
     faceLayerEngine: 'Engine',
     // Herkunft + Datum der gezeichneten Linie. Ohne beides ist ein Pfad eine
     // undatierte Überlagerung und kein Beleg.
@@ -850,7 +991,7 @@ export const admin = {
     layerTrace: 'Bahn',
     layerPath: 'Bewegung',
     layerPathHint:
-      'Dieselbe Bahn, als Bewegung gelesen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt die Bahn mit, denn die Bewegung schmückt sie.',
+      'Dieselbe Bahn, als Bewegung gelesen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gepunktet die Absetzer. Bringt die Bahn mit, denn die Bewegung schmückt sie.',
     layerEngine: 'Engine',
     // The Abstandsprofil under a word card: nearest distance of the engine
     // composition per point of the stored trace. A DISPLAY measure of the
@@ -1035,6 +1176,10 @@ export const admin = {
     kindWord: 'Wort',
     kindNote: 'Notiz',
     kindLandmark: 'Landmarke',
+    // Not a Korb kind of its own: an Abzug from the Abzugs-Linse files as a
+    // plain LETTER item (author decision 2026-09-23). The word heads the first
+    // line of its note and names it in the filing dialog.
+    penaltyHead: 'Abzug',
     // The filing dialog.
     dialogTitle: 'Auftrag einreichen',
     dialogTarget: 'Ziel',
@@ -1072,6 +1217,9 @@ export const admin = {
       'Die Vorlage, wie der Duktus sie schreibt: Strich für Strich, mit echtem Absetzen zwischen den Zügen. Genau so erscheint der Buchstabe später im Quiz — und so soll er einmal auf der Startseite schreiben.',
     computing: 'Diagnose wird gerechnet …',
     noCanonicalShort: 'noch kein Canonical — erst Strich aufnehmen',
+    // The quality route's 409: a row older than the pixel-space trace meta.
+    // „neu laden" cannot help there, so it gets its own sentence.
+    noPixelAnchors: 'Dieser Zeile fehlen die Pixel-Anker — erst im Wizard neu abtasten oder nachzeichnen.',
     reload: 'neu laden',
     cropHeading: 'Original (Tafel-Ausschnitt)',
     cropCaption:
@@ -1260,10 +1408,11 @@ export const admin = {
     quotenNone:
       'Erstbeleg- und Ausbau-Quote brauchen die Übergangsraum-Gewichte; die liegen noch nicht in der Datenbank. Der Befehl dazu steht auf dieser Seite unter „Am Rechner weiter".',
     // The statistik Unteransicht. Today it carries exactly one figure: the pen
-    // half width, the only one of the four §7.2 promises that can be derived
-    // from today's Bestand. The other three stand as a labelled Leerfläche —
-    // saying what will land here is more honest than a surface that looks as
-    // though there is nothing to be had.
+    // half width. The other three of the four §7.2 promises stand as a
+    // labelled Leerfläche — saying what will land here is more honest than a
+    // surface that looks as though there is nothing to be had. Only two of
+    // them still lack their compute; the Tintentreue verdict exists since
+    // #638 and is just not counted here yet.
     statistikIntro:
       'Was die Tinte dieser Hand sagt — im Unterschied zum Bestand, der sagt, wie weit die Hand gekommen ist. Gemessen wird je Fassung beim Einlesen; hier steht die Zusammenfassung über alle.',
     statistikNibTitle: 'Feder-Halbbreite',
@@ -1276,9 +1425,12 @@ export const admin = {
       'Keine angenommene Fassung dieser Hand trägt eine Federmessung — entweder ist noch keine Siebung hochgeschoben, oder die Fassungen stammen aus der Zeit vor dem Streifen-Befund. Eine fehlende Messung ist keine Null.',
     statistikSoonTitle: 'Kommt hierher',
     statistikSoonCaption:
-      'Beschriftete Leerfläche: die drei übrigen Größen aus dem Plan brauchen Rechenschichten, die es noch nicht gibt. Sie stehen hier, damit die Fläche sagt, was sie einmal trägt.',
+      'Beschriftete Leerfläche: die drei übrigen Größen aus dem Plan sind noch nicht gebaut; sie stehen hier, damit die Fläche sagt, was sie einmal trägt.',
+    // Where the per-box Ampel can actually be found: the list under
+    // „Nachfahren" and the word crops of the FILTERED gallery. The unfiltered
+    // gallery shows whole strips (`StripTile`), which carry no Ampel.
     statistikSoonTintentreue:
-      'Tintentreue-Verteilung — wie viele Wortkästen der Hand die Bahn treffen, teils treffen, nicht treffen. Braucht die referenzfreie Ampel (Phase 2).',
+      'Tintentreue-Verteilung — bei wie vielen Wortkästen der Hand die Bahn der Tinte folgt, teils folgt, nicht folgt. Die Ampel dazu steht je Kasten schon da: in der Liste unter „Nachfahren“ und auf den Wort-Ausschnitten der Galerie, sobald nach einem Wort oder Zeichen gefiltert ist. Über die ganze Hand gezählt wird hier noch nicht, und ihre Schwellen bleiben bis zur Kalibrierung vorläufig.',
     statistikSoonBelege:
       'Belegzahlen im Verlauf — wie die Abdeckung über die Sitzungen gewachsen ist. Braucht einen datierten Bestandsverlauf (Phase 3).',
     statistikSoonStapel:
@@ -1442,7 +1594,7 @@ export const admin = {
     // field, the value speaks to the reader.
     pfadShow: 'Bahn zeigen',
     pfadShowHint:
-      'Legt die gefolgte Bahn über den Streifen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt auch die Rohzahlen je Kasten mit — sie stecken in denselben Daten, also kostet das keinen zweiten Abruf. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
+      'Legt die gefolgte Bahn über den Streifen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gepunktet die Absetzer. Bringt auch die Rohzahlen je Kasten mit — sie stecken in denselben Daten, also kostet das keinen zweiten Abruf. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
     // Date and word count stay in the caption; the origin sits beside it as
     // the Herkunfts-Chip below.
     pfadPedigree: 'Bahn: {{datum}} · {{woerter}} Wort/Wörter',
@@ -1489,14 +1641,17 @@ export const admin = {
     // Streifen-Untertitel ist weg (die Ampel sagt dasselbe), und seinen Text
     // trägt jetzt `nachfahren.maskeHint` neben dem Befehl, der ihn behebt.
     pfadStale: 'Maske geändert',
-    // Die Rohzahlen je Kasten: was der Folger beim Nachfolgen mitgeschrieben
-    // hat, ohne Farbe und ohne Bewertung. Die Tintentreue-Ampel kommt später
-    // an dieselbe Stelle — bis dahin steht hier die Zahl. Eine einzelne
-    // fehlende Zahl steht als Strich da, eine Bahn ganz ohne Sensoren als
-    // „nicht gemessen" — keine der beiden gibt sich als Null aus.
+    // The raw numbers per box: what the follower recorded while following,
+    // with no colour and no verdict. The verdict is the Tintentreue traffic
+    // light's (since #638), shown in the list under „Nachfahren" and on the
+    // word crops of the FILTERED gallery (`CropTile`) — never these numbers.
+    // The whole-strip tile (`StripTile`) shows this hint too and carries no
+    // Ampel, so the hint says so. A single missing number reads as a dash, a
+    // Bahn with no sensors at all as „nicht gemessen"; neither passes for a
+    // zero.
     pfadRohzahlen: 'Zahl, kein Urteil',
     pfadRohzahlenHint:
-      'Die gespeicherten Sensoren des Folgers, ungewichtet und unbewertet. „Tinte ohne Bahn“: der Anteil der Tinte, den die Bahn nie befährt. „Absetzer“: wie oft die Feder vom Papier genommen wurde. „Sprünge“: Wechsel auf einen anderen Strang. „Haken“: Umkehrpunkte auf demselben Strang. Ein Strich steht für eine Zahl, die dieser Lauf nicht ausgerechnet hat — nicht für null. Über dem ganzen Streifen trägt jede Zeile ihre Kastennummer, von 0 an gezählt: dieselbe, die „--box“ beim Nachfolgen nimmt. Im Wort-Ausschnitt und bei ausgewähltem Wort steht sie nicht dabei — dort gilt die eine Zeile dem Kasten, der gerade gezeigt wird. Ob die Bahn der Tinte folgt, sagt keine dieser Zahlen — das beurteilt später die Ampel an derselben Stelle.',
+      'Die gespeicherten Sensoren des Folgers, ungewichtet und unbewertet. „Tinte ohne Bahn“: der Anteil der Tinte, den die Bahn nie befährt. „Absetzer“: wie oft die Feder vom Papier genommen wurde. „Sprünge“: Wechsel auf einen anderen Strang. „Haken“: Umkehrpunkte auf demselben Strang. Ein Strich steht für eine Zahl, die dieser Lauf nicht ausgerechnet hat — nicht für null. Über dem ganzen Streifen trägt jede Zeile ihre Kastennummer, von 0 an gezählt: dieselbe, die „--box“ beim Nachfolgen nimmt. Im Wort-Ausschnitt und bei ausgewähltem Wort steht sie nicht dabei — dort gilt die eine Zeile dem Kasten, der gerade gezeigt wird. Ob die Bahn der Tinte folgt, sagt keine dieser Zahlen — das sagt die Tintentreue-Ampel: in der Liste unter „Nachfahren“ und auf jedem Wort-Ausschnitt der Galerie, sobald nach einem Wort oder Zeichen gefiltert ist; der ganze Streifen trägt keine. Ihre Schwellen sind bis zur Kalibrierung vorläufig.',
     pfadRohzahlenUnvisited: 'Tinte ohne Bahn {{prozent}} %',
     pfadRohzahlenUnvisitedNone: 'Tinte ohne Bahn –',
     pfadRohzahlenLifts: 'Absetzer {{zahl}}',
@@ -1695,8 +1850,10 @@ export const admin = {
       // wird.
       spansHint:
         'Die Marke zwischen zwei Buchstaben mit dem Stift verschieben: sie sitzt auf dem letzten Punkt des linken Buchstabens. Eine so korrigierte Grenze ist Trainingsstoff für den Grenzen-Zuordner — sie wird als „von Hand" gespeichert und von keinem späteren Lauf überschrieben. Grenzen, die du nicht anfasst, bleiben die des Folgers.',
+      // The Zuordner exists since #650 and runs at the terminal, over a
+      // stored Bahn — so the sentence names the step, not a future.
       spansNone:
-        'Für diese Bahn sind noch keine Buchstabengrenzen zugeordnet — der Zuordner (tools.eigenhand.pfad --spans) kommt später. Bis dahin gibt es hier nichts zu verschieben.',
+        'Für diese Bahn sind noch keine Buchstabengrenzen zugeordnet. Das tut der Zuordner am Terminal: tools.eigenhand.pfad --spans über diesen Streifen, mit --apply gespeichert. Danach lassen sich die Grenzen hier verschieben.',
       spansCount: '{{zahl}} Grenzen',
       spansAuthored: '{{zahl}} von Hand',
       spansDropped:

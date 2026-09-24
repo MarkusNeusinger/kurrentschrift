@@ -191,11 +191,18 @@ export const wizard = {
     // old label the same panel printed „Deckung (IoU): 0.105" and „Deckung
     // 0.99" three lines apart, and the 0.99 read like an excellent result
     // while being the maximum possible deduction (author decision 2026-09-03).
+    //
+    // `collinearity` reads „Kreuzungsflucht", not „Kreuzung": the Landmarken-
+    // Linse on the same letter page names a detected crossing „Kreuzung", and
+    // one word for two things is the collision the Abzugs-Linse would have put
+    // side by side (author decision 2026-09-23). Only the DEDUCTION was renamed;
+    // the landmark keeps its word, and „Doppelzug" never collided — that
+    // landmark is the „Retrace-Zone".
     cat: {
       smoothness: 'Glätte',
       verticality: 'Senkrechte',
       corner: 'Ecken',
-      collinearity: 'Kreuzung',
+      collinearity: 'Kreuzungsflucht',
       retrace: 'Doppelzug',
       coverage: 'Deckungslücke',
     },
@@ -203,7 +210,7 @@ export const wizard = {
       smoothness: 'Bögen ohne Zacken',
       verticality: 'Abstriche wirklich senkrecht',
       corner: 'Umkehrpunkte sauber spitz',
-      collinearity: 'Strich bleibt durch eine Kreuzung gerade',
+      collinearity: 'Strich läuft durch eine Kreuzung in einer Flucht weiter',
       retrace: 'Hin- und Rückzug laufen parallel',
       coverage: 'Abzug aus dem Deckungs-Gate — Überlappung, Randabstand und Mittellinien-Lage zusammen',
     },

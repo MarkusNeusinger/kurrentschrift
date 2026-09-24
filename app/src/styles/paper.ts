@@ -230,6 +230,51 @@ export const roleDash = {
   eigenhand: strokeStyle.dotted,
 } as const;
 
+// ——— The Abzugs-Linse (penalty marks) ———
+// Where the Gleichzug score takes its points off, drawn over the letter's own
+// Tafel-Ausschnitt (optimierungs-werkbank.md §9). NOT a layer set: these marks
+// never share a surface with Spur, Pfad or Engine, and they could not join
+// that set anyway — a fourth layer hue in the 3:1-on-both-grounds band is the
+// impossibility `paper.test.ts` spells out.
+//
+// So the ground is changed instead of the band. The crop under the marks is
+// DIMMED to `penaltyCropAlpha` (the Diagnose skeleton column's own .35), which
+// turns plate ink into a light grey, and every token below clears 3:1 against
+// white AND against that dimmed ink — measured by name in `paper.test.ts`.
+//
+// ONE hue for every deduction, on purpose: the category is carried by the
+// mark's SHAPE (square, ring, bracket, band, hatch, crosshatch, stipple, edge
+// ticks, feelers) and the magnitude by its width or size, so no reader has to
+// decode six colours, a red-green-blind one least of all (Strichart-Regel,
+// design-system.md §2). The legend names the shape, never a colour.
+//
+// What frames a deduction without being one — the Doppelzug zone, the Glätte
+// corner windows — is CONTEXT and never wears the deduction hue: it has a hue
+// AND a form of its own (a dashed outline, a dashed span with end bars), so
+// „is this a deduction?" is answered twice, and never by colour alone.
+export const penalty = {
+  // Karmin (named pigment, cochineal lake) — every deduction mark, and only those.
+  mark: '#960018',
+  // Ultramarin (named pigment; approx) — the context marks, thin and dashed.
+  // Far from every other token here for a deuteranope too (ΔE ≥ 52, measured
+  // in `paper.test.ts`), and on the blue side, where the other thing the
+  // ruler LOOKED AT rather than subtracted — the centreline — already sits.
+  context: '#4040c0',
+  // The scored centreline, thin, under the marks — Preußischblau like the Tafel
+  // role, because it IS the Tafel row's geometry the ruler measured.
+  centerline: pigment.prussianBlue,
+  // The chosen site. An active STATE is the one thing viridian may mark
+  // (design-system.md §2); its text shade, because raw viridian sits at
+  // 2.11:1 on the dimmed ink.
+  selected: paper.viridianText,
+  // The ①–⑤ discs, with a white numeral.
+  pin: paper.ink,
+} as const;
+
+// How solid the crop is drawn under the penalty marks — see above. A GROUND
+// opacity, not a mark's: nothing is read through a mark here.
+export const penaltyCropAlpha = 0.35;
+
 // The one place the identity serif is the wrong tool: `--`, `-m`, `_` and `.`
 // are exactly the characters that slip while typing in a proportional antiqua
 // (audit 2026-09-02, finding 29). A SYSTEM stack, not a shipped face — §2's

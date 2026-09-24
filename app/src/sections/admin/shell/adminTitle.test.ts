@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { adminTitle } from './adminTitle';
+import { adminTitle, joinSubject } from './adminTitle';
 
 describe('admin tab titles', () => {
   it('names the subject of each detail view', () => {
@@ -11,6 +11,19 @@ describe('admin tab titles', () => {
 
   it('spells a letter key back into its character, as the h1 does', () => {
     expect(adminTitle('/admin/buchstaben', '?g=longs')).toBe('Buchstabe ſ · Werkbank');
+  });
+
+  it('spells both keys of a join back into their characters', () => {
+    // The registry key `longs` is an identifier, not what anyone writes: the
+    // tab said „Übergang longs → t" while the pickers beside it showed ſ.
+    expect(adminTitle('/admin/uebergaenge', '?l=longs&r=t')).toBe('Übergang ſ → t · Werkbank');
+    expect(adminTitle('/admin/uebergaenge', '?l=e&r=longs')).toBe('Übergang e → ſ · Werkbank');
+  });
+
+  it('gives the join h1 the very words of the tab', () => {
+    expect(joinSubject('longs', 't')).toBe('Übergang ſ → t');
+    // A key the registry does not know stays visible instead of leaving a gap.
+    expect(joinSubject('nonsense', 't')).toBe('Übergang nonsense → t');
   });
 
   it('falls back to the overview title when the URL carries no subject', () => {

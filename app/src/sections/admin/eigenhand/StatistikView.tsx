@@ -1,15 +1,17 @@
 // „Was sagt die Tinte dieser Hand?" — the statistik Unteransicht.
 //
 // It ships mostly as a labelled Leerfläche on purpose: of the four figures
-// §7.2 promises this view, three need compute that does not exist yet. The
-// Tintentreue distribution waits on the reference-free verdict (Phase 2), the
-// Ausschnitt-Stapel on the Fassung selection of the streifen view, and a dated
-// Belegzahl history on a Bestandsverlauf nobody records. Naming them beats an
-// empty page that looks like a broken one. Which of the four this view opens
-// with is Q7 of the Phase-1 reconnaissance and still the author's call — the
-// panels below are one prop apart from being replaced.
+// §7.2 promises this view, three are not built here. The Tintentreue
+// distribution no longer waits on compute — the verdict shipped in Phase 2
+// (#638) and the hand-wide read carries it per box (`GET
+// /eigenhand/pfade/{hand}`) — it has simply not been counted into this view
+// yet. The Ausschnitt-Stapel waits on the Fassung selection of the streifen
+// view, and a dated Belegzahl history on a Bestandsverlauf nobody records.
+// Naming them beats an empty page that looks like a broken one. Which of the
+// four this view opens with is Q7 of the Phase-1 reconnaissance and still the
+// author's call — the panels below are one prop apart from being replaced.
 //
-// The fourth IS derivable today, and it arrives on the Bestand payload the
+// The nib figure IS shown, and it arrives on the Bestand payload the
 // shell already reads: `nib_median` is the server's own `hand_nib_median` over
 // the hand's accepted, measured Fassungen. Deliberately NOT recomputed here
 // from the strips listing — that listing is the stored strip IMAGES, an opt-in

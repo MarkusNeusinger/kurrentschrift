@@ -12,5 +12,8 @@
   invented id for a script without a hand. The default is not stored as a
   pick, so a second hand arriving later leaves the choice to the author.
   The author's tip of the open taste question „Hand: —" (admin-redesign.md
-  §15.5 Nr. 13); Sütterlin opens on `mn-suetterlin` from today, Kurrent will
-  open on `mn-kurrent` once that hand exists.
+  §15.5 Nr. 13). Every script opens on its hand: Sütterlin on
+  `mn-suetterlin`, Kurrent on `mn-kurrent` and Offenbacher on
+  `mn-offenbacher` — the latter two created on 2026-09-23 as setups without
+  material, which the candidate list reads beside the hands that hold
+  sheets.

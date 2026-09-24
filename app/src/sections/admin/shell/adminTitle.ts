@@ -23,6 +23,19 @@ import { readEigenhandFocus, readJoinFocus, readLetterFocus, readWordFocus, text
 // as their eyebrow, so tab and page name the place identically.
 const AREA = de.admin.shell.startEyebrow;
 
+/**
+ * The join detail's subject as the reader writes it — „Übergang ſ → t", never
+ * the registry key „Übergang longs → t". Exported because the view's h1 says
+ * the same words: one function, so the tab and the page cannot spell one pair
+ * two ways. A key the registry does not know stays as it is rather than
+ * vanishing from the heading.
+ */
+export const joinSubject = (leftKey: string, rightKey: string): string =>
+  fmt(de.admin.joins.joinHeading, {
+    left: textForKey(leftKey) || leftKey,
+    right: textForKey(rightKey) || rightKey,
+  });
+
 // The subject line of one view: the detail heading when the URL carries a
 // subject, the overview title when it does not. `null` means there is no
 // subject at all (the Vorlage picker at /admin), which gets the bare area word.
@@ -40,7 +53,7 @@ function subjectOf(pathname: string, search: string): string | null {
   if (path === paths.admin.joins) {
     const { leftKey, rightKey } = readJoinFocus(params);
     if (!leftKey || !rightKey) return de.admin.joins.overviewTitle;
-    return fmt(de.admin.joins.joinHeading, { left: leftKey, right: rightKey });
+    return joinSubject(leftKey, rightKey);
   }
   if (path === paths.admin.words) {
     const { text } = readWordFocus(params);

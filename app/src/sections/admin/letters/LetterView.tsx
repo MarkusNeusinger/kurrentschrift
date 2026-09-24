@@ -33,6 +33,7 @@ import { ChartView } from '@/sections/admin/chart/ChartView';
 import { LandmarkPanel } from '@/sections/admin/letters/LandmarkPanel';
 import { LaufformApplyDialog } from '@/sections/admin/letters/LaufformApplyDialog';
 import { LetterOverview } from '@/sections/admin/letters/LetterOverview';
+import { PenaltyPanel } from '@/sections/admin/letters/PenaltyPanel';
 import { LetterStats } from '@/sections/admin/shell/LensStats';
 import { LetterPicker } from '@/sections/admin/shell/LetterPicker';
 import { OccurrenceThumb } from '@/sections/admin/shell/OccurrenceThumb';
@@ -107,6 +108,9 @@ export function LetterView() {
   // The Landmarken-Linse is off by default: it is a diagnostic layer over the
   // letter, and the first question on this page stays „wie sieht er aus".
   const [landmarksOpen, setLandmarksOpen] = useState(false);
+  // So is the Abzugs-Linse, for the same reason and one more: opening it
+  // re-scores the chart row (0.3–2.5 s), which nobody should pay by arriving.
+  const [penaltiesOpen, setPenaltiesOpen] = useState(false);
   // The Laufform face reports itself unavailable when the letter has no
   // variant-100 row — most letters do not, and that is information, not a gap.
   const [noLaufform, setNoLaufform] = useState(false);
@@ -388,6 +392,48 @@ export function LetterView() {
                       onMark={(key, variant, landmark) =>
                         fileMark({ target: { kind: 'landmark', glyphKey: key, variant, landmark } })
                       }
+                    />
+                  </Box>
+                </Collapse>
+              </>
+            )}
+          </Panel>
+        </Box>
+
+        {/* 2c — where the score takes its points off (optimierungs-werkbank.md
+            §9). Over the Tafel-Ausschnitt, not the written form: the ruler
+            measured the crop, and the renderer widens round bodies. Full width
+            for the same reason as the Landmarken above — the crop is drawn
+            large enough to carry 44 px targets, the lists stand beside it. */}
+        <Box sx={{ gridColumn: { lg: '1 / -1' } }}>
+          <Panel title={t.penalties.title} caption={t.penalties.caption}>
+            {!hasCanonical ? (
+              <Alert severity="info">{t.noCanonical}</Alert>
+            ) : !hasBbox ? (
+              <Alert severity="info">{t.noBbox}</Alert>
+            ) : (
+              <>
+                <Button
+                  size="small"
+                  variant={penaltiesOpen ? 'contained' : 'outlined'}
+                  aria-expanded={penaltiesOpen}
+                  onClick={() => setPenaltiesOpen((v) => !v)}
+                  endIcon={penaltiesOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                  sx={ACTION_TARGET}
+                >
+                  {t.penalties.toggle}
+                </Button>
+                <Collapse in={penaltiesOpen} unmountOnExit>
+                  <Box sx={{ mt: 1.5 }}>
+                    <PenaltyPanel
+                      key={glyphKey}
+                      sourceId={sourceId}
+                      glyphKey={glyphKey}
+                      cacheBust={cropCacheBust}
+                      // A deduction files as a plain LETTER item whose note the
+                      // lens heads (author decision 2026-09-23) — no kind or
+                      // stage of its own.
+                      onMark={(penalty) => fileMark({ target: { kind: 'penalty', glyphKey, penalty } })}
                     />
                   </Box>
                 </Collapse>
