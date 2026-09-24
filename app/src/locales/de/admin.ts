@@ -832,7 +832,10 @@ export const admin = {
     // The nouns are the one vocabulary of #621: the line is „Bahn", and the
     // layer that reads it as a movement is „Bewegung".
     faceLayerTrace: 'Bahn',
-    faceLayerPath: 'Bewegung (Schreibreihenfolge, Absetzer gestrichelt)',
+    // „gepunktet", not „gestrichelt": the lift is `liftConnector`, whose stroke
+    // is `strokeStyle.dotted` (styles/paper.ts) — a legend that names the
+    // wrong stroke style fails the one reader the Strichart-Regel is for.
+    faceLayerPath: 'Bewegung (Schreibreihenfolge, Absetzer gepunktet)',
     faceLayerEngine: 'Engine',
     // Herkunft + Datum der gezeichneten Linie. Ohne beides ist ein Pfad eine
     // undatierte Überlagerung und kein Beleg.
@@ -850,7 +853,7 @@ export const admin = {
     layerTrace: 'Bahn',
     layerPath: 'Bewegung',
     layerPathHint:
-      'Dieselbe Bahn, als Bewegung gelesen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt die Bahn mit, denn die Bewegung schmückt sie.',
+      'Dieselbe Bahn, als Bewegung gelesen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gepunktet die Absetzer. Bringt die Bahn mit, denn die Bewegung schmückt sie.',
     layerEngine: 'Engine',
     // The Abstandsprofil under a word card: nearest distance of the engine
     // composition per point of the stored trace. A DISPLAY measure of the
@@ -1260,10 +1263,11 @@ export const admin = {
     quotenNone:
       'Erstbeleg- und Ausbau-Quote brauchen die Übergangsraum-Gewichte; die liegen noch nicht in der Datenbank. Der Befehl dazu steht auf dieser Seite unter „Am Rechner weiter".',
     // The statistik Unteransicht. Today it carries exactly one figure: the pen
-    // half width, the only one of the four §7.2 promises that can be derived
-    // from today's Bestand. The other three stand as a labelled Leerfläche —
-    // saying what will land here is more honest than a surface that looks as
-    // though there is nothing to be had.
+    // half width. The other three of the four §7.2 promises stand as a
+    // labelled Leerfläche — saying what will land here is more honest than a
+    // surface that looks as though there is nothing to be had. Only two of
+    // them still lack their compute; the Tintentreue verdict exists since
+    // #638 and is just not counted here yet.
     statistikIntro:
       'Was die Tinte dieser Hand sagt — im Unterschied zum Bestand, der sagt, wie weit die Hand gekommen ist. Gemessen wird je Fassung beim Einlesen; hier steht die Zusammenfassung über alle.',
     statistikNibTitle: 'Feder-Halbbreite',
@@ -1276,9 +1280,9 @@ export const admin = {
       'Keine angenommene Fassung dieser Hand trägt eine Federmessung — entweder ist noch keine Siebung hochgeschoben, oder die Fassungen stammen aus der Zeit vor dem Streifen-Befund. Eine fehlende Messung ist keine Null.',
     statistikSoonTitle: 'Kommt hierher',
     statistikSoonCaption:
-      'Beschriftete Leerfläche: die drei übrigen Größen aus dem Plan brauchen Rechenschichten, die es noch nicht gibt. Sie stehen hier, damit die Fläche sagt, was sie einmal trägt.',
+      'Beschriftete Leerfläche: die drei übrigen Größen aus dem Plan sind hier noch nicht gebaut. Sie stehen hier, damit die Fläche sagt, was sie einmal trägt.',
     statistikSoonTintentreue:
-      'Tintentreue-Verteilung — wie viele Wortkästen der Hand die Bahn treffen, teils treffen, nicht treffen. Braucht die referenzfreie Ampel (Phase 2).',
+      'Tintentreue-Verteilung — wie viele Wortkästen der Hand der Tinte folgen, teils folgen, nicht folgen. Die Ampel dazu steht je Kasten schon in der Nachfahr-Liste; gezählt über die ganze Hand wird hier noch nicht, und ihre Schwellen bleiben bis zur Kalibrierung vorläufig.',
     statistikSoonBelege:
       'Belegzahlen im Verlauf — wie die Abdeckung über die Sitzungen gewachsen ist. Braucht einen datierten Bestandsverlauf (Phase 3).',
     statistikSoonStapel:
@@ -1442,7 +1446,7 @@ export const admin = {
     // field, the value speaks to the reader.
     pfadShow: 'Bahn zeigen',
     pfadShowHint:
-      'Legt die gefolgte Bahn über den Streifen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt auch die Rohzahlen je Kasten mit — sie stecken in denselben Daten, also kostet das keinen zweiten Abruf. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
+      'Legt die gefolgte Bahn über den Streifen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gepunktet die Absetzer. Bringt auch die Rohzahlen je Kasten mit — sie stecken in denselben Daten, also kostet das keinen zweiten Abruf. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
     // Date and word count stay in the caption; the origin sits beside it as
     // the Herkunfts-Chip below.
     pfadPedigree: 'Bahn: {{datum}} · {{woerter}} Wort/Wörter',
@@ -1489,14 +1493,15 @@ export const admin = {
     // Streifen-Untertitel ist weg (die Ampel sagt dasselbe), und seinen Text
     // trägt jetzt `nachfahren.maskeHint` neben dem Befehl, der ihn behebt.
     pfadStale: 'Maske geändert',
-    // Die Rohzahlen je Kasten: was der Folger beim Nachfolgen mitgeschrieben
-    // hat, ohne Farbe und ohne Bewertung. Die Tintentreue-Ampel kommt später
-    // an dieselbe Stelle — bis dahin steht hier die Zahl. Eine einzelne
-    // fehlende Zahl steht als Strich da, eine Bahn ganz ohne Sensoren als
-    // „nicht gemessen" — keine der beiden gibt sich als Null aus.
+    // The raw numbers per box: what the follower recorded while following,
+    // with no colour and no verdict. The verdict is the Tintentreue traffic
+    // light's (since #638), shown in the Nachfahr-Liste and on the gallery
+    // tile — never these numbers. A single missing number reads as a dash, a
+    // Bahn with no sensors at all as „nicht gemessen"; neither passes for a
+    // zero.
     pfadRohzahlen: 'Zahl, kein Urteil',
     pfadRohzahlenHint:
-      'Die gespeicherten Sensoren des Folgers, ungewichtet und unbewertet. „Tinte ohne Bahn“: der Anteil der Tinte, den die Bahn nie befährt. „Absetzer“: wie oft die Feder vom Papier genommen wurde. „Sprünge“: Wechsel auf einen anderen Strang. „Haken“: Umkehrpunkte auf demselben Strang. Ein Strich steht für eine Zahl, die dieser Lauf nicht ausgerechnet hat — nicht für null. Über dem ganzen Streifen trägt jede Zeile ihre Kastennummer, von 0 an gezählt: dieselbe, die „--box“ beim Nachfolgen nimmt. Im Wort-Ausschnitt und bei ausgewähltem Wort steht sie nicht dabei — dort gilt die eine Zeile dem Kasten, der gerade gezeigt wird. Ob die Bahn der Tinte folgt, sagt keine dieser Zahlen — das beurteilt später die Ampel an derselben Stelle.',
+      'Die gespeicherten Sensoren des Folgers, ungewichtet und unbewertet. „Tinte ohne Bahn“: der Anteil der Tinte, den die Bahn nie befährt. „Absetzer“: wie oft die Feder vom Papier genommen wurde. „Sprünge“: Wechsel auf einen anderen Strang. „Haken“: Umkehrpunkte auf demselben Strang. Ein Strich steht für eine Zahl, die dieser Lauf nicht ausgerechnet hat — nicht für null. Über dem ganzen Streifen trägt jede Zeile ihre Kastennummer, von 0 an gezählt: dieselbe, die „--box“ beim Nachfolgen nimmt. Im Wort-Ausschnitt und bei ausgewähltem Wort steht sie nicht dabei — dort gilt die eine Zeile dem Kasten, der gerade gezeigt wird. Ob die Bahn der Tinte folgt, sagt keine dieser Zahlen — das sagt die Tintentreue-Ampel in der Nachfahr-Liste und auf der Galerie-Kachel, und ihre Schwellen sind bis zur Kalibrierung vorläufig.',
     pfadRohzahlenUnvisited: 'Tinte ohne Bahn {{prozent}} %',
     pfadRohzahlenUnvisitedNone: 'Tinte ohne Bahn –',
     pfadRohzahlenLifts: 'Absetzer {{zahl}}',
@@ -1695,8 +1700,10 @@ export const admin = {
       // wird.
       spansHint:
         'Die Marke zwischen zwei Buchstaben mit dem Stift verschieben: sie sitzt auf dem letzten Punkt des linken Buchstabens. Eine so korrigierte Grenze ist Trainingsstoff für den Grenzen-Zuordner — sie wird als „von Hand" gespeichert und von keinem späteren Lauf überschrieben. Grenzen, die du nicht anfasst, bleiben die des Folgers.',
+      // The Zuordner exists since #650 and runs at the terminal, over a
+      // stored Bahn — so the sentence names the step, not a future.
       spansNone:
-        'Für diese Bahn sind noch keine Buchstabengrenzen zugeordnet — der Zuordner (tools.eigenhand.pfad --spans) kommt später. Bis dahin gibt es hier nichts zu verschieben.',
+        'Für diese Bahn sind noch keine Buchstabengrenzen zugeordnet. Das tut der Zuordner am Terminal: tools.eigenhand.pfad --spans über diesen Streifen, mit --apply gespeichert. Danach lassen sich die Grenzen hier verschieben.',
       spansCount: '{{zahl}} Grenzen',
       spansAuthored: '{{zahl}} von Hand',
       spansDropped:

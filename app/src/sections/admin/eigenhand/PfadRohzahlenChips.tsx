@@ -12,8 +12,8 @@ import { paper } from '@/styles/paper';
 /**
  * The stored sensors of the drawn word boxes as plain numbers — the Etikett
  * „Zahl, kein Urteil" is part of the block, because the Tintentreue traffic
- * light lands in exactly this place later and the two must never be confused
- * (admin-redesign.md V26).
+ * light (#638) judges the same readings in the Nachfahr-Liste and on the
+ * gallery tile, and the two must never be confused (admin-redesign.md V26).
  *
  * One line per Kasten: a Fassung's boxes are followed one by one, so the row's
  * weakest word is precisely what these numbers are read for — an average over
