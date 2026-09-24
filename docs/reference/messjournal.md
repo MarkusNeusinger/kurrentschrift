@@ -18498,3 +18498,13 @@ Maßstab, Feder und Sitzung bleiben verschränkt; die Saat bleibt die Form von
 `tools/pairlab/tintenpfad.py`, `tools/tracebench`; die Wurzel
 `c7f2efd9cf37`. Gegen die API nur GET; nichts nach `data/samples/own-hand`
 oder ins Archiv.
+
+**Nachtrag 2026-09-25 — die maßgebliche Referenz nach dem Merge.** Der
+Eintrag ist mit PR #659 gemergt. Maßgeblich ist dessen **Squash-Commit auf
+`main`, `97962e6`** (`97962e6bfd0e…`, 2026-09-25T00:24:50+02:00); der
+Branch-Hash der Fassung 3a ist `31f9265` (`31f92655ce00…`,
+2026-09-24T09:15:27+02:00). Der Text des Eintrags ist in beiden gleich
+(`git diff 31f9265 97962e6 -- docs/reference/messjournal.md` ist leer). Der
+Squash-Commit trägt keinen Arm-Code dieser Runde (kein Tor, kein
+`--register-seed {k,ky}`), ist also selbst Vor-Arm. Der Arm-Code
+entsteht danach auf `exp/sep24b-arme`, in einem eigenen Commit.
