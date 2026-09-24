@@ -57,7 +57,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — `add_header`-Vererbungsfalle §2 · Alltagswelle (Eigenhand) §5 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Span-Herkunft) §5
+- **A** — `add_header`-Vererbungsfalle §2 · Alltagswelle (Eigenhand) §5 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Abzugs-Linse §5 · Abzugsstelle §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Span-Herkunft) §5
 - **B** — Bahn §5 · Bahn-Archivkette §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Bahn-Marke §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
@@ -67,11 +67,11 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **H** — H0–H5 §5 · Haken-Spitze (→ Strang-Dekodierung) §3 · Hand §2 · Hand-Stil-Kopplung §5 · Hand-Überschuss §4 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
-- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5 · Kurztasten-Schalter §5
+- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kreuzungsflucht §4 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5 · Kurztasten-Schalter §5
 - **L** — Labs §4 · Landmarken-Auftrag §5 · Landmarken-Erkennung §5 · Landmarken-Linse §5 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Stand (geplant) §5 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
 - **N** — Nachbarbindung §4 · Nachfahr-Liste §5 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nicht-Hover-Regel §5 · Normalen-Fit (→ Strang-Dekodierung) §3 · Nullprobe §4
-- **O** — Offen (Streifen-Kasten) §5 · Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
+- **O** — Offen (Streifen-Kasten) §5 · Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · ohne Ort (Abzugs-Linse) §5 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Rollen-Token §5 · Route G §4 · Roving-Liste §5 · Rückgabe an Autor §5 · Rückhaltemenge §4 · Rückhaltemenge (Eigenhand) §5
@@ -2637,6 +2637,17 @@ gerenderten Verlauf: Glätte · Vertikalität · Eckenschärfe · Kollinearität
 `bench_loss` über Schwellzug und Gleichzug wäre bedeutungslos.
 `core/quality_suetterlin.py` → qualitaetsmetrik.md §5
 
+**Kreuzungsflucht** — der Anzeigename des Kollinearitäts-Abzugs
+(`components.collinearity`): Läuft ein gerader Strich durch eine Kreuzung,
+sollen die Gerade davor und die dahinter EINE Flucht bilden (Winkel `δθ`,
+Versatz `δd`). Bisher trug die Kategorie in der Oberfläche das Wort
+„Kreuzung“ (`optimize.cat.collinearity`) — genau wie die Kreuzungs-Marke
+der Landmarken-Linse auf derselben Seite, ein Wort für zwei Dinge
+(Autor-Entscheid 2026-09-23, mit der → Abzugs-Linse; die Beschriftung zieht
+mit deren Oberfläche nach). Die Umbenennung trifft nur die Abzugs-Kategorie;
+die Landmarke bleibt „Kreuzung“, und „Doppelzug“ kollidiert nicht (die
+Landmarke heißt „Retrace-Zone“). → qualitaetsmetrik.md §5
+
 **Messboden** — die Erkenntnis, dass 100 nicht erreichbar ist: runde
 Federkappen gegen eckige Balkenenden, ±0,5 px Binarisierungs-Unsicherheit
 an jeder Kante eines Drucks von 1866. Praktisch heißt das: **hohe 80er /
@@ -3631,6 +3642,61 @@ Buchstabe war richtig, der Erkenner falsch. Sie steht in der Triage-Reihe
 zuletzt vor `not_reproducible`, weil die Reihenfolge auch hier gilt — erst
 fragen, ob der autorierte Duktus stimmt, dann den Sensor verdächtigen, der
 ihn liest. → optimierungs-werkbank.md §8
+
+**Abzugs-Linse** — die Auskunft, WO die Gleichzug-Metrik einem Buchstaben
+seine Punkte abzieht, statt nur die Zeile „Abzüge: Deckungslücke 0,18 ·
+Ecken 0,17 …“ zu nennen. Verortet wird im **Tafel-Ausschnitt**, nicht auf
+der geschriebenen Form — dort hat das Lineal gemessen, und die
+Fluent-Weitung verschiebt a/e/o/u zur Renderzeit. Nur die Tafelzeile (V0)
+und nur Gleichzug: eine Laufform-Zeile wurde nie gegen einen Ausschnitt
+gemessen, und die Kurrent-Metrik kennt keine Abzugs-Kategorien. Die sechs
+Kategorien und ihre Metrik-Terme: Glätte (`smoothness`), Senkrechte
+(`verticality`), Ecken (`corner`), → **Kreuzungsflucht** (`collinearity`),
+Doppelzug (`retrace`), → **Deckungslücke** (`coverage`). Gerechnet wird
+live mit dem heutigen Lineal, nicht der Stempel. **Stand:** Kern und
+Admin-Route sind da, die Oberfläche folgt mit dem Overlay-PR. Beschlossen
+ist ihre Form (Autor-Entscheid 2026-09-23): eine Ebene der
+Buchstaben-Ansicht über dem Tafel-Ausschnitt; ⚑ wird einen gewöhnlichen
+Buchstaben-Auftrag (`kind = "letter"`) ablegen, denn die Beschwerde trifft
+den Duktus oder die Ableitung — ein Streit mit dem Lineal selbst ist ein
+Proposal samt Re-Baseline, kein Korb-Fix; Untertitel „Wo das Lineal
+abzieht — kein Fehlerbefund.“
+*Technisch:* `core/quality_localize.py` (ruft
+`suetterlin_quality_metrics` unverändert und baut die Stellen aus dessen
+Bausteinen nach), Route `GET
+/sources/{id}/templates/{glyph_key}/penalty-sites`, Schema
+`PenaltySitesOut`. → qualitaetsmetrik.md §5
+
+**Abzugsstelle** — ein verorteter Abzug der → **Abzugs-Linse**: eine Ecke,
+ein Senkrechtlauf, ein gewerteter Glätte-Abschnitt, eine Kreuzung, eine
+Gruppe fehlender oder überschüssiger Pixel, ein Randstück, ein Stück
+Mittellinie neben dem Skelett. Jede trägt ihren Teil der gezeigten
+Kategoriezahl, und **die Teile einer Kategorie summieren sich auf diese
+Zahl bis zur vierten Stelle**. „Term“ heißt: der Teil ist der Term selbst
+(Ecken, Kreuzungsflucht, Doppelzug); „Anteil“ heißt: der Abzug läuft durch
+ein `exp`, ein Produkt oder eine Wurzel und ist proportional verteilt
+(Glätte, Senkrechte, Deckungslücke). Pixel, die je Achse höchstens drei
+Pixel auseinander liegen, sind eine Stelle, nicht zwei, und das kettet sich
+fort — jedes Pixel wird um eine `RIM_PX`-Scheibe gedehnt (praktisch ein
+3×3-Block), und gedehnte Pixel, die sich berühren, gehören zusammen. Die
+linearisierten Punkte (`points_est`) reihen die fünf teuersten Stellen als
+Pins (Rang 1–5, in der Oberfläche ①–⑤) — eine Reihung, nie die Hauptzahl.
+*Technisch:* `PenaltySite` in `core/quality_localize.py`; die Ecken-Stelle
+trägt ihre Ankernummer (`numbers.anchor`), und über DIE verbindet sie sich
+mit der Umkehrecke der Landmarken-Linse, nicht über den Index.
+→ qualitaetsmetrik.md §5
+
+**ohne Ort** *(Abzugs-Linse)* — der Teil eines Abzugs, der zählt, aber
+keine Stelle hat: in der Antwort eine Stelle mit `x`/`y = null`, in der
+geplanten Oberfläche eine eigene Zeile ohne Marke statt einer Farbe. Vor
+allem zwei Fälle: Dice-Fehlpixel im Saum von `RIM_PX = 2 · DEAD_BAND_PX` =
+1,5 px um die andere Maske — die Kantenquantisierung, im Median 91 % des
+Dice-Anteils der Deckungslücke — und eine ganze Kategorie, deren
+Nachrechnung von der Metrik abwiche (nach einem Re-Baseline, dem die Linse
+nicht gefolgt ist): dann bleibt die Zahl stehen, und die Karte fällt samt
+ihrem Kontext (Kennzahlen, Eckfenster, Zone) weg. Dazu, im Grenzfall einer
+leeren Randlinie oder eines leeren Skeletts, der ganze Chamfer- bzw.
+Geo-Anteil. → qualitaetsmetrik.md §5
 
 **Auftragskorb-Protokoll** — der Rest ist Protokoll, und die API
 **erzwingt** es (`check_transition`, 422 bei unvollständigem Abschluss):

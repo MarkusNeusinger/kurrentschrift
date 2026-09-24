@@ -1,6 +1,6 @@
 # Qualitätsmetrik & Glyph-Bench
 
-> **Status (2026-09-10): lebend.** Die Messlatte und ihre **Regeln**. Das
+> **Status (2026-09-24): lebend.** Die Messlatte und ihre **Regeln**. Das
 > Journal der Läufe ist am 2026-09-04 in eine eigene Datei gezogen —
 > [`messjournal.md`](messjournal.md), dort weiterhin §14; hier §1–§13, §15.
 > **Aktuelle Headlines: Wörter 0,108339 · Paare 0,148236** (Re-Baseline
@@ -24,7 +24,7 @@
 > **Was offen ist.** Die Verworfen-Listen (§4, §5, §6) bleiben
 > **geschlossen** — ein dort abgelehnter Mechanismus ist eine
 > Wiederholung, keine Hypothese. Offene Arme, Autorenschritte und
-> Rettungswege der laufenden Kampagne stehen nicht hier, sondern in
+> Rettungswege der laufenden Kampagne stehen in
 > [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9/§7.11.
 >
 > **Wo die Details stehen.** Eingefrorene Referenzen und die
@@ -32,14 +32,14 @@
 > Baseline-Historie des Glyph-Benchs: [§3](#3-baseline-historie). Ein
 > Wort-Bench-Re-Baseline im Wortlaut (das jüngste ist „Laufform LF17
 > `sep10`“ im Messjournal): [§15](#15-sieben-angeschnittene-wortproben-repariert--angekündigtes-re-baseline-des-wort-benchs-aug31).
-> Die Läufe selbst: [`messjournal.md`](messjournal.md), Einstieg über sein
+> Die Läufe selbst: im Messjournal (oben verlinkt), Einstieg über sein
 > Register.
 >
 > **Nachzieh-Anlass.** Jede Änderung an `core/quality.py`,
-> `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py`
-> und jedes Re-Baseline der eingefrorenen Fixtures. Ein Lauf, der eine
-> Zahl hervorbringt, schreibt seinen datierten Abschnitt ins Messjournal
-> — nicht hierhin.
+> `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py`,
+> `core/quality_localize.py` und jedes Re-Baseline der eingefrorenen
+> Fixtures. Ein Lauf, der eine Zahl hervorbringt, schreibt seinen datierten
+> Abschnitt ins Messjournal — nicht hierhin.
 
 Wie die Qualität einer kanonischen Glyphe gemessen wird, wie der
 hermetische Benchmark (`tools/glyphbench`) und der Experiment-Loop
@@ -508,6 +508,43 @@ Neu abgeleitet wird ausschließlich über den per-Glyphen-Endpunkt
 `GET …/templates/{glyph_key}/quality`; gespeicherter und nachgerechneter Wert
 gehen in dem Moment auseinander, in dem sich die Metrik ändert — jede
 Re-Baseline (§2) macht die gespeicherten Zahlen historisch.
+
+### Die Abzugs-Linse — wo der Score abzieht, ohne ihn anzufassen
+
+`core/quality_localize.py` sagt für eine gespeicherte Gleichzug-Tafelzeile
+(V0) gegen ihren Tafel-Ausschnitt, **wo** die sechs Abzüge entstehen (Route
+`GET …/templates/{glyph_key}/penalty-sites`, admin-only). Das Lineal wird
+dabei nicht berührt: `suetterlin_quality_metrics` läuft unverändert, die
+Stellen werden aus denselben Bausteinen nachgebaut, private eingeschlossen
+(`_sample_and_rings`, `_locally_straight_mask`, die Erkenner aus
+`core/geometry.py`, die Konstanten oben), der Glyph-Bench bleibt
+byte-gleich. Umgekehrt zieht jeder Re-Baseline dieses Abschnitts
+`core/quality_localize.py` mit — sonst fällt die Linse für die verschobenen
+Kategorien still auf „ohne Ort“ zurück. **Regel: die Abzugsstellen einer Kategorie summieren
+sich auf die gezeigte Zahl bis zur vierten Stelle** — gepinnt in
+`tests/test_quality_localize.py`: synthetisch in CI, der Durchlauf über
+alle 62 eingefrorenen Buchstaben lokal, wo die Glyph-Bench-Fixtures liegen
+(dort ohne Abweichung). Exakte Terme sind Ecken und Kreuzungsflucht (je
+Stelle `(1−q)/N`) und Doppelzug (je fehlendem Pixel `1/Nenner`); Anteile
+sind Glätte (je Sample `|Δ²κ|`, durch das `exp` hindurch proportional),
+Senkrechte (je Lauf `L·rms`) und Deckungslücke (Log-Aufteilung auf Dice ·
+Chamfer · Geo; darunter Dice und Chamfer je Pixel als Term, Geo je Sample
+nach seinem quadrierten Überschuss — die RMSE ist die Wurzel aus deren
+Mittel, also ein Anteil). **Ohne Ort** bleibt, was keinen hat: vor allem
+Dice-Fehlpixel im Saum `RIM_PX = 2·DEAD_BAND_PX` um die andere Maske — im
+Median 91 % des Dice-Anteils, Kantenquantisierung — und eine Kategorie,
+deren Nachrechnung von der Metrik abwiche (sie verliert dann auch ihren
+Kontext); im Grenzfall einer leeren Randlinie oder eines leeren Skeletts
+auch der ganze Chamfer- bzw. Geo-Anteil. Eine Zeile mit nicht endlicher
+Geometrie oder nicht positiver x-Höhe lehnt die Linse ab (Route: 409),
+statt NaN zu verteilen. Gerechnet wird live,
+nicht der Stempel (46 der 372 gestempelten Kategoriewerte weichen heute um
+mehr als 0,005 ab). Die fünf teuersten Stellen reiht die Linse nach
+linearisierten Punkten (`100·√G·w_k/W` je Einheit, Deckung `50·N/√G`) —
+eine Reihung, nie die Hauptzahl. Was sie zeigt, korrigiert sie nicht: die
+Glätte legt im Median 8 %, höchstens 29 % ihrer Masse an Strichenden ab,
+weil `discrete_curvature` dort κ = 0 setzt; die Korrektur wäre ein
+Re-Baseline.
 
 ---
 
