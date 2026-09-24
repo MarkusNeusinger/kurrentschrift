@@ -1280,9 +1280,12 @@ export const admin = {
       'Keine angenommene Fassung dieser Hand trägt eine Federmessung — entweder ist noch keine Siebung hochgeschoben, oder die Fassungen stammen aus der Zeit vor dem Streifen-Befund. Eine fehlende Messung ist keine Null.',
     statistikSoonTitle: 'Kommt hierher',
     statistikSoonCaption:
-      'Beschriftete Leerfläche: die drei übrigen Größen aus dem Plan sind hier noch nicht gebaut. Sie stehen hier, damit die Fläche sagt, was sie einmal trägt.',
+      'Beschriftete Leerfläche: die drei übrigen Größen aus dem Plan sind noch nicht gebaut; sie stehen hier, damit die Fläche sagt, was sie einmal trägt.',
+    // Where the per-box Ampel can actually be found: the list under
+    // „Nachfahren" and the word crops of the FILTERED gallery. The unfiltered
+    // gallery shows whole strips (`StripTile`), which carry no Ampel.
     statistikSoonTintentreue:
-      'Tintentreue-Verteilung — wie viele Wortkästen der Hand der Tinte folgen, teils folgen, nicht folgen. Die Ampel dazu steht je Kasten schon in der Nachfahr-Liste; gezählt über die ganze Hand wird hier noch nicht, und ihre Schwellen bleiben bis zur Kalibrierung vorläufig.',
+      'Tintentreue-Verteilung — bei wie vielen Wortkästen der Hand die Bahn der Tinte folgt, teils folgt, nicht folgt. Die Ampel dazu steht je Kasten schon da: in der Liste unter „Nachfahren“ und auf den Wort-Ausschnitten der Galerie, sobald nach einem Wort oder Zeichen gefiltert ist. Über die ganze Hand gezählt wird hier noch nicht, und ihre Schwellen bleiben bis zur Kalibrierung vorläufig.',
     statistikSoonBelege:
       'Belegzahlen im Verlauf — wie die Abdeckung über die Sitzungen gewachsen ist. Braucht einen datierten Bestandsverlauf (Phase 3).',
     statistikSoonStapel:
@@ -1495,13 +1498,15 @@ export const admin = {
     pfadStale: 'Maske geändert',
     // The raw numbers per box: what the follower recorded while following,
     // with no colour and no verdict. The verdict is the Tintentreue traffic
-    // light's (since #638), shown in the Nachfahr-Liste and on the gallery
-    // tile — never these numbers. A single missing number reads as a dash, a
+    // light's (since #638), shown in the list under „Nachfahren" and on the
+    // word crops of the FILTERED gallery (`CropTile`) — never these numbers.
+    // The whole-strip tile (`StripTile`) shows this hint too and carries no
+    // Ampel, so the hint says so. A single missing number reads as a dash, a
     // Bahn with no sensors at all as „nicht gemessen"; neither passes for a
     // zero.
     pfadRohzahlen: 'Zahl, kein Urteil',
     pfadRohzahlenHint:
-      'Die gespeicherten Sensoren des Folgers, ungewichtet und unbewertet. „Tinte ohne Bahn“: der Anteil der Tinte, den die Bahn nie befährt. „Absetzer“: wie oft die Feder vom Papier genommen wurde. „Sprünge“: Wechsel auf einen anderen Strang. „Haken“: Umkehrpunkte auf demselben Strang. Ein Strich steht für eine Zahl, die dieser Lauf nicht ausgerechnet hat — nicht für null. Über dem ganzen Streifen trägt jede Zeile ihre Kastennummer, von 0 an gezählt: dieselbe, die „--box“ beim Nachfolgen nimmt. Im Wort-Ausschnitt und bei ausgewähltem Wort steht sie nicht dabei — dort gilt die eine Zeile dem Kasten, der gerade gezeigt wird. Ob die Bahn der Tinte folgt, sagt keine dieser Zahlen — das sagt die Tintentreue-Ampel in der Nachfahr-Liste und auf der Galerie-Kachel, und ihre Schwellen sind bis zur Kalibrierung vorläufig.',
+      'Die gespeicherten Sensoren des Folgers, ungewichtet und unbewertet. „Tinte ohne Bahn“: der Anteil der Tinte, den die Bahn nie befährt. „Absetzer“: wie oft die Feder vom Papier genommen wurde. „Sprünge“: Wechsel auf einen anderen Strang. „Haken“: Umkehrpunkte auf demselben Strang. Ein Strich steht für eine Zahl, die dieser Lauf nicht ausgerechnet hat — nicht für null. Über dem ganzen Streifen trägt jede Zeile ihre Kastennummer, von 0 an gezählt: dieselbe, die „--box“ beim Nachfolgen nimmt. Im Wort-Ausschnitt und bei ausgewähltem Wort steht sie nicht dabei — dort gilt die eine Zeile dem Kasten, der gerade gezeigt wird. Ob die Bahn der Tinte folgt, sagt keine dieser Zahlen — das sagt die Tintentreue-Ampel: in der Liste unter „Nachfahren“ und auf jedem Wort-Ausschnitt der Galerie, sobald nach einem Wort oder Zeichen gefiltert ist; der ganze Streifen trägt keine. Ihre Schwellen sind bis zur Kalibrierung vorläufig.',
     pfadRohzahlenUnvisited: 'Tinte ohne Bahn {{prozent}} %',
     pfadRohzahlenUnvisitedNone: 'Tinte ohne Bahn –',
     pfadRohzahlenLifts: 'Absetzer {{zahl}}',

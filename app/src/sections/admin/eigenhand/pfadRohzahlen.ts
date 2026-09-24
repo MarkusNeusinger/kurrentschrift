@@ -16,7 +16,7 @@
 //
 // A reading, never a verdict: these are the numbers, and the verdict is the
 // Tintentreue traffic light's (#638, admin-redesign.md V26), shown in the
-// Nachfahr-Liste and on the gallery tile.
+// list under „Nachfahren" and on the word crops of the filtered gallery.
 
 import type { EigenhandPfad } from '@/lib/api';
 

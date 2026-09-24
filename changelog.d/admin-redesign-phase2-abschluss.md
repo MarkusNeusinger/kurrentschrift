@@ -12,9 +12,10 @@
   drawing canvas with the plate one. PR 12 (`pfad --spans`, #650) never
   needed the named exception of the wave's ordering, and PR 13 shipped its
   instrument (#649). **Still open is the ROUND of PR 13**, a completion
-  condition of the phase: it judges 30 word boxes blind whose Bahn the
-  follower laid AND measured under format 2, and none exists yet — a Bahn
-  drawn by hand stays grey and does not count. So the traffic light stands
+  condition of the phase: it judges 30 word boxes blind that were measured
+  under format 2, and none exists yet. Today only the follower measures — a
+  Bahn drawn by hand stays grey while it is unmeasured, because
+  `pfad --messen` is not built. So the traffic light stands
   and is not calibrated, and its eight thresholds stay labelled
   provisional.
 

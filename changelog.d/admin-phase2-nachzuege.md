@@ -7,10 +7,15 @@
   paragraphs said all thirteen had merged: #649 and #650 landed before #648,
   which booked the wave. All four places now say thirteen, each with a dated
   note on what it said before. The one open item is the calibration ROUND of
-  PR 13, and its precondition is now stated as the code has it: at least 30
-  word boxes whose Bahn the follower laid and measured under format 2. A Bahn
-  drawn by hand stays grey ("von Hand gezeichnet") and does not count. The
-  plan had tied the round to the first hand-drawn Bahn instead. §15.5 item 13
+  PR 13. The plan had tied it to the first hand-drawn Bahn; it now states
+  the code's rule, which is at least 30 boxes measured under format 2. Today
+  only the follower measures, so a follower run is the only way to get
+  there. A Bahn drawn by hand stays grey ("von Hand gezeichnet") while it is
+  unmeasured, because `pfad --messen` (V21) is not built. Whether a
+  hand-drawn Bahn belongs in the round once it is measured is new open
+  question 34 in §15.7: `menschliche-bewertung.md` §8b names the follower's
+  Bahn as the round's subject, and the calibration filter asks only whether
+  a box was measured. §15.5 item 13
   now says that every script opens on its one hand, because `mn-kurrent` and
   `mn-offenbacher` exist as setups since 2026-09-23. The S9 scenario gets a
   dated note to the same effect. Two unreleased changelog fragments carried
@@ -20,10 +25,12 @@
   "no letter boundaries" line said the Zuordner "kommt später", but
   `tools.eigenhand.pfad --spans` exists since #650, so the line now names the
   command. The Statistik view said the Tintentreue distribution "braucht die
-  referenzfreie Ampel (Phase 2)", but the Ampel exists. The line now says the
-  per-box verdict is in the Nachfahr-Liste and that the hand-wide count is
-  what is not built yet. The Rohzahlen hint said the Ampel would judge "später
-  … an derselben Stelle", and now says where it judges today.
+  referenzfreie Ampel (Phase 2)", but the Ampel exists. The line now says
+  where the per-box verdict is shown and that the hand-wide count is what is
+  not built yet. The Rohzahlen hint said the Ampel would judge "später … an
+  derselben Stelle", and now says where it judges today: in the list under
+  "Nachfahren" and on the word crops of a filtered gallery. The whole-strip
+  tile shows the same hint and has no Ampel, and the hint says so.
 
 - **Lifts are called dotted, as they are drawn.** The Bewegung legend and two
   layer hints called the Absetzer "gestrichelt", while `liftConnector` draws
