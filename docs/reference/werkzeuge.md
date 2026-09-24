@@ -933,7 +933,9 @@ Ablage — steht im Abschnitt darüber, die Doktrin in
   `--archive`, nur lesend): liegt dort eine Ziehung, bricht der Lauf ab und
   nennt den Schnappschuss, aus dem die Kartei zurückzuholen ist. **Der Export** schneidet jeden Kasten mit
   Handarbeit — gezeichnete Bahn ODER von Hand korrigierte Grenzen — genau so
-  heraus, wie der Folger ihn liest (`bahn.json` + `kasten.png` + `tinte.png`);
+  heraus, wie der Folger ihn liest (`path.json` + `crop.png` + `ink.png`),
+  seit 2026-09-24 also mit gelöschten Druckbeschriftungen in `ink.png` wie
+  in der Folger-Eingabe (Hüllen-Format 2, `label_zones` je Fall);
   der Statusfilter kommt aus dem Archiv-Read (nur `angenommen`, die
   Streifenliste trägt gar keinen Status), und eine zurückgezogene Fassung
   verlässt den Baum beim nächsten Lauf wieder. In jedem `bahn.json` steht

@@ -24,6 +24,7 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
+from PIL import Image
 
 from core.config import REPO_ROOT
 from tools.eigenhand import training_set as tool
@@ -379,25 +380,42 @@ def _entry(box_index: int = 0) -> dict:
     }
 
 
-def _stub_api(monkeypatch, *, fassungen: list[dict], pfade: list[dict]) -> None:
-    """Everything the export reads over HTTP, answered from memory."""
+def _stub_api(
+    monkeypatch,
+    *,
+    fassungen: list[dict],
+    pfade: list[dict],
+    layout: dict | None = None,
+    row: dict = STRIP_ROW,
+    plane: np.ndarray | None = None,
+) -> None:
+    """Everything the export reads over HTTP, answered from memory.
+
+    Without a `layout` the Bogen is the one synthetic printed ROW above, which
+    is not a page `page_primitives` could draw — so its label zones are
+    stubbed to none, which is what a row printed without text in its cut
+    gives. The zones themselves are exercised over a REAL composed Bogen in
+    `test_the_exported_ink_is_the_ink_the_follower_is_handed`.
+    """
 
     def answer(_method, url, _token, *_a, **_kw):
         if "/archive/" in url:
             return {"hand": HAND, "style": "suetterlin", "fassungen": fassungen}
         if url.endswith("/layout"):
-            return {"rows": [LAYOUT_ROW]}
+            return layout if layout is not None else {"rows": [LAYOUT_ROW]}
         if url.endswith("/pfade"):
             return {"format": 2, "pfade": pfade}
-        return {"hand": HAND, "strips": [STRIP_ROW]}
+        return {"hand": HAND, "strips": [row]}
 
     monkeypatch.setattr(tool, "request_json", answer)
-    monkeypatch.setattr(tool, "_strip_plane", lambda *_a: _plane())
+    monkeypatch.setattr(tool, "_strip_plane", lambda *_a: _plane() if plane is None else plane)
     monkeypatch.setattr(tool, "_style_constants", lambda _style: {"manifest": {}, "source_id": "suetterlin-1922"})
     # No chart row for anything: every word then reads as unauthored, which is
     # the state the interesting cases are in anyway — the author drew them
     # BECAUSE the follower could not.
     monkeypatch.setattr(tool, "LiveDuctus", lambda *_a: SimpleNamespace(have=set(), rows_for=lambda _keys: ({}, {})))
+    if layout is None:
+        monkeypatch.setattr(tool, "label_zones_px", lambda *_a: [])
 
 
 class TestExport:
@@ -435,6 +453,7 @@ class TestExport:
         # nothing.
         assert [slot["text"] for slot in payload["slots"]] == list("lesen")
         assert payload["unauthored_glyphs"]
+        assert payload["label_zones"] == 0  # the synthetic row prints no text
         assert (case / "crop.png").exists() and (case / "ink.png").exists()
 
         manifest = json.loads((out / MANIFEST_NAME).read_text(encoding="utf-8"))
@@ -443,6 +462,107 @@ class TestExport:
         assert "Prüfstein 2" in manifest["note"]
         # The guard of the separation test, checked on the real tree this time.
         assert not list(out.rglob("manifest.json"))
+
+    def test_the_exported_ink_is_the_ink_the_follower_is_handed(self, tmp_path, monkeypatch):
+        # „Cut EXACTLY as the follower cuts it": since 2026-09-24 the follower
+        # clears the printed labels by default, so a training case that kept
+        # them would be material for a follower that no longer exists. End to
+        # end over a REAL composed Bogen, one strip through both tools.
+        import tools.pairlab.tintenpfad as follower
+        from core.eigenhand import bogen
+        from core.eigenhand.follower_input import ink_of, label_zones_px, zones_in_crop
+        from core.eigenhand.kartei import empty_kartei
+        from core.eigenhand.plan import load_plan
+        from tools.eigenhand import pfad
+        from tools.eigenhand.kartei import save_kartei
+
+        layout = bogen.compose_sheet(
+            plan=load_plan(),
+            kartei=empty_kartei(HAND, "suetterlin"),
+            hand=HAND,
+            style="suetterlin",
+            date="2026-08-24",
+            rows=1,
+            repeat=1,
+            strips=["S0001"],
+            hints=True,
+        )["layout"]
+        printed_row = layout["rows"][0]
+        x0, y0, x1, y1 = printed_row["cut_mm"]
+        width, height = int(round((x1 - x0) * 10)), int(round((y1 - y0) * 10))
+        zones = label_zones_px(layout, printed_row, [x0, y0], width, height)
+        hand = np.ones((height, width))
+        waist, baseline = (int(round((printed_row["band_mm"][k] - y0) * 10)) for k in ("waist", "baseline"))
+        for k in range(8):
+            hand[waist:baseline, 70 + 40 * k : 73 + 40 * k] = 0.1
+            hand[baseline - 3 : baseline, 70 + 40 * k : 113 + 40 * k] = 0.1
+        printed = hand.copy()
+        for zx0, zy0, zx1, zy1 in zones:
+            for x in range(zx0 + 6, zx1 - 6, 9):
+                printed[zy0 + 7 : zy1 - 7, x : x + 3] = 0.35
+        row = {
+            "strip": "S0001",
+            "fassung": "F01",
+            "sheet": "B0001",
+            "row_index": 0,
+            "crop_origin_mm": [x0, y0],
+            "width_px": width,
+            "height_px": height,
+            "flecken": [],
+            "boxes": [{"index": 0, "word": printed_row["boxes"][0]["word"]}],
+        }
+
+        # The follower's DEFAULT follow, its decoder stubbed: what it is handed is the point.
+        handed: list = []
+
+        def _follow(case, _weights):
+            handed.append(case)
+            return {"status": "failed", "detail": "stubbed"}
+
+        monkeypatch.setattr(pfad, "request_json", lambda *_a, **_k: layout)
+        monkeypatch.setattr(pfad, "_strip_plane", lambda *_a: printed)
+        monkeypatch.setattr(follower, "follow_case", _follow)
+        prior = {
+            "seed": SimpleNamespace(have=set(), rows_for=lambda keys: ({key: {} for key in keys}, {})),
+            "manifest": {},
+            "source_id": "suetterlin-1922",
+        }
+        pfad.follow_row("https://example.invalid", "t", HAND, row, prior, None)
+        (followed,) = handed
+
+        kartei = _drawn(tmp_path, monkeypatch)
+        save_kartei(HAND, kartei)
+        set_name = kartei["holdout"]["strips"]["S0001"]["set"]
+        _stub_api(
+            monkeypatch,
+            fassungen=[{"strip": "S0001", "fassung": "F01", "status": "angenommen"}],
+            pfade=[_entry()],
+            layout=layout,
+            row=row,
+            plane=printed,
+        )
+        out = tmp_path / "out"
+        assert tool.export(HAND, "https://example.invalid", "token", out, TODAY) == 1
+        case = out / set_name / case_id("S0001", "F01", 0)
+        exported = np.asarray(Image.open(case / "ink.png")) > 127
+        payload = json.loads((case / "path.json").read_text(encoding="utf-8"))
+
+        assert np.array_equal(exported, followed.mask)
+        # Not a trivial equality: inside this very box the unmasked cut reads
+        # the printed labels as ink, the export does not, and the handwriting
+        # is exactly what it is without any print beside it.
+        rect = followed.rect
+        assert payload["rect_px"] == list(rect)
+        inside = np.zeros(exported.shape, dtype=bool)
+        for zx0, zy0, zx1, zy1 in zones_in_crop(zones, rect):
+            inside[max(0, zy0) : max(0, zy1), max(0, zx0) : max(0, zx1)] = True
+        unmasked, _skel, _width = ink_of(followed.crop)
+        assert (unmasked & inside).any()
+        assert not (exported & inside).any()
+        hand_only, _skel, _width = ink_of(hand[rect[1] : rect[3], rect[0] : rect[2]])
+        assert np.array_equal(exported, hand_only)
+        assert payload["label_zones"] == len(zones) > 0
+        assert payload["format"] == tool.TRAINING_SET_FORMAT == 2
 
     def test_a_withdrawn_fassung_leaves_the_export_on_the_next_run(self, tmp_path, monkeypatch):
         from tools.eigenhand.kartei import save_kartei

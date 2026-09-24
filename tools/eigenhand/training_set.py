@@ -102,6 +102,7 @@ import numpy as np
 from PIL import Image
 
 from core.config import REPO_ROOT
+from core.eigenhand.follower_input import ink_of, label_zones_px, zones_in_crop
 from core.eigenhand.ids import ACCEPTED
 from core.eigenhand.pfad import authored_spans, frame_for_box, is_authored
 from core.eigenhand.plan import load_plan, shaping_form_of
@@ -109,11 +110,12 @@ from tools.eigenhand.apiclient import admin_token, api_base, request_json
 from tools.eigenhand.kartei import load_kartei, save_kartei
 
 # The word box is cut EXACTLY as the follower cuts it — same crop, same
-# binarisation, same shaped slots — because training material that does not
-# look like what the follower is fed is training material for something else.
-# Imported rather than copied, and the private names are deliberate: this seam
-# is the follower's own, and a second spelling of it would drift the day either
-# side changes. `tools/eigenhand/pfad.py` is not edited from here.
+# binarisation, same printed labels cleared, same shaped slots — because
+# training material that does not look like what the follower is fed is
+# training material for something else. Imported rather than copied, and the
+# private names are deliberate: this seam is the follower's own, and a second
+# spelling of it would drift the day either side changes.
+# `tools/eigenhand/pfad.py` is not edited from here.
 from tools.eigenhand.pfad import LiveDuctus, _case_for_box, _strip_plane, _style_constants
 from tools.eigenhand.snapshot import ARCHIVE_SUBDIR
 from tools.eigenhand.store import check_hand_id, style_of_hand
@@ -153,7 +155,13 @@ HOLDOUT_FORMAT = 1
 # root by globbing `<root>/*/manifest.json`, so a file of that name one level
 # under this tree would make it loadable as a bench root by anyone who pointed
 # `--fixtures` here. Pinned by `tests/test_eigenhand_training_set.py`.
-TRAINING_SET_FORMAT = 1
+#
+# Format 2 (2026-09-24): `ink.png` has the printed labels cleared, because the
+# follower's input does since the author's decision of that day, and each case
+# names how many printed label zones of its row were cleared. Format 1 exported the
+# unmasked ink; nothing about the two looks different from the outside, so the
+# number is the only way a reader can tell a stale tree from a current one.
+TRAINING_SET_FORMAT = 2
 MANIFEST_NAME = "training_set.json"
 
 # Said inside the artefact, not only in this docstring: the manifest is what a
@@ -453,6 +461,25 @@ def _write_case(target: Path, payload: dict, crop: np.ndarray, mask: np.ndarray)
     Image.fromarray((np.asarray(mask) * 255).astype(np.uint8), mode="L").save(target / CASE_MASK)
 
 
+def _followed_ink(case: Any, zones: list) -> np.ndarray:
+    """The box's ink with the printed labels cleared — the mask the follower is handed by default.
+
+    Stage 1 of `core.eigenhand.follower_input`, called the way
+    `tools.eigenhand.pfad.adapt_case` calls it: the row's zones in the box's
+    own crop pixels, the grey crop binarised UNPAINTED and the zones cleared
+    after, and with no zone at all the mask `_case_for_box` already cut. Only
+    stage 1, because it is the only one the follower runs by default (author
+    decision of 2026-09-24) and the only one that moves no pixel of the frame
+    — a resampled crop would no longer be the rectangle `rect_px` names, and
+    `registration_px` would stop landing on it. The crop itself stays
+    unpainted in the export, as it does for the follower.
+    """
+    if not zones:
+        return case.mask
+    mask, _skel, _width_map = ink_of(case.crop, zones)
+    return mask
+
+
 def _occupant(hand_dir: Path) -> str | None:
     """The hand whose export already sits here, or None where none does.
 
@@ -521,6 +548,7 @@ def _case_payload(
     case: Any,
     missing: list[str],
     pfad_format: int | None,
+    label_zones: int,
 ) -> dict:
     """Everything about one box that is not a plane — the entry, plus its address.
 
@@ -575,6 +603,10 @@ def _case_payload(
             for slot in case.slots
         ],
         "unauthored_glyphs": missing,
+        # How many printed label zones of the row were cleared from `ink.png`
+        # — the count the follower records in `meta.input.label_zones`. Zero
+        # is a row printed without text in its cut, not a mask left off.
+        "label_zones": label_zones,
         "images": {"crop": CASE_CROP, "mask": CASE_MASK},
     }
 
@@ -643,8 +675,13 @@ def export(hand: str, base: str, token: str, out: Path, today: str, archive: str
             layouts[row["sheet"]] = (
                 request_json("GET", f"{base}/eigenhand/sheets/{quote(hand)}/{quote(row['sheet'])}/layout", token) or {}
             )
-        layout_row = (layouts[row["sheet"]].get("rows") or [])[row["row_index"]]
+        layout = layouts[row["sheet"]]
+        layout_row = (layout.get("rows") or [])[row["row_index"]]
         plane = _strip_plane(base, token, hand, row)
+        # Once per row, in STRIP pixels, exactly as `pfad.follow_row` reads
+        # them: the labels are printed per row and each box only shifts them
+        # into its own crop.
+        label_zones = label_zones_px(layout, layout_row, row["crop_origin_mm"], row["width_px"], row["height_px"])
         for entry in entries:
             index = entry["box_index"]
             ident = case_id(strip, fassung, index)
@@ -659,8 +696,9 @@ def export(hand: str, base: str, token: str, out: Path, today: str, archive: str
                 continue
             word = frame["word"]
             case, missing = _case_for_box(prior, plane, frame, word, shaping_form_of(plan, word), ident)
-            payload = _case_payload(hand, style, set_name, row, entry, frame, case, missing, pfad_format)
-            _write_case(out / set_name / ident, payload, case.crop, case.mask)
+            zones = zones_in_crop(label_zones, frame["rect_px"])
+            payload = _case_payload(hand, style, set_name, row, entry, frame, case, missing, pfad_format, len(zones))
+            _write_case(out / set_name / ident, payload, case.crop, _followed_ink(case, zones))
             keep.add(ident)
             written.append(payload)
             print(

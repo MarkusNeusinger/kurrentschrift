@@ -28,4 +28,7 @@
   0.44× as far as on the plate, and the seed sat on the printed ruling
   rather than on the ink. Stages 1 and 2 are no-ops on every plate word by
   construction, and the dev-19 follower output stays byte-identical with
-  them on.
+  them on. The training export (`tools.eigenhand.training_set`) cuts its
+  ink the same way, so a case's `ink.png` is the mask the follower is
+  handed by default; its envelope moves to format 2 and names the cleared
+  zones.
