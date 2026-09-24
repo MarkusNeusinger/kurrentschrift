@@ -1,22 +1,23 @@
 ### Changed
 
-- **The admin-redesign plan books the close of Phase 2: eleven of thirteen
-  PRs shipped, two open.** Docs only, no code. `docs/proposals/admin-redesign.md`
-  §15.6 gains a second table — one row per PR with its number and, where the
-  built thing differs from the planned row, what differs. Two rows changed
-  shape in the building: the plan called the Nachfahr-Liste "der Filter
-  ‚Nachfahren'" and there was no Eigenhand work list to filter, so a whole
-  list surface with one row per word BOX was built instead; and the plan
-  expected one rebuilt editor dialog, while author decision G made it a
-  second, slim editor sharing one drawing canvas with the plate one.
-  **Still open: PR 12** (`pfad --spans`, the one named exception of the
-  wave's ordering — it may slip behind Phase 3) **and PR 13** (the
-  calibration instrument and the ONE calibration per hand, a completion
-  condition of the phase that cannot be built today: the round judges 30
-  written strip boxes blind and not a single hand-drawn Bahn exists). So the
-  traffic light stands and is not calibrated, and its eight thresholds stay
-  labelled provisional. The status blockquote, the §15 Stand paragraph, §14,
-  §15.1 and `docs/index.md` now say the same thing.
+- **The admin-redesign plan books the close of Phase 2: all thirteen PRs
+  shipped, the calibration round open.** Docs only, no code.
+  `docs/proposals/admin-redesign.md` §15.6 gains a second table — one row
+  per PR with its number and, where the built thing differs from the
+  planned row, what differs. Two rows changed shape in the building: the
+  plan called the Nachfahr-Liste "der Filter ‚Nachfahren'" and there was no
+  Eigenhand work list to filter, so a whole list surface with one row per
+  word BOX was built instead; and the plan expected one rebuilt editor
+  dialog, while author decision G made it a second, slim editor sharing one
+  drawing canvas with the plate one. PR 12 (`pfad --spans`, #650) never
+  needed the named exception of the wave's ordering, and PR 13 shipped its
+  instrument (#649). **Still open is the ROUND of PR 13**, a completion
+  condition of the phase: it judges 30 word boxes blind that were measured
+  under format 2, and none exists yet. Today only the follower measures — a
+  Bahn drawn by hand stays grey while it is unmeasured, because
+  `pfad --messen` is not built. So the traffic light stands
+  and is not calibrated, and its eight thresholds stay labelled
+  provisional.
 
 - **§4.7 gains the author decisions of rounds 2 and 3.** D — the tool
   measures the two missing sensors while following and the row stores them

@@ -183,7 +183,9 @@ Datenschicht (`shell/WorkbenchData.tsx`) liegen ÜBER dem Outlet, also
 kostet der Weg Buchstabe → Übergang → Wort keinen neuen Ladevorgang.
 Die alten Pfade (`/admin/chart` · `/vergleich` · `/paare` · `/belege` ·
 `/werkbank` · `/edit/:glyphKey`) bleiben als Redirects bestehen, damit
-Lesezeichen und Notizen weiter tragen.
+Lesezeichen und Notizen weiter tragen; `/edit/:glyphKey` nimmt dabei seinen
+Buchstaben als `?g=` mit (seit 2026-09-24, vorher landete er auf der
+Übersicht).
 
 ---
 

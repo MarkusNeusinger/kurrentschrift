@@ -39,6 +39,7 @@ import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
 import { PairMatrix } from '@/sections/admin/pairs/PairMatrix';
 import { findPairRow } from '@/sections/admin/pairs/pairRow';
 import { authoredLetters } from '@/sections/admin/pairs/pairRows';
+import { joinSubject } from '@/sections/admin/shell/adminTitle';
 import { PairStats } from '@/sections/admin/shell/LensStats';
 import { LayerDot } from '@/sections/admin/shell/LayerDot';
 import { LetterPicker } from '@/sections/admin/shell/LetterPicker';
@@ -483,7 +484,7 @@ export function JoinView() {
     <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
       <ViewHeader
         eyebrow={de.admin.shell.areaJoins}
-        titleText={fmt(t.joinHeading, { left: leftKey, right: rightKey })}
+        titleText={joinSubject(leftKey, rightKey)}
         note={order.caption}
         title={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
@@ -589,11 +590,13 @@ export function JoinView() {
           {/* The floor on the row, not on each button: the two stand one gap
               apart, so they grow rather than overlay (§9.3). */}
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1.5, '& > *': { minHeight: TOUCH_TARGET } }}>
+            {/* The label spells the glyph („Buchstabe ſ"), as the letter view's
+                own heading does; the key stays in the link only. */}
             <Button size="small" variant="outlined" onClick={() => navigate(lettersUrl(leftKey, ownHand))}>
-              {fmt(t.toLetter, { key: leftKey })}
+              {fmt(t.toLetter, { key: textForKey(leftKey) || leftKey })}
             </Button>
             <Button size="small" variant="outlined" onClick={() => navigate(lettersUrl(rightKey, ownHand))}>
-              {fmt(t.toLetter, { key: rightKey })}
+              {fmt(t.toLetter, { key: textForKey(rightKey) || rightKey })}
             </Button>
           </Box>
           <Typography variant="caption" color="textDisabled" sx={{ display: 'block', mt: 1.5 }}>

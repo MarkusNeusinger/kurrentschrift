@@ -13,3 +13,4 @@ export const LettersPage = lazy(() => import('@/pages/admin/LettersPage'));
 export const JoinsPage = lazy(() => import('@/pages/admin/JoinsPage'));
 export const WordsPage = lazy(() => import('@/pages/admin/WordsPage'));
 export const EigenhandPage = lazy(() => import('@/pages/admin/EigenhandPage'));
+export const LegacyEditRedirect = lazy(() => import('@/pages/admin/LegacyEditRedirect'));

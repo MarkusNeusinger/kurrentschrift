@@ -14,8 +14,9 @@
 // the perfect path. Zero and „never measured" are kept apart here so the panel
 // can say which of the two it is looking at.
 //
-// A reading, never a verdict: Phase 0 shows the numbers, the Tintentreue
-// traffic light arrives at the same place in Phase 2 (admin-redesign.md V26).
+// A reading, never a verdict: these are the numbers, and the verdict is the
+// Tintentreue traffic light's (#638, admin-redesign.md V26), shown in the
+// list under „Nachfahren" and on the word crops of the filtered gallery.
 
 import type { EigenhandPfad } from '@/lib/api';
 

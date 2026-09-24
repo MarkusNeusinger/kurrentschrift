@@ -8,6 +8,7 @@ import {
   AdminLayout,
   EigenhandPage,
   JoinsPage,
+  LegacyEditRedirect,
   LettersPage,
   StartPage,
   WordsPage,
@@ -43,7 +44,8 @@ export const adminRoutes: RouteObject[] = [
       { path: 'paare', element: <Navigate to={paths.admin.joins} replace /> },
       { path: 'belege', element: <Navigate to={paths.admin.words} replace /> },
       { path: 'werkbank', element: <Navigate to={paths.admin.words} replace /> },
-      { path: 'edit/:glyphKey', element: <Navigate to={paths.admin.letters} replace /> },
+      // The one retired URL that names a subject — it keeps it (`?g=`).
+      { path: 'edit/:glyphKey', element: <LegacyEditRedirect /> },
     ],
   },
 ];

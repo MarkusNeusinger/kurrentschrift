@@ -1,6 +1,6 @@
 # Admin-Redesign auf der grünen Wiese 2026-09-17 — Optionen, Szenarien, Rückfragen
 
-> **Status (2026-09-20): teil-umgesetzt.** **Die Phasen 0 und 1 sind im Code ausgeliefert**
+> **Status (2026-09-24): teil-umgesetzt.** **Die Phasen 0 und 1 sind im Code ausgeliefert**
 > — die neun PRs aus §15.2 und die acht aus §15.4 (#621, #622, #626, #625, #624, #627,
 > #629, #631) plus der Nachzug #628, behoben mit #633; die drei Autor-Entscheide vom
 > 2026-09-19 (§4.6) sind mit #623 gebucht. Offen aus Phase 0 ist genau ein Schritt, der
@@ -9,20 +9,23 @@
 > der Phasen 1 UND 2 lief auf dem Wegwerf-Stack mit SYNTHETISCHEN Daten** (die reservierte
 > Menge ist nicht seedbar): die gefüllten Arbeitsflächen hat vor dem Blick des Autors im
 > Prod-Admin niemand mit echten Daten gesehen (§15.4, §15.6).
-> **Phase 2 (Tintentreue + Nachfahren) ist geliefert bis auf zwei PRs:** ihre nur lesende
+> **Phase 2 (Tintentreue + Nachfahren) ist gebaut, alle dreizehn PRs aus §15.6 sind
+> gemergt** (#635–#644, #647, #649, #650; daneben #645, #646): ihre nur lesende
 > Erkundung hat 22 Stellen DIESES Docs als falsch belegt, alle berichtigt (21 hier in
-> place mit `datei:zeile`-Beleg, die 22. schon mit #632); alle neun Fragen A–I sind am
-> 2026-09-20 entschieden (§4.7; H gegen die Empfehlung und zugleich die Antwort auf FM3
-> der Freigabe-Maschine); und **alle dreizehn PRs aus §15.6 sind gemergt** (#635–#644,
-> #647, #649, #650; daneben #645, #646). Offen bleibt aus PR 13 die RUNDE — das
-> Instrument steht, die Kalibrierung selbst braucht 30 geschriebene Kästen und es gibt
-> noch keine von Hand gezeichnete Bahn: **die Ampel steht,
+> place mit `datei:zeile`-Beleg, die 22. schon mit #632), und alle neun Fragen A–I sind
+> am 2026-09-20 entschieden (§4.7; H gegen die Empfehlung und zugleich die Antwort auf
+> FM3 der Freigabe-Maschine). Offen bleibt aus PR 13 allein die RUNDE — das Instrument
+> steht, die Kalibrierung braucht mindestens 30 unter Format 2 GEMESSENE Kästen, und davon
+> gibt es noch keinen. Heute misst nur ein Folger-Lauf; eine von Hand gezeichnete Bahn
+> bleibt grau, solange sie ungemessen ist — `pfad --messen` (V21) ist nicht gebaut (§14,
+> Schritt 9; berichtigt am 2026-09-24, hier stand „bis auf zwei PRs"): **die Ampel steht,
 > geeicht ist sie nicht**, ihre acht Schwellen bleiben „vorläufig". **Phase 5 wartet auf den
 > Autor:** FM1, FM2, FM4, FM5, FM6 aus [`freigabe-maschine.md`](freigabe-maschine.md) §10 (FM3 ist
 > entschieden), der Lese-Sweep über die Admin-API vor M1 (dort §12, mit Rückfrage) und V1 (§15.3).
 > Die Phasen 3 und 4 sind unberührt; die offenen Geschmacksfragen — jede mit der Empfehlung gebaut,
 > jede mit einem Wort kippbar — sammeln §15.5 (Phase 0/1) und §15.7 (Phase 2, dort auch die drei
-> Schritte, die nur der Autor tun kann). Auf Wunsch des Autors entstanden („noch nichts
+> Schritte, die nur der Autor tun kann; die Ziehung der zwei Rückhaltemengen ist davon am
+> 2026-09-21 getan, Nr. 32). Auf Wunsch des Autors entstanden („noch nichts
 > implementieren … ich will das erst mit dir durch diskutieren bevor wir umsetzen", §1).
 > **Der Rückfragen-Katalog ist seit dem 2026-09-18 beantwortet:** alle 25 Fragen, die
 > Unterpunkte zu Q4/Q24, die Vorgaben V1–V26 und der Kleinkram — Entscheid-Zeile je Frage
@@ -2226,7 +2229,9 @@ Verwerfen. Was der Server nicht sieht, bestätigt keine Karte — `report
 **S9 Zweite Schrift (Kurrent).** Zwei Tafeln, keine Hand `mn-kurrent`, ein
 Streifenplan ohne Stil-Schlüssel, ≥ 600 dpi und Zwei-Kanal: Scope-Leiste
 „Hand: —", Eigenhand-Flächen im Leerzustand „keine Hand dieses Stils"; kein
-Bau in diesem Plan (Q25).
+Bau in diesem Plan (Q25). *(Nachtrag 2026-09-24: das Szenario beschreibt den
+Stand vom 2026-09-17. Seit dem 2026-09-23 gibt es `mn-kurrent` als Setup
+ohne Material, und die Scope-Leiste steht auf ihr — §15.5 Nr. 13.)*
 
 **S10 Rollback eines Apply.** Falsches öffentliches Schriftbild → welcher
 Apply war es (kein Änderungsprotokoll, „Letzte Änderungen" MISSING) →
@@ -3164,25 +3169,42 @@ wer eine davon wieder aufmacht, braucht einen neuen Entscheid.
    beim Schreiben dieses Schritts offen. — **Erledigt 2026-09-20:** die Welle
    ist gebaut, siehe Schritt 9; D–I sind am selben Tag entschieden (§4.7),
    H gegen die Empfehlung.
-9. **Stand 2026-09-20, Abschluss der Welle: Phase 2 ist geliefert bis auf
-   PR 12 und PR 13.** Elf der dreizehn PRs aus §15.6 sind gemergt — die
+9. **Abschluss der Welle (Stand 2026-09-21, berichtigt 2026-09-24): alle
+   dreizehn PRs aus §15.6 sind gemergt.** Die erste Fassung dieses Schritts
+   (2026-09-20) zählte elf und führte PR 12 und PR 13 als offen; beide
+   landeten noch vor dem Doku-PR #648, der die Welle buchte. Gemergt sind die
    Archiv-Kette (#635), der gespeicherte Format-Marker mit Revision `0032`
    (#636), der Vorab-Split (#637), die Ampel (#638), Format 2 auf der
    Leseseite (#639), der meta-only Read (#640), der schreibende Lockstep
    (#641), der Kasten-Schreibweg mit Bahn-Marke (#642), die Nachfahr-Liste
-   (#643), der Streifen-Editor (#644) und der Trainingssatz (#647); dazu
-   zwei PRs außerhalb des Schnitts, die Sprachregel (#645) und die
-   Bedien-Hälfte einer abgewiesenen Bedingung (#646).
-   **Offen sind zwei.** **PR 12 (`pfad --spans`)** ist die eine benannte
-   Ausnahme der Wellen-Ordnung: er darf hinter Phase 3 rutschen, und das ist
-   §15.6 so geschrieben — sein Ergebnis hängt an keiner anderen Fläche.
-   **PR 13 (das Kalibrier-Instrument und die EINE Kalibrierung je Hand)** ist
-   dagegen Abschlussbedingung der Phase und **lässt sich heute nicht bauen**:
-   die Runde beurteilt 30 geschriebene Streifenkästen blind, und es gibt noch
-   keine einzige von Hand gezeichnete Bahn. Bis dahin bleiben die acht
-   Schwellen „vorläufig" und die Ampel sagt das in ihrer eigenen Antwort mit.
-   **Phase 2 gilt darum als noch nicht abgeschlossen** — die Ampel ist
-   gebaut, geeicht ist sie nicht.
+   (#643), der Streifen-Editor (#644), der Trainingssatz (#647),
+   `pfad --spans` (#650) und das Kalibrier-INSTRUMENT (#649); dazu zwei PRs
+   außerhalb des Schnitts, die Sprachregel (#645) und die Bedien-Hälfte
+   einer abgewiesenen Bedingung (#646).
+   **Offen ist allein die Kalibrier-RUNDE aus PR 13**, und sie ist
+   Abschlussbedingung der Phase. Sie beurteilt 30 Kästen blind, und in ihre
+   Grundgesamtheit kommt nur ein GEMESSENER Kasten
+   (`tools/eigenhand/tintentreue_calibration.py::boxes_of_hand` fragt nach
+   `gemessen`, nicht nach der Herkunft) — gemessen unter Format 2, also mit
+   den bewerteten Sensoren im Eintrag (`core/eigenhand/tintentreue.py`,
+   `VOLLSTAENDIG_AB_FORMAT = 2`). Die rechnet heute nur der Folger beim
+   Nachfolgen; der Streifen-Editor speichert eine gezeichnete Bahn mit
+   leerem `meta`. Eine von Hand gezeichnete Bahn steht darum grau als „von
+   Hand gezeichnet", **solange sie ungemessen ist**: das Grau hängt an der
+   fehlenden Messung, nicht an der Herkunft (`tintentreue.py`, grauer
+   Zustand 3), und nach V21 misst `pfad --messen` sie nach, worauf sie
+   dieselbe Ampel trägt. `pfad --messen` ist nicht gebaut — bis dahin zählt
+   eine gezeichnete Bahn nicht mit. Nicht entschieden ist, ob eine
+   gezeichnete Bahn, sobald sie gemessen ist, überhaupt in die Runde gehört:
+   [`menschliche-bewertung.md`](../reference/menschliche-bewertung.md) §8b
+   nennt als Gegenstand „die Bahn, die ein Folger über seine Tinte gelegt
+   hat", der Filter fragt nur nach `gemessen` (§15.7, Nr. 34). Am 2026-09-24
+   gibt es keinen einzigen gemessenen Kasten: über die Admin-API gelesen
+   tragen sieben Kästen von `mn-suetterlin` eine Bahn,
+   alle unter Format 1 und darum grau (Entscheid I). Bis zur Runde bleiben
+   die acht Schwellen „vorläufig", und die Ampel sagt das in ihrer eigenen
+   Antwort mit. **Phase 2 gilt darum als noch nicht abgeschlossen** — die
+   Ampel ist gebaut, geeicht ist sie nicht.
 
 ## 15 Umsetzung der gewählten Form (Stand 2026-09-20)
 
@@ -3197,7 +3219,8 @@ Phase 2 noch als „begonnen, nichts gemergt" führte). **Die Phasen 0 und 1
 sind gebaut** — die neun PRs aus §15.2 und die acht aus §15.4 sind gemergt,
 der eine Nachzug #628 mit **#633** (§15.4); offen ist allein der
 Prod-Datenschritt V1, der auf die Rückfrage in der Sitzung wartet.
-**Phase 2 ist geliefert bis auf zwei PRs** (§15.1, Zeile 2): die nur lesende
+**Phase 2 ist gebaut** (§15.1, Zeile 2; berichtigt am 2026-09-24 — hier
+stand „geliefert bis auf zwei PRs"): die nur lesende
 Erkundung hat 22 Stellen dieses Docs als falsch belegt — 21 davon in §6.2,
 §6.3, §6.4, §6.7, §7.2 und §12.4 in place berichtigt, jede mit ihrem
 `datei:zeile`-Beleg, die 22. schon mit #632 —, alle neun Fragen A–I sind am
@@ -3205,10 +3228,12 @@ Erkundung hat 22 Stellen dieses Docs als falsch belegt — 21 davon in §6.2,
 PRs des Schnitts sind **alle dreizehn gemergt** (§15.6, mit Nummern und
 einer Zeile je Zeile) — zuletzt **PR 12** (`pfad --spans`, #650) und das
 **Instrument** von PR 13 (#649). Was von PR 13 offen bleibt, ist die RUNDE
-selbst: sie beurteilt 30 geschriebene Streifenkästen blind, und es gibt
-noch keine einzige von Hand gezeichnete Bahn. **Die Phase ist darum
-gebaut, aber nicht abgeschlossen: die Ampel steht, geeicht ist sie
-nicht**, und ihre acht Schwellen bleiben ausdrücklich „vorläufig". Phase 5 hat ihr
+selbst: sie beurteilt 30 unter Format 2 gemessene Kästen blind, und davon
+gibt es noch keinen. Heute misst nur der Folger; eine von Hand gezeichnete
+Bahn bleibt grau, solange sie ungemessen ist — `pfad --messen` (V21) ist
+nicht gebaut (§14, Schritt 9). **Die
+Phase ist darum gebaut, aber nicht abgeschlossen: die Ampel steht, geeicht
+ist sie nicht**, und ihre acht Schwellen bleiben ausdrücklich „vorläufig". Phase 5 hat ihr
 erstes Doc (§15.3, Schritt 1) und ihren Pin-PR (Schritt 2); gebaut ist von
 ihr nichts, und fünf Rückfragen (FM1, FM2, FM4, FM5, FM6 — FM3 ist seit dem
 2026-09-20 entschieden) plus der Lese-Sweep halten den Bau an. Die
@@ -3223,7 +3248,7 @@ sind angehängt, weil § Nummern nie umgeschrieben werden.
 |---|---|---|---|
 | **0** Reparaturen + Regeln | die eine Liste aus §5.2: Overflow · Tab-Titel · erwartete 404 stumm · Wort-Detail ohne `word_instance` · Korb-Drawer mit Filtern · Rohzahlen-Chip · Apply-Guard · authored-Regel · Ebenen-, Rollen- und `mono`-Token — dazu der Wegwerf-Verify-Stack als ausführbares Rezept | V1, V8, V17, V22, V23, V26; Kleinkram | §5.2, §6.7; Schnitt in §15.2 |
 | **1** Scope + Arbeitslisten | Scope-Leiste mit zwei Feldern, die nicht schaltet; `h=` optional in den `focus.ts`-Buildern, Korb- und Todoist-Links tragen es immer; kompakte Liste als Vorgabe mit URL-Zustand in den drei Übersichten; `?reiter=`-Split der Eigenhand-Seite; Übergabekarten-Bauteil + `report --faellig`; Tastatur-Regel; Rollen-Etiketten und „Bahn" statt „Pfad" in der Oberfläche. Der Picker bleibt Einstieg; ein „Heute" vor Phase 4 läge unter `/admin/heute` | Q2 a, Q7 b, Q8 a + b (nicht c), Q25 a, **P1-Q1 c, P1-Q3 a, P1-Q11 b** (§4.6); V2, V14, V15, V19, V24 | §5.1 Ideen 1, 4, 11, 18; §7.1–§7.2; PR-Schnitt §15.4 |
-| **2** Tintentreue + Nachfahren | **Zeile neu geschrieben 2026-09-20 nach der Erkundung** — sie führte sonst den alten und den berichtigten Plan nebeneinander. Was gebaut wird: die Archiv-Kette für authored-Bahnen und authored-Spans VOR dem ersten nachgefahrenen Kasten; der gespeicherte Format-Marker; dann PFAD_FORMAT 2 im Lockstep mit seinen DREI echten Schema-Änderungen — Skip-Einträge, Span-Herkunft je Kasten, Feld-Schutz (die Sensoren 4/5 sind additiv und gehören nicht zum Format, §6.3); das Werkzeug schreibt im zweiten Release die fünf Sensoren; `tintentreue.py` mit „vorläufigen" Schwellen und §14-Vorregistrierung, zuletzt die EINE Kalibrierung je Hand samt dem Instrument, das es dafür noch nicht gibt; meta-only Read; der Vorab-Split von `StripsPanel`; eine ganze Nachfahr-Listenfläche mit einer Zeile je KASTEN (kein „Filter", §7.2) in der Ordnung Schwere → Streifen; `PATCH …/pfade/{box}` + ETag; der Streifen-Editor mit „Speichern & weiter", Absetzer-Soll und den Buchstabengrenzen (Vollbild und Werkzeuge oben sind schon gebaut, §6.4); `pfad --spans`; der lokale Trainings-Export. **Stand 2026-09-21: alle dreizehn PRs sind gemergt**, zuletzt `pfad --spans` (#650) und das Kalibrier-INSTRUMENT (#649); offen ist nur noch die Kalibrier-RUNDE selbst, die ohne gezeichnete Bahnen nicht laufen kann — §15.6 | Q4 a + (i), Q6 b, Q9 b, Q10 b, Q12 b, Q13 (Phase 2: b), Q14 a, Q15 b mit Korrektur, Q18; V5, V7, V20, V21; **Entscheide A–I** (§4.7) | §6.3, §6.4, §6.7; PR-Schnitt **§15.6**, Offenes **§15.7** |
+| **2** Tintentreue + Nachfahren | **Zeile neu geschrieben 2026-09-20 nach der Erkundung** — sie führte sonst den alten und den berichtigten Plan nebeneinander. Was gebaut wird: die Archiv-Kette für authored-Bahnen und authored-Spans VOR dem ersten nachgefahrenen Kasten; der gespeicherte Format-Marker; dann PFAD_FORMAT 2 im Lockstep mit seinen DREI echten Schema-Änderungen — Skip-Einträge, Span-Herkunft je Kasten, Feld-Schutz (die Sensoren 4/5 sind additiv und gehören nicht zum Format, §6.3); das Werkzeug schreibt im zweiten Release die fünf Sensoren; `tintentreue.py` mit „vorläufigen" Schwellen und §14-Vorregistrierung, zuletzt die EINE Kalibrierung je Hand samt dem Instrument, das es dafür noch nicht gibt; meta-only Read; der Vorab-Split von `StripsPanel`; eine ganze Nachfahr-Listenfläche mit einer Zeile je KASTEN (kein „Filter", §7.2) in der Ordnung Schwere → Streifen; `PATCH …/pfade/{box}` + ETag; der Streifen-Editor mit „Speichern & weiter", Absetzer-Soll und den Buchstabengrenzen (Vollbild und Werkzeuge oben sind schon gebaut, §6.4); `pfad --spans`; der lokale Trainings-Export. **Stand 2026-09-21: alle dreizehn PRs sind gemergt**, zuletzt `pfad --spans` (#650) und das Kalibrier-INSTRUMENT (#649); offen ist nur noch die Kalibrier-RUNDE selbst, die ohne 30 unter Format 2 gemessene Kästen nicht laufen kann (heute misst nur der Folger; eine von Hand gezeichnete Bahn bleibt grau, solange sie ungemessen ist — `pfad --messen`, V21, ist nicht gebaut; berichtigt 2026-09-24) — §15.6 | Q4 a + (i), Q6 b, Q9 b, Q10 b, Q12 b, Q13 (Phase 2: b), Q14 a, Q15 b mit Korrektur, Q18; V5, V7, V20, V21; **Entscheide A–I** (§4.7) | §6.3, §6.4, §6.7; PR-Schnitt **§15.6**, Offenes **§15.7** |
 | **3** Rollen-Spalten + Stufe 1 | Router-Zeilen; Rollen-Spalten in Buchstabe · Übergang · Wort mit der zweiten Hand eingeklappt, beschriftet, nie verrechnet; Belegleiste; beschriftete Leerflächen für Phase 5; `hands.kind` + `work_items.hand_id` als EIN Schema-PR; Stufe 1 = Belegzahlen, Tintentreue-Verteilung, Ausschnitt-Stapel, Feder-Halbbreite — keine Pipeline aus Bahnen; Kohorten-Filter + Warn-Chip „gemischte Federn" | Q3 a, Q11 b, Q16 a; V1, V4, V7, V16 | §5.1 Ideen 2, 3, 9; §6.1, §6.2, §6.5 |
 | **4** C-Bausteine auf A | „Heute" wird `/admin`, mit Bestandskopf (nur Zahlen, keine Marke) und nach der Wachstumsschleife der Eigenhand geordnet; der Picker wandert in den Vorlagen-Chip; `?liste=` + ‹ ›; Arbeitsvorrat; Nachfahr-Liste nach Schwere → Bahn-Deckung → Gewicht → Streifen, die Streifenfolge als Umschalter; „Speichern & weiter" entlang der Liste; Korb-Seite `/admin/korb` | Q5 a, Q7 a, Q13 (ab Phase 4: a + c), Q24 a; Leitsatz 2 | §9.1–§9.2 mit dem Vokabular aus §5.0 |
 | **5** Produktionshand | läuft PARALLEL ab Phase 1 — eigenes Gleis, §15.3 | Q1 a, Q17, Q19–Q24 | §6.6, §6.7 |
@@ -3335,7 +3360,8 @@ in dieser Reihenfolge — jeder ist die Voraussetzung des nächsten:
    Entscheid ist H dieses Plans (§4.7), gebucht in `freigabe-maschine.md`
    §10 FM3 und gebaut mit #647. Die alte Bedingung „FM3 vor Schritt 4" ist
    damit erledigt; an ihre Stelle tritt die engere, dass die ZIEHUNG vor der
-   ersten von Hand gezeichneten Bahn liegt.
+   ersten von Hand gezeichneten Bahn liegt. Die Ziehung ist am 2026-09-21
+   gemacht (§15.7 Nr. 32, nachgetragen 2026-09-24).
 
    **Zwei Befunde nimmt der Schema-PR (Schritt 3) aus dem Doc mit; beide am
    2026-09-19 im Code nachgeprüft:**
@@ -3617,10 +3643,17 @@ ist. Die Nummern sind nur Adressen für die Antwort.
     den der Autor gewählt hätte. Bei zwei Händen eines Stils bleibt das Feld
     bis zur ersten Wahl leer, bei einem Stil ohne Hand ebenso (keine
     erfundene Kennung, Q25 a). Die Vorbelegung wird NICHT als Wahl gemerkt:
-    kommt eine zweite Hand dazu, entscheidet wieder der Autor. Folge für
-    heute: Sütterlin steht in jedem Browser auf `mn-suetterlin`; Kurrent
-    und Offenbacher bleiben „Hand: —", bis ihre Hand angelegt ist — eine
-    `mn-kurrent` gibt es in der DB noch nicht (S9).
+    kommt eine zweite Hand dazu, entscheidet wieder der Autor. Folge, Stand
+    2026-09-24: **jede der drei Schriften hat genau eine Hand und öffnet in
+    jedem Browser auf ihr.** Am 2026-09-23 sind `mn-kurrent` und
+    `mn-offenbacher` angelegt worden — als Setup mit Bezeichnung und Gerät;
+    Feder, Tinte und Papier noch offen, Material mit Absicht keins
+    (`GET /eigenhand/setups`). Dass eine Hand ohne einen einzigen Bogen
+    trotzdem Kandidatin ist, liegt an der Kandidatenliste: sie liest
+    `/eigenhand/hands` (Bögen ∪ Fassungen) UND `/eigenhand/setups`
+    (`shell/handScope.ts::handCandidates`). Die erste Fassung dieses Satzes
+    vom 2026-09-23 führte Kurrent und Offenbacher noch als „Hand: —", weil
+    es `mn-kurrent` damals nicht gab (S9).
 14. **`h=` ist Metadatum** (#626): es wird geschrieben und weitergereicht,
     beim Ankommen aber nicht übernommen. Eine Übernahme braucht zuerst eine
     Regel für den Fall, dass URL und Picker sich widersprechen.
@@ -3723,8 +3756,10 @@ Tabelle; wo beide auseinandergehen, gilt die zweite.
 | 12 | **`pfad --spans`** | der automatische Grenzen-Zuordner über eine nachgefahrene Bahn, der authored-Spans nie ersetzt; eigener kleiner §14-Nachweis (grüne Auto-Bahnen „wie von Hand") | M | PR 3 + PR 10 | Q15 (b) mit Korrektur, V21. **Der einzige PR der Welle, der sie VERLASSEN darf** — siehe die Notiz unter der Tabelle |
 | 13 | **Das Kalibrier-Instrument und die EINE Kalibrierung je Hand** | der Posten, den §6.7 nicht führte: ein Streifen-Modus für `humanbench` (oder ein Geschwister-Bauer), eigene Frage, eigenes Kategorienset, Abbildung auf drei Stufen; davor der Nachzug in `menschliche-bewertung.md`, danach der §14-Adoptionseintrag, der die acht Zahlen datiert einfriert und „vorläufig" streicht | M + die Runde | PR 5 + genügend Fassungen (die Menge zählt FASSUNGEN, nicht Wochen — Q18) | Q10 (b) mit Autor-Zusatz. **Fragen F und I** |
 
-**Stand 2026-09-20 — was ankam.** Eine Zeile je PR: die Nummer und, wo das
-Gebaute von der Zeile oben abweicht, worin. Elf sind gemergt, zwei offen.
+**Stand 2026-09-21 — was ankam.** Eine Zeile je PR: die Nummer und, wo das
+Gebaute von der Zeile oben abweicht, worin. Alle dreizehn sind gemergt;
+offen ist allein die Kalibrier-RUNDE aus PR 13 (berichtigt am 2026-09-24 —
+hier stand „Elf sind gemergt, zwei offen", geschrieben vor #649 und #650).
 
 | # | Gemergt | Was ankam, gegen die Zeile oben |
 |---|---|---|
@@ -3740,7 +3775,7 @@ Gebaute von der Zeile oben abweicht, worin. Elf sind gemergt, zwei offen.
 | 10 | **#644** | **die Zeile erwartete EINEN umgebauten Dialog, gebaut ist ein ZWEITER, schlanker** (Entscheid G) — mit der Zeichenfläche als gemeinsamem Bauteil, nicht als Kopie. Neu gegenüber der Zeile: die nominale Lineatur des Kastens aus der API, ohne die ein aufgegebener Kasten gar keinen Rahmen hätte (§6.4) |
 | 11 | **#647** | **die Zeile sagte „Er zieht KEINE Rückhaltemenge" — Entscheid H hat das umgedreht:** zwei getrennte Mengen, gezogen als eigener, einmaliger Akt über die Streifen des eingefrorenen Plans. Derselbe Entscheid beantwortet FM3 der Freigabe-Maschine (§15.3) |
 | 12 | **#650** | `pfad --spans` — er musste die Ausnahme der Wellen-Ordnung nicht in Anspruch nehmen. **A48 bestätigt am Code:** die Zuordnung des Folgers entsteht aus Slot-Etiketten, die der DEKODIERER ausgibt, also war sie für eine gezeichnete Bahn wirklich neue Arbeit. Gemessen gegen die Zuordnung des Folgers, `dtw` adoptiert; die ausdrücklich benannte Grenze ist die Zirkularität der Referenz, und die Messung, die sie bricht, läuft erst auf den Bahnen des Autors |
-| 13 | **#649 — nur das INSTRUMENT** | Kalibrier-Instrument gebaut, `menschliche-bewertung.md` §8b vorher nachgezogen, die Runde vorregistriert. **Die RUNDE selbst ist die Abschlussbedingung und steht aus:** sie beurteilt 30 geschriebene Streifenkästen blind, und es existiert noch keine einzige von Hand gezeichnete Bahn. Bis dahin bleiben die acht Schwellen „vorläufig", `VORLAEUFIG` ist unberührt, und die Ampel sagt das in ihrer Antwort mit |
+| 13 | **#649 — nur das INSTRUMENT** | Kalibrier-Instrument gebaut, `menschliche-bewertung.md` §8b vorher nachgezogen, die Runde vorregistriert. **Die RUNDE selbst ist die Abschlussbedingung und steht aus:** sie beurteilt 30 unter Format 2 gemessene Kästen blind, und davon existiert noch keiner; heute misst nur der Folger, und eine von Hand gezeichnete Bahn bleibt grau, solange sie ungemessen ist — `pfad --messen` (V21) ist nicht gebaut (berichtigt 2026-09-24; ob eine gemessene gezeichnete Bahn in die Runde gehört, ist §15.7 Nr. 34). Bis dahin bleiben die acht Schwellen „vorläufig", `VORLAEUFIG` ist unberührt, und die Ampel sagt das in ihrer Antwort mit |
 
 Zwei PRs fuhren neben dem Schnitt: **#645** (die Sprachregel als
 [`sprachregelung.md`](../reference/sprachregelung.md) §5) und **#646** (was
@@ -3848,7 +3883,7 @@ alles, wie es gebaut ist. Die Nummern sind nur Adressen für die Antwort.
     `useEigenhandPfadBoxes` plus die `ampel`-Eigenschaft von `CropTile`.
 
 **Drei Schritte, die nur der Autor tun kann** — keiner davon ist lokal
-prüfbar:
+prüfbar, und Nr. 32 ist am 2026-09-21 getan worden:
 
 31. **Die Archiv-Kette über echte Daten laufen lassen.** Sie ist gegen
     einen Fake-API-Client und die In-Process-Suite geprüft, aber noch nie
@@ -3874,13 +3909,53 @@ prüfbar:
     gehört sie **vor die erste Bahn** — danach zöge man, nachdem man das
     Material gesehen hat. Ein zweites Ziehen wird verweigert, ohne
     Override.
+    **Getan am 2026-09-21** (nachgetragen 2026-09-24; bis dahin führte
+    diese Liste den Schritt als offen): Schlüssel
+    `mn-suetterlin-2026-09-21`, gezogen über 265 Streifen — `practice` 160
+    · `holdout-follower` 49 · `holdout-release` 56. Maßgeblich ist die
+    Kartei im Archiv-Schnappschuss `own-hand/mn-suetterlin/2026-09-21-0928`
+    (privates Archiv `kurrentschrift-data`, Commit `9efe356`); welcher
+    Streifen in welcher Menge liegt, steht bewusst nirgends im Repo, damit
+    der Autor blind bleibt. **Die lokale Datenwurzel
+    `data/samples/own-hand/mn-suetterlin` war am 2026-09-24 veraltet** —
+    Kartei vom 2026-09-09, ohne Ziehung —, weil die Sitzung vom 2026-09-21
+    in einer anderen Datenwurzel arbeitete. Die Eigenhand-Werkzeuge laden
+    `.env` nicht und sehen das Archiv darum nur mit `--archive` (oder einem
+    in der Shell gesetzten `KURRENTSCHRIFT_ARCHIVE`); ohne das hätte ein
+    lokales `training_set --draw` die Ziehung übersehen und eine ZWEITE
+    erlaubt — für diese Hand läuft `--draw` nie wieder. Die sieben angehefteten Referenzwörter
+    `S0182`–`S0188` sind in der Ziehung, geschrieben sind sie noch nicht:
+    sie kommen auf den nächsten im Admin erzeugten Bogen, und das ist
+    **`B0005`**, nicht `B0002` — `B0002`–`B0004` sind am 2026-09-08
+    gedruckt (mit `S0001` und `S0004`–`S0011`) und „unterwegs".
 33. **Das Tablet beurteilen** (Q14 a): Stiftverzögerung, Handballen-Abwehr,
     ob die Umschalter erreichbar sind, während die Hand aufliegt, und ob
     die Bahn über echter 300-dpi-Tinte überhaupt lesbar liegt. Der
     Browserlauf der Welle hatte eine Maus und einen flachen grauen Streifen
     als Unterlage.
 
-Und der eine Posten, der daran hängt: die **Kalibrier-Runde** aus PR 13.
-Das Instrument steht seit #649, die Runde braucht 30 geschriebene Kästen;
-bis dahin bleiben die acht Schwellen „vorläufig", und die Ampel sagt das in
-ihrer eigenen Antwort mit.
+Und der eine Posten, der am Autor hängt, aber an keinem der drei Schritte
+oben: die **Kalibrier-Runde** aus PR 13. Das Instrument steht seit #649;
+die Runde braucht mindestens 30 unter Format 2 gemessene Kästen, und messen
+tut heute nur der Folger (`tools.eigenhand.pfad --apply`, ein
+Schreibschritt des Autors). Eine von Hand gezeichnete Bahn bleibt grau,
+solange sie ungemessen ist — `pfad --messen` (V21) ist nicht gebaut —, und
+zählt bis dahin nicht mit (berichtigt 2026-09-24 — der Satz hängte die
+Runde an die drei Schritte oben und damit an die erste von Hand gezeichnete
+Bahn). Bis zur Runde bleiben die acht Schwellen „vorläufig", und die Ampel
+sagt das in ihrer eigenen Antwort mit. Daran hängt eine Frage, die heute
+folgenlos ist:
+
+34. **Gehört eine gezeichnete Bahn, sobald sie gemessen ist, in die
+    Kalibrier-Runde?** (angelegt 2026-09-24) Die zwei Stellen, die das
+    regeln, sagen Verschiedenes:
+    [`menschliche-bewertung.md`](../reference/menschliche-bewertung.md) §8b
+    nennt als Gegenstand der Runde „die Bahn, die ein Folger über seine
+    Tinte gelegt hat"; der Filter `boxes_of_hand` fragt nur nach
+    `gemessen`, und V21 gibt der gemessenen gezeichneten Bahn dieselbe
+    Ampel. Gebaut ist der Filter — ohne ein Wort nimmt die Runde also jeden
+    gemessenen Kasten, sobald es `pfad --messen` gibt. Kipp, wenn
+    gezeichnete Bahnen draußen bleiben sollen: eine Herkunfts-Bedingung in
+    `boxes_of_hand` und ein Satz in §8b. V21 bleibt davon unberührt — die
+    Ampel darf eine gezeichnete Bahn beurteilen, auch wenn die Runde sie
+    nicht nimmt.
