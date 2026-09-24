@@ -6,6 +6,7 @@ the canonical there, recording the chart as `provenance_source_id`.
 """
 
 from collections.abc import Sequence
+from dataclasses import asdict
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -21,6 +22,10 @@ from api.schemas import (
     KringelCatalogueOut,
     LandmarkOut,
     LaufformUpsert,
+    PenaltyCategoryOut,
+    PenaltyFrameOut,
+    PenaltyPinOut,
+    PenaltySitesOut,
     ResampleRequest,
     TemplateLandmarksOut,
     TemplateOut,
@@ -41,6 +46,7 @@ from core.pipeline import (
     written_preview_for_canonical,
 )
 from core.quality import quality_for_glyph
+from core.quality_localize import METRIC_NAME, PenaltyMap, UnscorableInputError, suetterlin_penalty_sites_for_glyph
 from core.quality_suetterlin import suetterlin_quality_for_glyph
 from core.shaping import expected_glyph_key, is_registry_glyph_key
 from core.suetterlin import canonical_suetterlin_from_path, canonical_suetterlin_from_raw_path_only
@@ -762,6 +768,68 @@ async def get_quality(glyph_key: str, source: Source = Depends(require_source), 
         return {"stored": stored, "candidate": candidate, "candidate_refine": candidate_refine}
 
     return await run_in_threadpool(compute)
+
+
+def _penalty_sites_out(glyph_key: str, style_id: str, stamped: dict | None, pm: PenaltyMap) -> PenaltySitesOut:
+    """The lens payload from the core's frozen dataclasses (their field names are the wire's)."""
+    return PenaltySitesOut(
+        glyph_key=glyph_key,
+        style_id=style_id,
+        metric=METRIC_NAME,
+        stamped=stamped,
+        score=pm.metrics["score"],
+        components=pm.metrics["components"],
+        applicable=pm.metrics["applicable"],
+        frame=PenaltyFrameOut(width=pm.width, height=pm.height, unit_px=pm.unit_px),
+        centerline=[list(stroke) for stroke in pm.centerline],
+        sites={key: PenaltyCategoryOut.model_validate(asdict(cat)) for key, cat in pm.categories.items()},
+        pins=[PenaltyPinOut.model_validate(asdict(pin)) for pin in pm.pins],
+    )
+
+
+# Admin-gated for the same open-core reason as /quality (quellen-und-rechte.md
+# §5): a score and where it is lost are measured over the learned dataset.
+# Re-reads the chart per request like /quality's `stored` half — never the
+# stamp, so the sites add up to a number measured with today's ruler.
+@router.get("/{glyph_key}/penalty-sites", response_model=PenaltySitesOut, dependencies=[Depends(require_admin)])
+async def get_penalty_sites(
+    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+):
+    """Where the metric takes its points off one letter, per deduction (admin only).
+
+    The chart row only. A script whose metric has no deduction categories
+    answers with `sites` null and a `reason`, not with a borrowed legend.
+    """
+    bbox = await BboxRepository(db).get(source.id, glyph_key)
+    if bbox is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"bbox not set for {glyph_key!r}")
+    template = await TemplateRepository(db).get(source.style_id, glyph_key)
+    if template is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")
+    style_id, _, _, width_resolver = await resolve_style(source, db)
+    trace_meta = dict(template.trace_meta or {})
+    stamp = trace_meta.get("quality")
+    stamped = stamp.get("components") if isinstance(stamp, dict) else None
+    if width_resolver != "constant":
+        # Kurrent and Offenbacher are scored by the pixel/width metric, which has
+        # no deduction categories — the two metrics are never mixed.
+        return PenaltySitesOut(glyph_key=glyph_key, style_id=style_id, reason="no_components", stamped=stamped)
+    if not trace_meta.get("pixel_anchors") or not trace_meta.get("half_widths_px"):
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail=f"stored template for {glyph_key!r} lacks pixel-space trace meta; resample or re-trace first",
+        )
+    try:
+        pm = await run_in_threadpool(
+            suetterlin_penalty_sites_for_glyph, {"trace_meta": trace_meta}, _bbox_to_dict(bbox), source.chart_path
+        )
+    except UnscorableInputError as exc:
+        # A corrupt row (non-finite geometry, a zero x-height) is the author's
+        # to fix, like the legacy row above — a clear 409, never a 500.
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, detail=f"stored template for {glyph_key!r} cannot be localized: {exc}"
+        ) from exc
+    return _penalty_sites_out(glyph_key, style_id, stamped, pm)
 
 
 @router.delete("/{glyph_key}", status_code=204, dependencies=[Depends(require_admin)])
