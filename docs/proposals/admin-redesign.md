@@ -16,9 +16,10 @@
 > am 2026-09-20 entschieden (§4.7; H gegen die Empfehlung und zugleich die Antwort auf
 > FM3 der Freigabe-Maschine). Offen bleibt aus PR 13 allein die RUNDE — das Instrument
 > steht, die Kalibrierung braucht mindestens 30 unter Format 2 GEMESSENE Kästen, und davon
-> gibt es noch keinen. Heute misst nur ein Folger-Lauf; eine von Hand gezeichnete Bahn
-> bleibt grau, solange sie ungemessen ist — `pfad --messen` (V21) ist nicht gebaut (§14,
-> Schritt 9; berichtigt am 2026-09-24, hier stand „bis auf zwei PRs"): **die Ampel steht,
+> gibt es noch keinen. Gemessen wird von einem Folger-Lauf und seit dem 2026-09-25 auch von
+> `pfad --messen` (V21), das eine von Hand gezeichnete Bahn nachmisst — bis dahin bleibt sie
+> grau (§14, Schritt 9; berichtigt am 2026-09-24, hier stand „bis auf zwei PRs"; ob eine
+> nachgemessene Zeichnung in die Runde gehört, bleibt offen, §15.7 Nr. 34): **die Ampel steht,
 > geeicht ist sie nicht**, ihre acht Schwellen bleiben „vorläufig". **Phase 5 wartet auf den
 > Autor:** FM1, FM2, FM4, FM5, FM6 aus [`freigabe-maschine.md`](freigabe-maschine.md) §10 (FM3 ist
 > entschieden), der Lese-Sweep über die Admin-API vor M1 (dort §12, mit Rückfrage) und V1 (§15.3).
@@ -2914,7 +2915,8 @@ berührt oder sichtbar Geschmackssache ist.
   — wiederholt wird NICHTS von selbst.
 - **V21 Nachgefahrene Bahnen werden gemessen** (`pfad --messen`, Sensoren
   1/3/4/5 sind referenzfrei); „von Hand" ist ein Herkunfts-Chip, nie eine
-  Ampelfarbe; bis dahin zwei Zähler (gemessen / ungemessen).
+  Ampelfarbe; bis dahin zwei Zähler (gemessen / ungemessen). Gebaut
+  2026-09-25 (§15.7).
 - **V22 Guard-Eigner-Regel:** Apply nur, wenn `hand.id == sources.hand_id`
   einer Quelle desselben Stils oder der Stempel
   `templates.trace_meta["laufform"]["hand_id"]` der V100-Zeile passt; fehlt
@@ -3193,8 +3195,9 @@ wer eine davon wieder aufmacht, braucht einen neuen Entscheid.
    Hand gezeichnet", **solange sie ungemessen ist**: das Grau hängt an der
    fehlenden Messung, nicht an der Herkunft (`tintentreue.py`, grauer
    Zustand 3), und nach V21 misst `pfad --messen` sie nach, worauf sie
-   dieselbe Ampel trägt. `pfad --messen` ist nicht gebaut — bis dahin zählt
-   eine gezeichnete Bahn nicht mit. Nicht entschieden ist, ob eine
+   dieselbe Ampel trägt. `pfad --messen` ist seit dem 2026-09-25 gebaut
+   (`tools/eigenhand/messen.py`, → Nachmessung); eine ungemessene gezeichnete
+   Bahn zählt weiter nicht mit. Nicht entschieden ist, ob eine
    gezeichnete Bahn, sobald sie gemessen ist, überhaupt in die Runde gehört:
    [`menschliche-bewertung.md`](../reference/menschliche-bewertung.md) §8b
    nennt als Gegenstand „die Bahn, die ein Folger über seine Tinte gelegt
@@ -3229,9 +3232,9 @@ PRs des Schnitts sind **alle dreizehn gemergt** (§15.6, mit Nummern und
 einer Zeile je Zeile) — zuletzt **PR 12** (`pfad --spans`, #650) und das
 **Instrument** von PR 13 (#649). Was von PR 13 offen bleibt, ist die RUNDE
 selbst: sie beurteilt 30 unter Format 2 gemessene Kästen blind, und davon
-gibt es noch keinen. Heute misst nur der Folger; eine von Hand gezeichnete
-Bahn bleibt grau, solange sie ungemessen ist — `pfad --messen` (V21) ist
-nicht gebaut (§14, Schritt 9). **Die
+gibt es noch keinen. Es misst der Folger, und seit dem 2026-09-25 misst
+`pfad --messen` (V21) eine von Hand gezeichnete Bahn nach; bis dahin bleibt
+sie grau (§14, Schritt 9). **Die
 Phase ist darum gebaut, aber nicht abgeschlossen: die Ampel steht, geeicht
 ist sie nicht**, und ihre acht Schwellen bleiben ausdrücklich „vorläufig". Phase 5 hat ihr
 erstes Doc (§15.3, Schritt 1) und ihren Pin-PR (Schritt 2); gebaut ist von
@@ -3248,7 +3251,7 @@ sind angehängt, weil § Nummern nie umgeschrieben werden.
 |---|---|---|---|
 | **0** Reparaturen + Regeln | die eine Liste aus §5.2: Overflow · Tab-Titel · erwartete 404 stumm · Wort-Detail ohne `word_instance` · Korb-Drawer mit Filtern · Rohzahlen-Chip · Apply-Guard · authored-Regel · Ebenen-, Rollen- und `mono`-Token — dazu der Wegwerf-Verify-Stack als ausführbares Rezept | V1, V8, V17, V22, V23, V26; Kleinkram | §5.2, §6.7; Schnitt in §15.2 |
 | **1** Scope + Arbeitslisten | Scope-Leiste mit zwei Feldern, die nicht schaltet; `h=` optional in den `focus.ts`-Buildern, Korb- und Todoist-Links tragen es immer; kompakte Liste als Vorgabe mit URL-Zustand in den drei Übersichten; `?reiter=`-Split der Eigenhand-Seite; Übergabekarten-Bauteil + `report --faellig`; Tastatur-Regel; Rollen-Etiketten und „Bahn" statt „Pfad" in der Oberfläche. Der Picker bleibt Einstieg; ein „Heute" vor Phase 4 läge unter `/admin/heute` | Q2 a, Q7 b, Q8 a + b (nicht c), Q25 a, **P1-Q1 c, P1-Q3 a, P1-Q11 b** (§4.6); V2, V14, V15, V19, V24 | §5.1 Ideen 1, 4, 11, 18; §7.1–§7.2; PR-Schnitt §15.4 |
-| **2** Tintentreue + Nachfahren | **Zeile neu geschrieben 2026-09-20 nach der Erkundung** — sie führte sonst den alten und den berichtigten Plan nebeneinander. Was gebaut wird: die Archiv-Kette für authored-Bahnen und authored-Spans VOR dem ersten nachgefahrenen Kasten; der gespeicherte Format-Marker; dann PFAD_FORMAT 2 im Lockstep mit seinen DREI echten Schema-Änderungen — Skip-Einträge, Span-Herkunft je Kasten, Feld-Schutz (die Sensoren 4/5 sind additiv und gehören nicht zum Format, §6.3); das Werkzeug schreibt im zweiten Release die fünf Sensoren; `tintentreue.py` mit „vorläufigen" Schwellen und §14-Vorregistrierung, zuletzt die EINE Kalibrierung je Hand samt dem Instrument, das es dafür noch nicht gibt; meta-only Read; der Vorab-Split von `StripsPanel`; eine ganze Nachfahr-Listenfläche mit einer Zeile je KASTEN (kein „Filter", §7.2) in der Ordnung Schwere → Streifen; `PATCH …/pfade/{box}` + ETag; der Streifen-Editor mit „Speichern & weiter", Absetzer-Soll und den Buchstabengrenzen (Vollbild und Werkzeuge oben sind schon gebaut, §6.4); `pfad --spans`; der lokale Trainings-Export. **Stand 2026-09-21: alle dreizehn PRs sind gemergt**, zuletzt `pfad --spans` (#650) und das Kalibrier-INSTRUMENT (#649); offen ist nur noch die Kalibrier-RUNDE selbst, die ohne 30 unter Format 2 gemessene Kästen nicht laufen kann (heute misst nur der Folger; eine von Hand gezeichnete Bahn bleibt grau, solange sie ungemessen ist — `pfad --messen`, V21, ist nicht gebaut; berichtigt 2026-09-24) — §15.6 | Q4 a + (i), Q6 b, Q9 b, Q10 b, Q12 b, Q13 (Phase 2: b), Q14 a, Q15 b mit Korrektur, Q18; V5, V7, V20, V21; **Entscheide A–I** (§4.7) | §6.3, §6.4, §6.7; PR-Schnitt **§15.6**, Offenes **§15.7** |
+| **2** Tintentreue + Nachfahren | **Zeile neu geschrieben 2026-09-20 nach der Erkundung** — sie führte sonst den alten und den berichtigten Plan nebeneinander. Was gebaut wird: die Archiv-Kette für authored-Bahnen und authored-Spans VOR dem ersten nachgefahrenen Kasten; der gespeicherte Format-Marker; dann PFAD_FORMAT 2 im Lockstep mit seinen DREI echten Schema-Änderungen — Skip-Einträge, Span-Herkunft je Kasten, Feld-Schutz (die Sensoren 4/5 sind additiv und gehören nicht zum Format, §6.3); das Werkzeug schreibt im zweiten Release die fünf Sensoren; `tintentreue.py` mit „vorläufigen" Schwellen und §14-Vorregistrierung, zuletzt die EINE Kalibrierung je Hand samt dem Instrument, das es dafür noch nicht gibt; meta-only Read; der Vorab-Split von `StripsPanel`; eine ganze Nachfahr-Listenfläche mit einer Zeile je KASTEN (kein „Filter", §7.2) in der Ordnung Schwere → Streifen; `PATCH …/pfade/{box}` + ETag; der Streifen-Editor mit „Speichern & weiter", Absetzer-Soll und den Buchstabengrenzen (Vollbild und Werkzeuge oben sind schon gebaut, §6.4); `pfad --spans`; der lokale Trainings-Export. **Stand 2026-09-21: alle dreizehn PRs sind gemergt**, zuletzt `pfad --spans` (#650) und das Kalibrier-INSTRUMENT (#649); offen ist nur noch die Kalibrier-RUNDE selbst, die ohne 30 unter Format 2 gemessene Kästen nicht laufen kann (eine von Hand gezeichnete Bahn bleibt grau, solange sie ungemessen ist; berichtigt 2026-09-24 — `pfad --messen`, V21, misst sie seit dem 2026-09-25 nach) — §15.6 | Q4 a + (i), Q6 b, Q9 b, Q10 b, Q12 b, Q13 (Phase 2: b), Q14 a, Q15 b mit Korrektur, Q18; V5, V7, V20, V21; **Entscheide A–I** (§4.7) | §6.3, §6.4, §6.7; PR-Schnitt **§15.6**, Offenes **§15.7** |
 | **3** Rollen-Spalten + Stufe 1 | Router-Zeilen; Rollen-Spalten in Buchstabe · Übergang · Wort mit der zweiten Hand eingeklappt, beschriftet, nie verrechnet; Belegleiste; beschriftete Leerflächen für Phase 5; `hands.kind` + `work_items.hand_id` als EIN Schema-PR; Stufe 1 = Belegzahlen, Tintentreue-Verteilung, Ausschnitt-Stapel, Feder-Halbbreite — keine Pipeline aus Bahnen; Kohorten-Filter + Warn-Chip „gemischte Federn" | Q3 a, Q11 b, Q16 a; V1, V4, V7, V16 | §5.1 Ideen 2, 3, 9; §6.1, §6.2, §6.5 |
 | **4** C-Bausteine auf A | „Heute" wird `/admin`, mit Bestandskopf (nur Zahlen, keine Marke) und nach der Wachstumsschleife der Eigenhand geordnet; der Picker wandert in den Vorlagen-Chip; `?liste=` + ‹ ›; Arbeitsvorrat; Nachfahr-Liste nach Schwere → Bahn-Deckung → Gewicht → Streifen, die Streifenfolge als Umschalter; „Speichern & weiter" entlang der Liste; Korb-Seite `/admin/korb` | Q5 a, Q7 a, Q13 (ab Phase 4: a + c), Q24 a; Leitsatz 2 | §9.1–§9.2 mit dem Vokabular aus §5.0 |
 | **5** Produktionshand | läuft PARALLEL ab Phase 1 — eigenes Gleis, §15.3 | Q1 a, Q17, Q19–Q24 | §6.6, §6.7 |
@@ -3775,7 +3778,7 @@ hier stand „Elf sind gemergt, zwei offen", geschrieben vor #649 und #650).
 | 10 | **#644** | **die Zeile erwartete EINEN umgebauten Dialog, gebaut ist ein ZWEITER, schlanker** (Entscheid G) — mit der Zeichenfläche als gemeinsamem Bauteil, nicht als Kopie. Neu gegenüber der Zeile: die nominale Lineatur des Kastens aus der API, ohne die ein aufgegebener Kasten gar keinen Rahmen hätte (§6.4) |
 | 11 | **#647** | **die Zeile sagte „Er zieht KEINE Rückhaltemenge" — Entscheid H hat das umgedreht:** zwei getrennte Mengen, gezogen als eigener, einmaliger Akt über die Streifen des eingefrorenen Plans. Derselbe Entscheid beantwortet FM3 der Freigabe-Maschine (§15.3) |
 | 12 | **#650** | `pfad --spans` — er musste die Ausnahme der Wellen-Ordnung nicht in Anspruch nehmen. **A48 bestätigt am Code:** die Zuordnung des Folgers entsteht aus Slot-Etiketten, die der DEKODIERER ausgibt, also war sie für eine gezeichnete Bahn wirklich neue Arbeit. Gemessen gegen die Zuordnung des Folgers, `dtw` adoptiert; die ausdrücklich benannte Grenze ist die Zirkularität der Referenz, und die Messung, die sie bricht, läuft erst auf den Bahnen des Autors |
-| 13 | **#649 — nur das INSTRUMENT** | Kalibrier-Instrument gebaut, `menschliche-bewertung.md` §8b vorher nachgezogen, die Runde vorregistriert. **Die RUNDE selbst ist die Abschlussbedingung und steht aus:** sie beurteilt 30 unter Format 2 gemessene Kästen blind, und davon existiert noch keiner; heute misst nur der Folger, und eine von Hand gezeichnete Bahn bleibt grau, solange sie ungemessen ist — `pfad --messen` (V21) ist nicht gebaut (berichtigt 2026-09-24; ob eine gemessene gezeichnete Bahn in die Runde gehört, ist §15.7 Nr. 34). Bis dahin bleiben die acht Schwellen „vorläufig", `VORLAEUFIG` ist unberührt, und die Ampel sagt das in ihrer Antwort mit |
+| 13 | **#649 — nur das INSTRUMENT** | Kalibrier-Instrument gebaut, `menschliche-bewertung.md` §8b vorher nachgezogen, die Runde vorregistriert. **Die RUNDE selbst ist die Abschlussbedingung und steht aus:** sie beurteilt 30 unter Format 2 gemessene Kästen blind, und davon existiert noch keiner; eine von Hand gezeichnete Bahn bleibt grau, solange sie ungemessen ist (berichtigt 2026-09-24), und `pfad --messen` (V21) misst sie seit dem 2026-09-25 nach (ob eine gemessene gezeichnete Bahn in die Runde gehört, ist §15.7 Nr. 34). Bis dahin bleiben die acht Schwellen „vorläufig", `VORLAEUFIG` ist unberührt, und die Ampel sagt das in ihrer Antwort mit |
 
 Zwei PRs fuhren neben dem Schnitt: **#645** (die Sprachregel als
 [`sprachregelung.md`](../reference/sprachregelung.md) §5) und **#646** (was
@@ -3937,14 +3940,21 @@ prüfbar, und Nr. 32 ist am 2026-09-21 getan worden:
 Und der eine Posten, der am Autor hängt, aber an keinem der drei Schritte
 oben: die **Kalibrier-Runde** aus PR 13. Das Instrument steht seit #649;
 die Runde braucht mindestens 30 unter Format 2 gemessene Kästen, und messen
-tut heute nur der Folger (`tools.eigenhand.pfad --apply`, ein
-Schreibschritt des Autors). Eine von Hand gezeichnete Bahn bleibt grau,
-solange sie ungemessen ist — `pfad --messen` (V21) ist nicht gebaut —, und
-zählt bis dahin nicht mit (berichtigt 2026-09-24 — der Satz hängte die
-Runde an die drei Schritte oben und damit an die erste von Hand gezeichnete
-Bahn). Bis zur Runde bleiben die acht Schwellen „vorläufig", und die Ampel
-sagt das in ihrer eigenen Antwort mit. Daran hängt eine Frage, die heute
-folgenlos ist:
+tut der Folger (`tools.eigenhand.pfad --apply`, ein Schreibschritt des
+Autors). Eine von Hand gezeichnete Bahn bleibt grau, solange sie ungemessen
+ist, und zählt bis dahin nicht mit (berichtigt 2026-09-24 — der Satz hängte
+die Runde an die drei Schritte oben und damit an die erste von Hand
+gezeichnete Bahn). **Nachgetragen 2026-09-25: V21 ist gebaut.**
+`tools.eigenhand.pfad --messen` misst eine gezeichnete Bahn nach
+(`tools/eigenhand/messen.py`, → Nachmessung im Glossar) — auf derselben
+Tinte, die der Folger bekäme, Papier-Exkursion und AIoU mit dem Code des
+Folgers, „Tinte ohne Bahn" und Absetzer als Lesart derselben Frage ohne
+Dekodierung; Züge, Registrierung und Buchstabengrenzen bleiben Byte für
+Byte, geschrieben wird je Kasten per `PATCH` mit `If-Match`. Auch das ist
+ein Schreibschritt des Autors (`--apply`, Snapshot davor). Bis zur Runde
+bleiben die acht Schwellen „vorläufig", und die Ampel sagt das in ihrer
+eigenen Antwort mit. Daran hängt eine Frage, die bis zum 2026-09-25
+folgenlos war und es mit dem ersten `--messen --apply` nicht mehr ist:
 
 34. **Gehört eine gezeichnete Bahn, sobald sie gemessen ist, in die
     Kalibrier-Runde?** (angelegt 2026-09-24) Die zwei Stellen, die das
@@ -3958,4 +3968,8 @@ folgenlos ist:
     gezeichnete Bahnen draußen bleiben sollen: eine Herkunfts-Bedingung in
     `boxes_of_hand` und ein Satz in §8b. V21 bleibt davon unberührt — die
     Ampel darf eine gezeichnete Bahn beurteilen, auch wenn die Runde sie
-    nicht nimmt.
+    nicht nimmt. **Stand 2026-09-25: weiter offen** — `pfad --messen` ist
+    gebaut, `tintentreue_calibration.py` ist bewusst unverändert, also nimmt
+    die Runde eine nachgemessene Zeichnung, bis der Autor kippt; eine
+    Herkunfts-Bedingung fände sie an `verfahren: "authored"` (die
+    Nachmessung schreibt dazu `meta.messung.gemessen_von: "messen"`).

@@ -1665,7 +1665,7 @@ export const admin = {
     pfadRohzahlenBox: 'Kasten {{nr}} · {{wort}}:',
     pfadRohzahlenNone: 'nicht gemessen',
     pfadRohzahlenNoneHint:
-      'Diese Bahn trägt keine Sensoren — von Hand nachgefahren, oder aus einem Lauf, bevor der Folger sie mitgeschrieben hat. Keine Zahl heißt nicht null.',
+      'Diese Bahn trägt keine Sensoren — von Hand nachgefahren und noch nicht nachgemessen („tools.eigenhand.pfad --messen"), oder aus einem Lauf, bevor der Folger sie mitgeschrieben hat. Keine Zahl heißt nicht null.',
     // Der Streifen-Befund: ein VORSCHLAG, nie ein Urteil. Der Haken auf dem
     // Blatt bleibt die Entscheidung; hier steht nur, was auffällt und welche
     // Fassung eines Streifens die schwächste ist.
@@ -1715,7 +1715,7 @@ export const admin = {
       // überraschende: eine von Hand gezeichnete Bahn ist Wahrheit, kein
       // Mangel — sie ist nur noch nicht gemessen.
       statusHint:
-        'Nötig: alles, was noch Nachfahr-Arbeit ist. Erledigt: die Bahn folgt der Tinte — oder du hast sie selbst gezogen. Ohne Bahn: der Kasten trägt gar keinen Eintrag oder einen, der sagt, warum keiner da ist.',
+        'Nötig: alles, was noch Nachfahr-Arbeit ist. Erledigt: die Bahn folgt der Tinte — oder du hast sie selbst gezogen, und sie ist noch ungemessen; nach „tools.eigenhand.pfad --messen" zählt ihre Ampel wie jede andere. Ohne Bahn: der Kasten trägt gar keinen Eintrag oder einen, der sagt, warum keiner da ist.',
       rowExpand: '{{wort}} aufklappen',
       rowCollapse: '{{wort}} zuklappen',
       rowPlace: '{{strip}} · {{fassung}} · Kasten {{nr}}',
@@ -1731,7 +1731,7 @@ export const admin = {
       // Streifenfolge. Das wird gesagt, statt eine Rangfolge zu behaupten.
       notRanked: 'Noch ist kein Kasten gemessen — die Reihenfolge ist die des Streifenplans.',
       notRankedHint:
-        'Die Ampel liest die Sensoren, die der Folger beim Nachfolgen mitschreibt. Fassungen aus einem Lauf vor dem Formatwechsel tragen zwei davon nicht und bleiben grau, bis sie einmal neu gefolgt werden.',
+        'Die Ampel liest die Sensoren, die der Folger beim Nachfolgen mitschreibt — bei einer von Hand gezogenen Bahn die, die „tools.eigenhand.pfad --messen" nachmisst. Fassungen aus einem Lauf vor dem Formatwechsel tragen zwei davon nicht und bleiben grau, bis sie einmal neu gefolgt werden.',
       empty: 'Für diese Hand ist noch kein Streifen abgelegt.',
       loadError: 'Die Kastenliste konnte nicht geladen werden.',
       // Nach jedem gespeicherten Kasten wird die Liste neu gelesen. Scheitert
@@ -1797,7 +1797,7 @@ export const admin = {
       // sie nicht ersetzen. Wer es doch will, tut es am Terminal mit
       // `--replace-authored` — und sieht dort die Warnung.
       authoredKeinNeuFolgen:
-        'Von Hand gezogen — diese Bahn ist deine eigene Linie. Der Folger ersetzt sie nicht; das ginge nur am Terminal mit „--replace-authored".',
+        'Von Hand gezogen — diese Bahn ist deine eigene Linie. Der Folger ersetzt sie nicht; das ginge nur am Terminal mit „--replace-authored". Messen lässt sie sich, ohne sie anzufassen, mit „tools.eigenhand.pfad --messen".',
       korbMark: 'Kasten markieren',
       trace: 'Nachfahren',
     },

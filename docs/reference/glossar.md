@@ -70,7 +70,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kreuzungsflucht §4 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5 · Kurzsehne (→ Bahn-Unstetigkeit) §4 · Kurztasten-Schalter §5
 - **L** — Labs §4 · Landmarken-Auftrag §5 · Landmarken-Erkennung §5 · Landmarken-Linse §5 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Stand (geplant) §5 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
-- **N** — Nachbarbindung §4 · Nachfahr-Liste §5 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nicht-Hover-Regel §5 · Normalen-Fit (→ Strang-Dekodierung) §3 · Nullprobe §4
+- **N** — Nachbarbindung §4 · Nachfahr-Liste §5 · Nachfahr-Stand §5 · Nachmessung (`pfad --messen`) §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nicht-Hover-Regel §5 · Normalen-Fit (→ Strang-Dekodierung) §3 · Nullprobe §4
 - **O** — Offen (Streifen-Kasten) §5 · Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · ohne Ort (Abzugs-Linse) §5 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Plattenmaßstab (→ Eingabestufen) §5 · Platten-Wächter §5 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
@@ -4619,6 +4619,30 @@ kann keine Koordinate einer Bahn bewegen. *Technisch:*
 Runde in [`messjournal.md`](messjournal.md) §14 „Span-Zuordner `sep20`".
 → Buchstabengrenzen einer Bahn; Span-Herkunft; Saat-Korrespondenz;
 Trainingsmenge (nachgefahrene Bahnen)
+
+**Nachmessung** *(`pfad --messen`, V21)* — der Lauf, der einer von Hand
+gezeichneten → Bahn dieselben Sensoren gibt, die der Folger für seine eigene
+speichert, damit sie dieselbe → Tintentreue-Ampel trägt (gebaut 2026-09-25).
+Der Streifen-Editor speichert eine Zeichnung mit leerem `meta`; bis zur
+Nachmessung steht sie darum grau als „von Hand gezeichnet". Gemessen wird auf
+derselben Tinte, die der Folger bekäme (Vorgabe: → Eingabestufen mit
+Beschriftungsmaske): Papier-Exkursion und AIoU mit dem Code des Folgers selbst,
+„Tinte ohne Bahn" auf den Strängen des Folgers mit einer eigenen
+**Befahren-Regel** — ein Strang gilt als befahren, wenn mindestens die Hälfte
+seiner Bogenlänge innerhalb von 0,10 x-Höhen der Zeichnung liegt (bloße Nähe
+würde jeden gekreuzten Strich mitzählen) —, die Absetzer als Züge minus eins
+minus die Absetzer, die die Saat selbst erlaubt, nie unter null. Sprünge und
+Haken sind Dekoder-Ereignisse und bleiben `null`. Die Nachmessung bewegt
+nichts: Züge, Registrierung und Buchstabengrenzen gehen Byte für Byte zurück,
+`verfahren` bleibt `authored`; gesetzt werden nur `meta` (mit
+`meta.messung.gemessen_von: "messen"`) und `flecken_n`, die Maske, unter der
+die ZAHLEN entstanden. Geschrieben wird je Kasten per `PATCH` mit
+`If-Match`; ein schon gemessener Kasten bleibt ohne `--neu` stehen, außer die
+Maske hat sich seither geändert. Ob eine nachgemessene Zeichnung in die →
+Tintentreue-Kalibrierung gehört, ist offen (admin-redesign.md §15.7, Nr. 34).
+*Technisch:* `tools/eigenhand/messen.py`, Modus
+`tools/eigenhand/pfad.py --messen`.
+→ Tintentreue; Streifen-Editor; Span-Zuordner
 
 **Bahn-Archivkette** — die drei Glieder, die eine von Hand nachgefahrene →
 Bahn aus der geteilten Datenbank ins private Archiv und zurück bringen:
