@@ -865,25 +865,25 @@ Ablage — steht im Abschnitt darüber, die Doktrin in
   **Drei Eingabestufen** (seit 2026-09-24, jede einzeln schaltbar; alle
   aus = der Lauf, mit dem jede Bahn vor diesem Tag gefolgt wurde, Byte für
   Byte) ändern, was der Folger BEKOMMT, nie den Folger — der Dekoder bleibt
-  der A45-Standard der Tafel:
+  der A45-Standard der Platte:
   `--mask-labels` (**Vorgabe AN** seit dem Autor-Entscheid vom 2026-09-24,
   aus mit `--no-mask-labels`) löscht die gedruckte Streifen-ID, die
   Herkunftszeile und die
   Wort-Beschriftungen NACH der Binarisierung aus Maske und Skelett (die
   Zonen aus denselben Seitenprimitiven, aus denen das Bogen-PDF gezeichnet
   wird; Kasten-Rechteck und gespeicherter Rahmen bleiben, wie sie sind);
-  `--resample-plate` folgt den Kasten bei den 31 px je x-Höhe der Tafel
-  (nur außerhalb ihres Bereichs 28–33, also auf keinem Tafelwort) und bildet
-  die Bahn exakt auf die Streifenpixel zurück; `--register-seed` legt die
-  Saat auf x-Höhe, Grundlinie und Breite der Hand statt auf die gedruckte
+  `--resample-plate` folgt den Kasten bei den 31 px je x-Höhe der Platte
+  (nur außerhalb ihres Bereichs 28–33, also auf keinem Plattenwort) und
+  bildet die Bahn exakt auf die Streifenpixel zurück; `--register-seed` legt
+  die Saat auf x-Höhe, Grundlinie und Breite der Hand statt auf die gedruckte
   Lineatur — anisotrop, sy und Grundlinie aus den Moden der spaltenweisen
-  Skelett-Extreme (an der Tafel kalibriert), sx aus Tinten- gegen
+  Skelett-Extreme (an der Platte kalibriert), sx aus Tinten- gegen
   Kompositionsbreite; unlesbare Moden oder ein Maß jenseits der
   x-Höhen-Toleranz der API lassen die Saat unverändert. Die Rechnung steht
   in `core/eigenhand/follower_input.py`; eine gespeicherte Zeile nennt die
   Stufen (`konfiguration.input`) und was sie gemessen haben (`meta.input`).
   Herkunft: die Eigenhand-Diagnose vom 2026-09-24 (Beschriftung als Tinte
-  gefahren, Pixelpreise mit 0,44× Tafelreichweite, Saat auf der gedruckten
+  gefahren, Pixelpreise mit 0,44× Plattenreichweite, Saat auf der gedruckten
   statt der geschriebenen Lineatur). Die Leiter ist gemessen (§14
   „Folger-Eingabe-Leiter `sep24`" in `messjournal.md`); `--resample-plate`
   und `--register-seed` bleiben aus, bis eine vorregistrierte Runde sie
