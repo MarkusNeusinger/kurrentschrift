@@ -252,7 +252,8 @@ die DB) — mit seiner Bedingung.
 | sep20 | Eigenhand | [Tintentreue-Kalibrierung — die blinde Runde](#tintentreue-kalibrierung-sep20--vorregistrierung-der-blinden-runde-je-hand) | Pre-Reg · **nichts beurteilt, nichts adoptiert** | Die Runde, die die acht geborgten Schwellen ersetzt (Q10 b, gebaut als letzter Posten der Phase 2 — Frage F): 30 Kästen einer Hand, blind in **drei Stufen plus vier Merkmale** beurteilt, Abbildung nicht interpretativ (die gesetzte Stufe IST die Stufe, je Merkmal genau ein Sensor). Nachbau statt Konfiguration — `humanbench` liest eingefrorene Fixture-Crops und hat sechs Fit-Kategorien —, geteilt wird nur die SEITE (`STRIP_CATEGORIES`), der Bauer wohnt bei den Pixeln (`tools/eigenhand/tintentreue_calibration.py`); Verfahren in [`menschliche-bewertung.md`](menschliche-bewertung.md) §8b, vor dem Code geschrieben. Ziehung nach der VORLÄUFIGEN Stufe geschichtet (Prävalenz damit keine Aussage über die Hand), Auswerteplan mit Verlässlichkeits-Schranke, Mindestbesetzung, Quantil-Schnitt und Rundung in die strengere Richtung. Gates (F)–(H) neben den Adoptions-Gates (A)–(E) von „Tintentreue `sep20`"; `VORLAEUFIG` unberührt, das Etikett bleibt stehen. Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
 | sep20 | Eigenhand | [Span-Zuordner — Grenzen ohne Dekodierung](#span-zuordner-sep20--die-zuordnung-über-eine-nachgefahrene-bahn-gegen-die-dekodierung-gemessen) | Pre-Reg (geschwächt) + gemessen · **adoptiert: `dtw`** | Die Buchstabengrenzen einer Bahn, hinter der keine Dekodierung steht (A48: für authored-Bahnen ist die Zuordnung neue Arbeit). Ein Knopf, zwei Arme — monotone Ausrichtung gegen ordnungslos-nächster Saat-Punkt —, gemessen gegen die Zuordnung des Folgers auf 63 Wörtern der eingefrorenen Wurzel `5d4556b87573`, BLAS gepinnt. Beide Arme halten beide Schranken; die Entscheidung fällt am Maximum: die ordnungslose Basis legt ihre schlechteste Naht 2,16 xh daneben (ein ganzer Buchstabe), die monotone 0,34 xh. Ausdrücklich benannte Grenze: die Referenzbahn wurde gegen genau diese Saat dekodiert, die Zahl ist eine obere Schranke — die Messung, die das bricht, läuft auf den nachgefahrenen Bahnen des Autors und bekommt ihre eigene Vorregistrierung. Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
 | sep24 | Eigenhand/Tintenpfad | [Folger-Eingabe-Leiter](#folger-eingabe-leiter-sep24--die-eigene-hand-in-drei-sprossen-a1-und-a2-nicht-besser-a3-raus-am-platten-wächter) | Pre-Reg + gemessen (explorativ, n = 7) · **A1/A2 nicht besser, A3 raus** · Beschriftungszonen per Autor-Entscheid Vorgabe | A3 (Saat-Registrierung) hebt die Hand 7 von 7 (cov-Median 0,736 → 0,959) und reißt den dev-19-aiou 0,7929 → 0,7895; Vorregistrierung ohne Vor-Arm-Hash |
-| sep24 | Eigenhand/Tintenpfad | [Stufe 3 gezielt: R-gate + R-split `sep24b`](#stufe-3-gezielt-r-gate--r-split-sep24b--vorregistrierung-bevor-ein-arm-läuft) | Pre-Reg · **keine Zahl** (Fassung 3a) | C0 → R-k → R-ky, Stufe 3 nur auf Bogen-Eingabe; (a) die 7 Kästen, (b) 7 `practice`-Kästen der Ziehung vom 2026-09-21 (`mn-suetterlin-2026-09-21`) ab S0182 vom nächsten Bogen B0005 — nichts mehr zu ziehen; Bahn-Unstetigkeit + Kurzsehnen nur berichtend |
+| sep24 | Eigenhand/Tintenpfad | [Stufe 3 gezielt: R-gate + R-split `sep24b`](#stufe-3-gezielt-r-gate--r-split-sep24b--vorregistrierung-bevor-ein-arm-läuft) | Pre-Reg (Fassung 3a, maßgeblich `97962e6`) · (a) gemessen, nächste Zeile · (b) offen | C0 → R-k → R-ky, Stufe 3 nur auf Bogen-Eingabe; (a) die 7 Kästen, (b) 7 `practice`-Kästen der Ziehung vom 2026-09-21 (`mn-suetterlin-2026-09-21`) ab S0182 vom nächsten Bogen B0005 — nichts mehr zu ziehen; Bahn-Unstetigkeit + Kurzsehnen nur berichtend; Nachträge 2026-09-25: Referenz nach dem Merge, verlorener `sep24`-Scratch neu aufgebaut |
+| sep25 | Eigenhand/Tintenpfad | [Stufe 3 gezielt `sep24b`, Stufe (a)](#stufe-3-gezielt-sep24b-stufe-a--r-k-besteht-r-ky-schlägt-r-k-nicht-k-trägt-den-gewinn) | gemessen (explorativ, n = 7) · **R-k besteht, R-ky schlägt R-k nicht** · nominiert für (b): Plattenmaßstab + R-k | R-k gegen C0 7 von 7, cov-Median 0,736 → 0,960 (Δ +0,2481); R-ky gegen R-k 2 von 7, Median-Δ 0; ungetort auf der Platte kostet k allein den aiou-Median nicht (0,7929), sy + Grundlinie schon (0,7895); G1/G2 halten, C0 = A2 und R-ky = A3 reproduziert |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -18508,3 +18509,171 @@ Branch-Hash der Fassung 3a ist `31f9265` (`31f92655ce00…`,
 Squash-Commit trägt keinen Arm-Code dieser Runde (kein Tor, kein
 `--register-seed {k,ky}`), ist also selbst Vor-Arm. Der Arm-Code
 entsteht danach auf `exp/sep24b-arme`, in einem eigenen Commit.
+
+**Nachtrag 2026-09-25 — Abweichungen der Stufe (a), vor dem ersten Arm
+festgestellt.** Der Rechner ist am 2026-09-25 um 00:18 neu gestartet; `/tmp`
+war danach leer und mit ihm der ganze Scratch-Ordner `folger-arms/` von
+`sep24`: Cache, die gespeicherten Bahnen von B0–A3, der Basis-Kandidat
+`plate/base-cand.json` (`c6e78cc4…`) samt Bericht. Was `sep24` mit den
+Werkzeugen Write/Edit geschrieben hatte, ließ sich aus den Sitzungsprotokollen
+Byte für Byte zurückspielen, und die registrierten Prüfsummen stimmen:
+`score.py` `6531a729…`, `blind.py` `e303fea3…`, `PREREG.md` `e49ec791…`. Was
+Skripte geschrieben hatten, war verloren. Vier Folgen, festgelegt, bevor eine
+Sprosse lief:
+
+1. **Der Cache ist neu geholt,** über dieselbe GET-Strecke wie in `sep24`,
+   mit denselben 22 Chart- und 15 Laufform-Schlüsseln. Dass es derselbe
+   Cache ist, zeigt B0: auf ihm gefolgt, reproduziert B0 die gespeicherten
+   Format-1-Bahnen vom 2026-09-13 Zug für Zug in 7 von 7 Kästen, und dazu
+   jede erhaltene `sep24`-Zahl von B0 und A1.
+2. **Die Konstruktionsproben** (C0 == A2, R-ky == A3) vergleichen nicht mehr
+   Bahn-Bytes, sondern alles, was von `sep24` erhalten ist. Dazu gehören cov
+   und off je Kasten, cov auf volle Stellen für S0002 #0–2, Züge,
+   Komponenten, Sehnen und AIoU (4 Stellen) je Kasten, Absetzer,
+   Saat-Absetzer und Ampel je Kasten, der ganze Datensatz von S0002 #0 und
+   für A3 k, sy und Grundlinienversatz je Kasten auf volle Stellen.
+3. **G1** vergleicht mit einem Basis-Kandidaten, der auf dem Vor-Arm-Commit
+   `97962e6` neu gelaufen ist (derselbe Befehl, dieselbe Wurzel, BLAS
+   gepinnt), und mit den dev-19-Ziffern der Ledger-Zeile.
+4. **Eine Korrektur am Prüfcode, nach den Sprossen und vor der Regel.** Die
+   erste Konstruktionsprobe las AIoU dreistellig aus der Tabelle des
+   `sep24`-Berichts, die von Hand aufgerundet ist. Zwei Werte liegen auf der
+   Rundungskante (0,5625 und 0,7815), sie passten darum nicht. Die Probe
+   liest seitdem die vierstellige Tabelle aus demselben Protokoll. Keine
+   Sprosse ist neu gelaufen.
+
+Das Lauflog (`folger-arms/sep24b/LOG.md`) nennt jeden Befehl mit HEAD
+`d50f886`, die sha256 des Läufers (`579a3060…`, nach Korrektur 4
+`a3579d4d…`, der Sprossen-Code unverändert) und des Sensor-Skripts
+`unstetigkeit.py` (`d04caab8…`), beide vor C0 festgehalten.
+
+### Stufe 3 gezielt `sep24b`, Stufe (a) — R-k besteht, R-ky schlägt R-k nicht: k trägt den Gewinn
+
+Die Messung zur Vorregistrierung darüber (Fassung 3a, maßgeblich `97962e6`),
+**nur Stufe (a)**. Stufe (b) ist nicht gelaufen, weil B0005 mit S0182–S0188
+noch nicht geschrieben ist. Die Abweichungen stehen im Nachtrag vom
+2026-09-25 unter der Vorregistrierung.
+
+**Stand und Lauf.** Arm-Commit `d50f886` auf `exp/sep24b-arme`
+(`--register-seed {k,ky}` und das Stufe-3-Tor; der Referenz-Nachtrag
+`1c0f817` davor), bei jedem Lauf 0 geänderte Dateien. BLAS ist gepinnt
+(`OPENBLAS/OMP/MKL_NUM_THREADS=1`), die Wurzel ist `c7f2efd9cf37`. Das
+Lineal `score.py` ist unverändert (`6531a729…`), die Eingabe der Cache (GET).
+Alle Sprossen laufen über `adapt_case` des Repos, mit Kalibrierung und
+Bereichsgrenzen des Werkzeugs. Befehle, Uhrzeiten und Prüfsummen stehen in
+`folger-arms/sep24b/LOG.md` und `commands.jsonl`, Pixel und Bahnen im
+Scratch.
+
+**Konstruktionsproben und Wächter — alle bestanden.**
+
+- **C0 == `sep24`-A2** und **R-ky == `sep24`-A3** stimmen in jedem Feld
+  überein, das vom `sep24`-Record erhalten ist, bei R-ky auch in k, sy und
+  Grundlinienversatz aller 7 Kästen auf volle Stellen. Die einzige neue Zahl
+  von (a) ist R-k.
+- **G1:** Der Standard-Plattenpfad auf dem Vor-Arm-Baum (`97962e6`) und auf
+  dem Arm-Commit ist 63 von 63 Zeilen byte-gleich (ohne Uhrzeitfelder).
+  dev-19 liefert auf beiden 0,038351 · 0,048012 · 0,7929, die Ziffern der
+  Ledger-Zeile.
+- **G2:** `adapt_case` mit den Stufen von C0, R-k und R-ky gibt jeden der 63
+  Plattenfälle Array-gleich zurück (einschließlich `seed_x_scale`), 63/63/63.
+  Die 19 dev-Wörter sind Folger-JSON-gleich (19/19/19). Den Grund des Tors
+  tragen 63 von 63 Fällen in `readings`.
+
+**Die Leiter** (cov je Kasten, off ist in allen drei Sprossen überall 0,
+Regel (i) prüft also nur cov):
+
+| Kasten | C0 | R-k | Δ | R-ky | Δ gegen R-k |
+|---|---|---|---|---|---|
+| immediately (m̄) | 0,6408 | 0,9174 | +0,2766 | 0,9127 | −0,0048 |
+| things | 0,6950 | 0,9432 | +0,2481 | 0,9432 | 0,0000 |
+| doctor | 0,8473 | 0,9070 | +0,0597 | 0,9070 | 0,0000 |
+| verbleibe | 0,7358 | 0,9842 | +0,2484 | 0,9844 | +0,0002 |
+| gefährlich | 0,7471 | 0,9595 | +0,2124 | 0,9589 | −0,0006 |
+| ehedem | 0,8862 | 0,9817 | +0,0955 | 0,9838 | +0,0022 |
+| Kurrentschrift | 0,7290 | 0,9824 | +0,2535 | 0,9810 | −0,0014 |
+| **Median** | 0,7358 | **0,9595** | | 0,9589 | |
+| Züge / Absetzer gesamt | 42 / 36 | 20 / 5 | | 25 / 10 | |
+
+**Verdikt je Stufe, wörtlich nach der Regel.**
+**R-k schlägt C0:** (i) 7 von 7, (ii) Median Δcov **+0,2481** (≥ +0,10),
+(iii) schlechtester Kasten **+0,0597** (*doctor*).
+**R-ky schlägt R-k nicht:** (i) 2 von 7, (ii) Median Δcov **0,0000** (genau
+null, *things*), (iii) schlechtester −0,0048 (*immediately*). (iii) hält,
+(i) und (ii) nicht.
+**Was die Runde damit antwortet**, nach ihrer eigenen Lesart: R-k besteht,
+und R-ky schlägt R-k nicht — **k trägt den Gewinn, sy bleibt aus.**
+
+Das ist eine Nominierung, keine Adoption. (a) ist explorativ und
+vorbelastet, n = 7 aus drei Streifen. Nominiert ist für Stufe (b) das Paket
+Plattenmaßstab + R-k. Der Blindlauf gehört nach der Vorregistrierung auf das
+Paar, das in (b) Regel und Wächter besteht, und läuft darum jetzt nicht.
+
+**Die ungetorte Plattenzeile** (Bericht, nie Wächter; der Scratch-Läufer
+setzt `eigenhand:ungated-report:` vor den Fixture-`origin`). dev-19 gegen die
+Vor-Arm-Basis:
+
+| | dtw-Median | dtw-p90 | aiou-Median | aiou je Wort ↑ / ↓ / = |
+|---|---|---|---|---|
+| Basis | 0,038351 | 0,048012 | 0,7929 | |
+| R-k | 0,036739 | 0,048117 | **0,7929** | 5 / 7 / 7 |
+| R-ky | 0,038371 | 0,047841 | **0,7895** | 8 / 8 / 3 |
+
+R-k wirkt auf alle 63 Plattenwörter. R-ky fällt an `mit` und `mit-2` auf die
+Identität zurück (Bereichsgrenzen des Werkzeugs) und trifft darum die
+Gegenprobe von `sep24` (0,038371 / 0,7895) ziffernidentisch. Das Medianwort
+bleibt `die-2`: unter R-k 0,7929, unter R-ky 0,7895. **Auch auf der Platte
+kostet k allein den Median nicht, sy + Grundlinie kosten ihn.** Damit ist
+die offene Frage aus `sep24` (Beobachtung 1) beantwortet, für diese 19
+Wörter. `marks_missing`, `retrace_missing` und `lift_delta_total` bleiben
+in beiden Zeilen 0.
+
+**Die Berichtsgrößen** (`unstetigkeit.py`, entscheiden nichts), über die
+Bahnen B0–A3 von `sep24`, hier neu gelaufen und reproduziert:
+
+| Sprosse | Knick-Dichte (Median, je xh) | Wackler (Median) | Kurzsehnen gesamt |
+|---|---|---|---|
+| B0 | 2,476 | 5,34° | 37 |
+| A1 | 2,597 | 5,70° | 36 |
+| C0 (= A2) | 2,429 | 6,49° | 48 |
+| R-k | 2,300 | 5,91° | 16 |
+| R-ky (= A3) | 2,213 | 5,69° | 12 |
+
+Die Kurzsehnen fallen C0 → R-k um zwei Drittel. Die Knick-Dichte fällt, die
+Zahl der Knick-Ereignisse steigt (332 → 454), weil R-k 46 % mehr Bahn misst.
+Der Wackler-Median liegt auf R-k (5,91°) und R-ky (5,69°) zwischen B0
+(5,34°) und C0 (6,49°).
+Ob die beiden Größen das Zittern treffen, das das Blindurteil an A3 sah,
+zeigt erst der Blindlauf. Solange bleiben es Zahlen ohne Urteil.
+
+**Beobachtungen außerhalb der Regel** (keine ändert ein Verdikt):
+
+1. **k liegt auf der Hand bei 0,64–0,88, wenn es gegen die gedruckte x-Höhe
+   gemessen wird** (R-k). Gegen die registrierte (R-ky) sind es 0,70–0,98.
+   Die Saat von 1922 ist für diese Hand auch ohne sy-Schätzung zu breit, in
+   jedem Kasten.
+2. **Wo sy = 1,000 gelesen wird** (*things*, *doctor*), sind R-k und R-ky
+   dieselbe Bahn. Median und schlechtester Kasten von „R-k gegen C0" sind
+   darum ziffernidentisch mit „A3 gegen A2" aus `sep24`.
+3. **Die Tintentreue** (geborgte Schwellen) liest für R-k 2 „folgt",
+   4 „folgt teils" und 1 „folgt nicht" (*doctor*, Absetzer der Bahn). Für
+   R-ky sind es 2 · 3 · 2, wie in `sep24`. Absetzer des Folgers: C0 36,
+   R-k 5, R-ky 10.
+
+**Rettungswege** (§7.9) für die Sprosse, die nicht besteht (sy +
+Grundlinie): (1) **R-sy-Schätzer** — ein anderer Schätzer der x-Höhe (etwa
+das Mittelband-Histogramm der Tinte gegen die komponierte Saat). Seine
+Vorregistrierung ist zuerst auf Plattenwörtern mit sy ≡ 1 zu prüfen: der
+Moden-Schätzer streut dort 0,13–1,37, und das ist der Sensor. (2)
+**R-price** — ty ±4 px in Pixeln; auf 31 px/xh sind das 0,13 xh, genug, um
+einen Grundlinien-Versatz von 3–5 px schon im eingefrorenen Registrieren
+aufzufangen. Dann wäre die Grundlinie eine Doppelung, kein Fehler. (3)
+**Bestätigung in (b)** auf einer zweiten Sitzung: sy kann erst dort etwas
+tragen, wo die x-Höhe wirklich von der gedruckten abweicht, was auf B0001
+nicht messbar war.
+
+**Welche Lineale sich nicht bewegt haben.** Kein Edit an `score.py`,
+`core/word_metric.py`, `core/continuity.py`, `tools/pairlab/tintenpfad.py`
+oder `tools/tracebench`. Keine Fixture-Wurzel geschrieben. Gegen die API nur
+GET, nichts nach `data/samples/own-hand` oder ins Archiv. Kein
+Rückhalte-Streifen gefolgt, gewertet oder angesehen, keine Zugehörigkeit
+ausgegeben.
