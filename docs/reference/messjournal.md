@@ -18178,14 +18178,19 @@ Sehne unter 0,2 xh zählt nicht).
 
 1. **sy ist vermutlich Schätzer-Rauschen, k trägt den Gewinn.** Auf
    Plattenwörtern, deren sy per Definition 1,0 ist, liest der Moden-Schätzer
-   0,57–1,37 (k bis 7,7 an `mit`); auf dem Bogen 0,74 (*verbleibe*, *ehedem*)
+   0,13–1,37 (`mit` 0,13 bei k 7,7 und `mit-2` 0,57, die beiden Wörter, an
+   denen die Bereichsgrenzen des Werkzeugs feuern würden; ohne sie
+   0,74–1,37); auf dem Bogen 0,74 (*verbleibe*, *ehedem*)
    neben 1,00 (*things*, *doctor*) — in EINER Sitzung schwankt eine x-Höhe
    nicht um 26 %. Die Kalibrierung R = 9/14 ist selbst ein Warnzeichen. k ist
    direkt gemessen und liegt in jedem Kasten bei 0,70–0,98: die Saat von 1922
-   ist für diese Hand überall zu breit. Das trennt erst R-split.
+   ist für diese Hand überall zu breit. Ob ein hohes sy den Platten-Median
+   kostet, ist offen: von den acht Wörtern mit sy > 1,15 fallen vier
+   (`die-2`, `das`, `laden` bei 1,35; `will`) und steigen vier (`zwei` bei
+   1,37, `die`, `Wer`, `Galoppieren`). Beides prüft erst R-split.
 2. **Die Registrierung steht auf dem Streifen am Anschlag.** ty ±4 px der
    eingefrorenen Registrierung (`core/word_metric.py`) sitzt in 12 von 14
-   B0/A1-Zeilen am Rand, in 3 von 7 A2- und 1 von 7 A3-Zeilen; bei 31 px/xh
+   B0/A1-Zeilen am Rand, in 4 von 7 A2- und 1 von 7 A3-Zeilen; bei 31 px/xh
    sind 4 px 0,13 statt 0,056 xh. Ein Teil des A2-Gewinns kann also diese
    Pixel-Konstante sein (R-price), nicht das Umtasten selbst.
 3. **A1 wirkt über die Registrierung, nicht über den Folger:** die
@@ -18242,7 +18247,8 @@ auf Bogen-Eingabe, der Platten-Wächter wird Byte-Identität per Konstruktion,
 mit der ehrlichen Kehrseite, dass Stufe 3 dem Platten-Lineal entzogen statt
 dort als harmlos bewiesen wird (Beobachtung 4: etwa neutral, −0,0034 am
 Medianwort) — und **R-split**: k allein, dann sy + Grundlinie als eigene
-Sprosse (den Platten-Median kosten `die-2`, `das`, `laden` mit sy > 1,15);
+Sprosse (ob ein hohes sy den Platten-Median kostet, ist nach Beobachtung 1
+eine Hypothese: vier der acht Wörter mit sy > 1,15 fallen, vier steigen);
 dazu ein Sensor für den Restmangel als Berichtsgröße. Beide stehen im
 nächsten Eintrag vorregistriert.
 
