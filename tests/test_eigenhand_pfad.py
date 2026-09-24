@@ -1156,6 +1156,16 @@ class TestSkipEntries:
     follower work.
     """
 
+    @pytest.fixture(autouse=True)
+    def _a_row_without_a_printed_page(self, monkeypatch):
+        # Label masking is the default since 2026-09-24, and the stub layout
+        # below is one printed ROW, not a page `page_primitives` could draw.
+        # No zones is what a page without printed text gives; the zones
+        # themselves are pinned in `TestInputStages`.
+        from tools.eigenhand import pfad as tool
+
+        monkeypatch.setattr(tool, "label_zones_px", lambda *_a: [])
+
     ROW_IN = {
         "strip": "S0001",
         "fassung": "F01",
@@ -1682,10 +1692,11 @@ class TestDuctusSeed:
 
 
 class TestInputStages:
-    """The three opt-in input stages as the tool wires them (`FollowerInput`, `adapt_case`).
+    """The three input stages as the tool wires them (`FollowerInput`, `adapt_case`).
 
     The arithmetic itself is pinned in `tests/test_eigenhand_follower_input.py`;
-    here it is the seam: that the standard follow never touches a stage, that a
+    here it is the seam: that the default follow clears the labels and does
+    nothing else, that with every stage off no stage is even touched, that a
     switched-on stage reaches the follower and comes back on the strip, and
     that the stored row says which stages produced it.
     """
@@ -1719,7 +1730,54 @@ class TestInputStages:
             mask=mask,
         )
 
-    def test_the_standard_follow_never_calls_a_stage(self, monkeypatch):
+    def test_label_masking_is_the_default_and_the_other_two_are_not(self):
+        # Author decision of 2026-09-24 (§14 „Folger-Eingabe-Leiter `sep24`"):
+        # the mask is a correction of the input, resampling and the seed
+        # registration wait for a pre-registered round of their own.
+        from tools.eigenhand import pfad as tool
+
+        assert tool.FollowerInput() == tool.STANDARD_INPUT
+        assert (tool.STANDARD_INPUT.mask_labels, tool.STANDARD_INPUT.resample_plate) == (True, False)
+        assert tool.STANDARD_INPUT.register_seed is False
+        assert tool.STANDARD_INPUT.konfiguration() == {
+            "mask_labels": True,
+            "resample_xh_px": None,
+            "register_seed": False,
+        }
+
+    def test_the_default_follow_clears_the_labels_and_nothing_else(self, monkeypatch):
+        import tools.pairlab.tintenpfad as follower
+        from tools.eigenhand import pfad as tool
+
+        seen: dict = {}
+
+        def _zones(*_a):
+            seen["zones_read"] = True
+            return [(0, 0, 4, 4)]
+
+        def _adapt(case, stages, **kwargs):
+            seen["stages"], seen["zones"] = stages, kwargs["zones"]
+            return tool.AdaptedCase(case, readings={"label_zones": len(kwargs["zones"])})
+
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: {"rows": [ROW]})
+        monkeypatch.setattr(tool, "_strip_plane", lambda *_a: np.zeros((HEIGHT_PX, WIDTH_PX)))
+        monkeypatch.setattr(tool, "_paper_sensors", lambda *_a: {})
+        monkeypatch.setattr(tool, "_case_for_box", lambda *_a: (SimpleNamespace(mask=None), []))
+        monkeypatch.setattr(follower, "follow_case", lambda *_a: self.OK_INFO)
+        monkeypatch.setattr(tool, "label_zones_px", _zones)
+        monkeypatch.setattr(tool, "adapt_case", _adapt)
+        row = {**TestSkipEntries.ROW_IN}
+        entry = tool.follow_row("https://example.invalid", "t", "mn-suetterlin", row, {}, None)[0]
+        assert seen["zones_read"] and seen["stages"] == tool.FollowerInput(mask_labels=True)
+        # The strip-pixel zone reaches the stage in the box's own crop pixels.
+        x0, y0 = _frame(0)["rect_px"][:2]
+        assert seen["zones"] == [(-x0, -y0, 4 - x0, 4 - y0)]
+        assert entry["konfiguration"] == {**tool.KONFIGURATION, "input": tool.STANDARD_INPUT.konfiguration()}
+        assert entry["meta"]["input"] == {"label_zones": 1}
+
+    def test_with_every_stage_off_no_stage_is_touched(self, monkeypatch):
+        # The pre-2026-09-24 follow — every Bahn stored before that date — has
+        # to stay reachable byte for byte, stored row included.
         import tools.pairlab.tintenpfad as follower
         from tools.eigenhand import pfad as tool
 
@@ -1728,12 +1786,31 @@ class TestInputStages:
         monkeypatch.setattr(tool, "_paper_sensors", lambda *_a: {})
         monkeypatch.setattr(tool, "_case_for_box", lambda *_a: (SimpleNamespace(mask=None), []))
         monkeypatch.setattr(follower, "follow_case", lambda *_a: self.OK_INFO)
-        monkeypatch.setattr(tool, "adapt_case", lambda *_a, **_k: pytest.fail("the standard follow adapted the case"))
-        monkeypatch.setattr(tool, "label_zones_px", lambda *_a: pytest.fail("the standard follow read the labels"))
+        monkeypatch.setattr(tool, "adapt_case", lambda *_a, **_k: pytest.fail("an unstaged follow adapted the case"))
+        monkeypatch.setattr(tool, "label_zones_px", lambda *_a: pytest.fail("an unstaged follow read the labels"))
         row = {**TestSkipEntries.ROW_IN}
-        entry = tool.follow_row("https://example.invalid", "t", "mn-suetterlin", row, {}, None)[0]
+        off = tool.FollowerInput(mask_labels=False)
+        assert not off.active
+        entry = tool.follow_row("https://example.invalid", "t", "mn-suetterlin", row, {}, None, off)[0]
         assert entry["konfiguration"] == tool.KONFIGURATION
         assert set(entry["meta"]) == {"tintenpfad"}
+
+    def test_the_command_line_switches_the_default_mask_off_and_on(self, tmp_path, monkeypatch):
+        from tools.eigenhand import pfad as tool
+
+        used: list = []
+        _stub_run(monkeypatch, fresh=[], stored=[])
+        monkeypatch.setattr(tool, "follow_row", lambda *args: used.append(args[-1]) or [])
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("a dry run must not write"))
+        out = str(tmp_path / "pfade.json")
+        for flags in ([], ["--mask-labels"], ["--no-mask-labels"], ["--no-mask-labels", "--register-seed"]):
+            assert tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--out", out, *flags]) == 0
+        assert used == [
+            tool.STANDARD_INPUT,
+            tool.STANDARD_INPUT,
+            tool.FollowerInput(mask_labels=False),
+            tool.FollowerInput(mask_labels=False, register_seed=True),
+        ]
 
     def test_cleared_labels_are_what_the_follower_is_handed(self, monkeypatch):
         # End to end over a REAL composed Bogen: the printed id, provenance and
@@ -1797,23 +1874,24 @@ class TestInputStages:
         monkeypatch.setattr(tool, "_strip_plane", lambda *_a: printed)
         monkeypatch.setattr(follower, "follow_case", _follow)
 
-        standard = tool.follow_row("https://example.invalid", "t", "mn-suetterlin", row, prior, None)
-        stages = tool.FollowerInput(mask_labels=True)
-        masked = tool.follow_row("https://example.invalid", "t", "mn-suetterlin", row, prior, None, stages)
+        unmasked = tool.follow_row(
+            "https://example.invalid", "t", "mn-suetterlin", row, prior, None, tool.FollowerInput(mask_labels=False)
+        )
+        masked = tool.follow_row("https://example.invalid", "t", "mn-suetterlin", row, prior, None)  # the default
 
         rect = handed[0].rect
         inside = np.zeros(handed[0].mask.shape, dtype=bool)
         for zx0, zy0, zx1, zy1 in zones_in_crop(zones, rect):
             inside[max(0, zy0) : max(0, zy1), max(0, zx0) : max(0, zx1)] = True
         assert inside.any()
-        assert (handed[0].mask & inside).any()  # what the standard follow still reads as ink
+        assert (handed[0].mask & inside).any()  # what the unmasked follow still reads as ink
         assert not (handed[1].mask & inside).any() and not (handed[1].skel & inside).any()
         hand_only, _skel, _width = ink_of(hand[:, rect[0] : rect[2]])
         assert np.array_equal(handed[1].mask, hand_only)
         # Same crop, same frame: only the ink changed.
         assert handed[1].rect == rect and handed[1].baseline_y == handed[0].baseline_y
         # And a box the follower gave up on still names the stages it ran with.
-        assert "input" not in standard[0]["konfiguration"]
+        assert "input" not in unmasked[0]["konfiguration"]
         assert masked[0]["konfiguration"]["input"] == {
             "mask_labels": True,
             "resample_xh_px": None,
@@ -1903,16 +1981,30 @@ class TestInputStages:
         assert adapted.case is case and adapted.case.seed_x_scale == 1.0
         assert adapted.readings["seed"]["applied"] is False and "unreadable" in adapted.readings["seed"]["reason"]
 
-    def test_the_spans_mode_refuses_a_stage_it_would_never_apply(self):
+    @pytest.mark.parametrize("named", ["--mask-labels", "--no-mask-labels", "--resample-plate"])
+    def test_the_spans_mode_refuses_a_stage_it_would_never_apply(self, named):
+        # Switched on or off, a NAMED stage beside `--spans` is a setting no
+        # line of the run reads. The default mask alone is not refused — the
+        # `--spans` runs of `TestSpanAssignment` go through with it.
         from tools.eigenhand import pfad as tool
 
         with pytest.raises(SystemExit, match="input stages"):
-            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--spans", "--mask-labels"])
+            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--spans", named])
 
-    def test_the_re_run_line_after_a_moved_list_keeps_the_stages(self, monkeypatch):
+    @pytest.mark.parametrize(
+        ("flags", "line"),
+        [
+            (["--no-mask-labels", "--resample-plate"], "--fassung F01 --no-mask-labels --resample-plate --apply"),
+            (["--mask-labels", "--register-seed"], "--fassung F01 --register-seed --apply"),
+            ([], "--fassung F01 --apply"),
+        ],
+    )
+    def test_the_re_run_line_after_a_moved_list_keeps_the_stages(self, monkeypatch, flags, line):
         # The line the terminal hands back has to store what THIS run would
-        # have stored — a re-run without the stages would follow a different
-        # input and push a different Bahn under the operator's nose.
+        # have stored — a re-run with other stages would follow a different
+        # input and push a different Bahn under the operator's nose. The
+        # default mask needs no flag to come back, and spelling it out is what
+        # a `--spans` re-run would refuse.
         from tools.eigenhand import pfad as tool
 
         _stub_run(monkeypatch, fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}], stored=[])
@@ -1922,5 +2014,6 @@ class TestInputStages:
 
         monkeypatch.setattr(tool, "request_json", _refuse)
         with pytest.raises(SystemExit) as refused:
-            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--mask-labels", "--resample-plate", "--apply"])
-        assert "--fassung F01 --mask-labels --resample-plate --apply" in str(refused.value)
+            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", *flags, "--apply"])
+        assert line in str(refused.value)
+        assert "-mask-labels" not in str(refused.value) or "--no-mask-labels" in flags

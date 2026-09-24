@@ -4461,7 +4461,7 @@ Angabe die Nummer dieses Abbilds behaupten.
 proposals/eigenhand-erfassung.md §7.5
 
 **Eingabestufen (Streifen-Folger)** *(follower input stages)* — die drei
-zuschaltbaren Stufen, die ändern, was der Tintenpfad auf einem
+schaltbaren Stufen, die ändern, was der Tintenpfad auf einem
 Eigenhand-Streifen BEKOMMT, nie den Folger selbst (der Dekoder bleibt der
 A45-Standard der Tafel): **Beschriftungszonen** (die gedruckte Streifen-ID,
 Herkunftszeile und Wort-Beschriftungen, aus denselben Seitenprimitiven wie
@@ -4478,13 +4478,18 @@ geklemmt). Die ersten beiden sind auf jedem Tafelwort No-ops per
 Konstruktion, die dritte ist eine Registrierung und bewegt jede Saat.
 Anlass war die Eigenhand-Diagnose vom 2026-09-24: Beschriftung als Tinte
 gefahren, Pixelpreise mit 0,44× ihrer Tafelreichweite, die Saat auf der
-gedruckten statt der geschriebenen Lineatur. Alle drei sind aus, bis eine
-vorregistrierte Runde eine davon trägt.
+gedruckten statt der geschriebenen Lineatur. Die Beschriftungszonen sind
+seit dem Autor-Entscheid vom 2026-09-24 die VORGABE (messjournal.md §14
+„Folger-Eingabe-Leiter `sep24`": die Deckungsregel schrieb ihnen nichts gut,
+aber eine Maske kann keine Tinte hinzufügen — sie nimmt fremde weg); die
+anderen beiden bleiben aus, bis eine vorregistrierte Runde sie trägt. Alle
+drei aus ist der Lauf, mit dem jede Bahn vor diesem Tag gefolgt wurde.
 *Technisch:* `core/eigenhand/follower_input.py` (`label_zones_px` ·
 `ink_of` · `resample_to_plate` · `CropToStrip` · `register_seed` ·
 `PLATE_MODE_CALIBRATION` · `scale_composed_x`), `tools/eigenhand/pfad.py`
-(`FollowerInput` · `adapt_case`, `--mask-labels` · `--resample-plate` ·
-`--register-seed`), `WordCase.seed_x_scale`; im gespeicherten Eintrag
+(`FollowerInput` · `STANDARD_INPUT` · `adapt_case`, `--mask-labels` /
+`--no-mask-labels` · `--resample-plate` · `--register-seed`),
+`WordCase.seed_x_scale`; im gespeicherten Eintrag
 `konfiguration.input` + `meta.input`.
 → Streifen-Pfad; Schnittband; Saat-Abstand
 

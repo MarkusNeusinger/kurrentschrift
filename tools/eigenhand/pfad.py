@@ -102,19 +102,23 @@ THE CONFIGURATION is the one the campaign settled on for the reversal corners
 says out of itself what produced it.
 
 THE INPUT STAGES are three switches on what the follower is HANDED, never on
-the follower itself — the decoder stays the plate's A45 standard. All three
-are off by default, and off is the path above byte for byte:
+the follower itself — the decoder stays the plate's A45 standard. The first is
+ON by default since the author's decision of 2026-09-24; the other two are
+opt-in until a pre-registered round carries them:
 
     --mask-labels      clear the printed strip id, provenance line and word
-                       labels from the ink after binarisation
+                       labels from the ink after binarisation (the default;
+                       --no-mask-labels reads them as ink again)
     --resample-plate   follow the crop at the plate's 31 px per x-height and
                        map the Bahn back into strip pixels
     --register-seed    lay the seed on the hand's own x-height, baseline and
                        width, measured off the ink, instead of the printed ruling
 
-The arithmetic is `core.eigenhand.follower_input`; why each exists is there
-too. A run with any of them on says so in the stored row
-(``konfiguration.input``, and what they measured in ``meta.input``).
+With all three off (``--no-mask-labels`` and neither of the others) the run is
+the one every Bahn stored before that date was made on, byte for byte. The
+arithmetic is `core.eigenhand.follower_input`; why each exists is there too. A
+run with any of them on says so in the stored row (``konfiguration.input``,
+and what they measured in ``meta.input``).
 """
 
 from __future__ import annotations
@@ -227,12 +231,23 @@ class FollowerInput:
 
     Three independent switches, applied in this order when several are on:
     the labels are cleared, then the crop is resampled (the zones with it),
-    then the seed is registered on whatever ink the first two left. All off is
-    the standard follow, and `follow_row` does not even call `adapt_case` then
-    — the default path has to stay the one every stored Bahn was made on.
+    then the seed is registered on whatever ink the first two left.
+
+    Label masking is ON by default — the author's decision of 2026-09-24,
+    after that night's ladder round (messjournal §14 „Folger-Eingabe-Leiter
+    `sep24`"). The round's coverage rule did not credit it (4 of 7 boxes,
+    median +0.002): a mask cannot add ink to cover. What it does is take away
+    ink that is not the hand's — the printed id a Bahn rode as its first run,
+    and the pull the label ink had on the seed registration — and a plate
+    crop carries no printed text, so on the plate it has nothing to clear.
+    The other two stay opt-in until a pre-registered round carries them.
+
+    With all three off `follow_row` does not even call `adapt_case`: that is
+    the path every Bahn stored before that date was made on, and it has to
+    stay reachable byte for byte.
     """
 
-    mask_labels: bool = False
+    mask_labels: bool = True
     resample_plate: bool = False
     register_seed: bool = False
 
@@ -787,8 +802,9 @@ def follow_row(
     the rest of the row with „not selected". A box nothing has ever followed
     carries no entry, which is the same statement without the damage.
 
-    `stages` switches the input stages on (`FollowerInput`); the default is
-    the standard follow, and on it no stage function is even called.
+    `stages` picks the input stages (`FollowerInput`); the default clears the
+    printed labels and nothing else. With every stage off no stage function
+    is even called — the follow every Bahn before 2026-09-24 was made with.
     """
     _refuse_unknown_boxes(row, boxes)
 
@@ -1244,12 +1260,21 @@ def main(argv: list[str] | None = None) -> int:
         help="the matching rule of --spans; the default is the one the §14 round of 2026-09-20 measured",
     )
     stage = ap.add_argument_group(
-        "input stages", "what the follower is handed — each off by default, and all off is the standard follow"
+        "input stages",
+        "what the follower is handed — label masking on by default (2026-09-24), the other two opt-in; "
+        "all three off is the follow every Bahn before that date was made with",
     )
     stage.add_argument(
         "--mask-labels",
-        action="store_true",
-        help="clear the printed strip id, provenance line and word labels from the ink after binarisation",
+        # None rather than the default itself: `--spans` refuses a stage the
+        # operator NAMED, and only an unset flag can tell that apart from the
+        # default riding along.
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help=(
+            "clear the printed strip id, provenance line and word labels from the ink after binarisation "
+            "(the default; --no-mask-labels reads them as ink again)"
+        ),
     )
     stage.add_argument(
         "--resample-plate",
@@ -1262,7 +1287,12 @@ def main(argv: list[str] | None = None) -> int:
         help="lay the seed on the hand's own x-height, baseline and width, measured off the ink",
     )
     args = ap.parse_args(argv)
-    stages = FollowerInput(args.mask_labels, args.resample_plate, args.register_seed)
+    stages = FollowerInput(
+        STANDARD_INPUT.mask_labels if args.mask_labels is None else args.mask_labels,
+        args.resample_plate,
+        args.register_seed,
+    )
+    named_stages = args.mask_labels is not None or args.resample_plate or args.register_seed
 
     if args.spans and args.replace_authored:
         # Not a compatibility detail: `--spans` is the mode that cannot lose a
@@ -1271,10 +1301,12 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(
             "--spans never touches a path, so --replace-authored has nothing to give up — drop one of them"
         )
-    if args.spans and stages.active:
+    if args.spans and named_stages:
         # Refused rather than ignored: `--spans` follows nothing, so a stage
-        # switched on beside it would be a setting the operator believes was
-        # applied and that no line of the run ever read.
+        # named beside it — switched on or off — would be a setting the
+        # operator believes was applied and that no line of the run ever read.
+        # Only a NAMED one, though: the default mask is part of every follow,
+        # not something a `--spans` run was asked for.
         raise SystemExit("--spans follows nothing, so the input stages have no crop to adapt — drop them")
 
     hand = check_hand_id(args.hand)
@@ -1420,7 +1452,14 @@ def main(argv: list[str] | None = None) -> int:
                 "".join(f" --box {index}" for index in args.box or [])
                 + (" --spans" if args.spans else "")
                 + (f" --spans-method {args.spans_method}" if args.spans and args.spans_method != DEFAULT_METHOD else "")
-                + (" --mask-labels" if stages.mask_labels else "")
+                # The deviations from the default, as for `--spans-method`: the
+                # mask rides along unnamed, and spelling it out would make the
+                # line a `--spans` run hands back refuse itself.
+                + (
+                    ""
+                    if stages.mask_labels == STANDARD_INPUT.mask_labels
+                    else (" --mask-labels" if stages.mask_labels else " --no-mask-labels")
+                )
                 + (" --resample-plate" if stages.resample_plate else "")
                 + (" --register-seed" if stages.register_seed else "")
             )

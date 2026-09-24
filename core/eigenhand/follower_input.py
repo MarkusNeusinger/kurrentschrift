@@ -9,8 +9,10 @@ pixel-denominated prices acting at 0.44× their plate reach, and the seed laid
 on the PRINTED ruling where the hand wrote narrower and higher.
 
 So the decoder stays the plate's and its INPUT is adapted, in three separate
-stages that `tools.eigenhand.pfad` switches on one by one (all off is the
-standard path, byte for byte):
+stages that `tools.eigenhand.pfad` switches on one by one. The first is that
+tool's default since the author's decision of 2026-09-24, the other two are
+opt-in, and all three off is the path the strips were followed on before,
+byte for byte:
 
 1. LABEL ZONES. The printed strip id, provenance line and word labels are
    cleared from the binarised mask — after binarisation, so the grey crop is

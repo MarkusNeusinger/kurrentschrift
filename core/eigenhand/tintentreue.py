@@ -376,14 +376,31 @@ def sensoren_of(pfad: Mapping[str, Any], schwellen: Schwellen) -> list[Sensorwer
     has already held it against the printed box and against the frozen plan,
     so it is the one field of a stored path that cannot disagree with the
     strip. A path without a word falls back to one run, as `befund` does.
+
+    What the Absetzer sensor reads is `paper_lifts + 1`, and `paper_lifts` is
+    the FOLLOWER's count of the lifts it made on its own: a lift the seed
+    itself sanctions — a stroke boundary of the composition, which is what an
+    i-dot, the umlaut dots and the u-breve are — ends the run without being
+    counted (`tools.pairlab.tintenpfad` keeps those apart as `seed_lifts`).
+    So a Bahn that rides the body in one run and adds its dots reads one run,
+    against a Soll of one body run, and is green; the marks never enter
+    either side. (The diagnosis of 2026-09-24 read it the other way and
+    proposed adding the marks to the Soll; that would have read every
+    correctly followed dotted word as runs short — messjournal §14
+    „Folger-Eingabe-Leiter `sep24`".)
     """
     block = _sensorblock(pfad)
     wort = pfad.get("word")
+    # Known limitation, not corrected here (the grading is pre-registered,
+    # §14 „Tintentreue `sep20`"): where `body_runs_expected` is above one —
+    # a word with digits or punctuation, which the script never joins — the
+    # breaks between those pieces are seed lifts too, so the Bahn cannot
+    # reach that Soll and reads runs short even when it is perfect.
     soll = float(body_runs_expected(wort)) if isinstance(wort, str) and wort else 1.0
     absetzer = _zahl(block.get(KEY_ABSETZER))
-    # The Bahn's runs, not its lifts: `n` lifts cut a path into `n + 1` runs,
-    # and the Soll counts runs. Comparing lifts against runs would read every
-    # correctly followed one-run word as one run short.
+    # The Bahn's runs, not its lifts: `n` unsanctioned lifts cut the body into
+    # `n + 1` runs, and the Soll counts runs. Comparing lifts against runs
+    # would read every correctly followed one-run word as one run short.
     zuege = None if absetzer is None else absetzer + 1
     unbesucht = _zahl(block.get(KEY_UNBESUCHT))
     exkursion = _zahl(block.get(KEY_EXKURSION))
